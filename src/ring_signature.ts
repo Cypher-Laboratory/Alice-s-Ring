@@ -1,5 +1,5 @@
 import { keccak256 } from "js-sha3";
-import { randomBigint, G, modulo, getRandomSecuredNumber } from "./utils";
+import { randomBigint, G, l, modulo, getRandomSecuredNumber } from "./utils";
 
 const maxBigInt =
   0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141n; // est ce que c'est un bon choix ?
@@ -22,34 +22,33 @@ export function ringSignature(
   // slice the anonimity set to add the signer's pubkey
   // what's better ? adding the signer pubkey at the end and then mix the array or doing like this ?
   const signerPubkey: [bigint, bigint] = [privateKey * G[0], privateKey * G[1]];
-  const pubkeys = anonymitySet
-    .slice(0, signerIndex)
-    .concat(signerPubkey)
-    .concat(anonymitySet.slice(signerIndex + 1));
-
+  const pubkeys = [signerPubkey].concat(anonymitySet);
+  console.log("signerPubkey: ", signerPubkey);
   console.log("pubkeys: ", pubkeys);
 
   // generate fake responses
-  const responses: bigint[] = generateResponses(
+  const [responses, cSigner] = generateResponses(
     signerIndex,
     message,
     privateKey,
     alpha,
-    anonymitySet,
+    pubkeys,
   );
 
   const content: string = pubkeys + message + alpha * G[0] + alpha * G[1];
-  const cIndexSignerPlus1 = BigInt(keccak256(content));
+  const cont = alpha * G[0] + alpha * G[1];
+  console.log("content c1: ", cont);
+  const cIndexSignerPlus1 = BigInt("0x" + keccak256(content));
 
   const cees = computeCees(
-    signerIndex,
     message,
+    cSigner,
     cIndexSignerPlus1,
-    anonymitySet,
+    pubkeys,
     responses,
   );
 
-  return [cl, responses];
+  return [cees[0], responses];
 }
 
 export function ringSignatureVerify(
@@ -57,8 +56,8 @@ export function ringSignatureVerify(
   anonymitySet: [bigint, bigint][],
   signature: [bigint, bigint[]],
 ): boolean {
-  let ci = 0n; // c0: on met quoi ici ?
-
+  let ci = signature[1][0];
+  console.log("Verif, c0: ", ci);
   for (let i = 1; i < anonymitySet.length; i++) {
     const content =
       anonymitySet +
@@ -71,22 +70,38 @@ export function ringSignatureVerify(
       String(anonymitySet[i - 1][1] * G[0]) +
       String(anonymitySet[i - 1][0] * G[1]) +
       String(anonymitySet[i - 1][1] * G[1]);
-    ci = BigInt(keccak256(content));
+    if (i == 1) {
+      const cont =
+        String(signature[1][i] * G[0]) +
+        String(signature[1][i] * G[1]) +
+        String(signature[1][i - 1] * G[0]) +
+        String(signature[1][i - 1] * G[1]) +
+        String(anonymitySet[i - 1][0] * G[0]) +
+        String(anonymitySet[i - 1][1] * G[0]) +
+        String(anonymitySet[i - 1][0] * G[1]) +
+        String(anonymitySet[i - 1][1] * G[1]);
+      console.log("content c1 verify: ", cont);
+    }
+    ci = BigInt("0x" + keccak256(content));
+    console.log("Verif, c" + i + ": ", ci);
   }
 
   return signature[0] == ci;
 }
 
 function computeCees(
-  signerIndex: number,
   message: string,
+  cSigner: bigint,
   cIndexSignerPlus1: bigint,
   anonymitySet: [bigint, bigint][],
   responses: bigint[],
 ): bigint[] {
-  const cees: bigint[] = [cIndexSignerPlus1];
+  const cees: bigint[] = [cSigner, cIndexSignerPlus1];
+  console.log("c0: ", cees[0]);
+  console.log("c1: ", cees[1]);
+  console.log("anonymitySet.length: ", anonymitySet.length);
   // For i = π + 1, π + 2, ..., n, 1, 2, ..., π − 1 calculate, replacing n + 1 → 1
-  for (let i = signerIndex + 2; i < anonymitySet.length; i++) {
+  for (let i = 2; i < anonymitySet.length; i++) {
     const content: string =
       anonymitySet +
       message +
@@ -98,36 +113,7 @@ function computeCees(
       String(anonymitySet[i - 1][1] * G[0]) +
       String(anonymitySet[i - 1][0] * G[1]) +
       String(anonymitySet[i - 1][1] * G[1]);
-    cees.push(BigInt(keccak256(content)));
-  }
-  for (let i = 0; i < signerIndex; i++) {
-    if (i > 0) {
-      const content: string =
-        anonymitySet +
-        message +
-        String(responses[i] * G[0]) +
-        String(responses[i] * G[1]) +
-        String(cees[i - 1] * G[0]) +
-        String(cees[i - 1] * G[1]) +
-        String(anonymitySet[i - 1][0] * G[0]) +
-        String(anonymitySet[i - 1][1] * G[0]) +
-        String(anonymitySet[i - 1][0] * G[1]) +
-        String(anonymitySet[i - 1][1] * G[1]);
-      cees.push(BigInt(keccak256(content)));
-    } else {
-      const content: string =
-        anonymitySet +
-        message +
-        String(responses[i] * G[0]) +
-        String(responses[i] * G[1]) +
-        String(cees[anonymitySet.length - 1] * G[0]) +
-        String(cees[anonymitySet.length - 1] * G[1]) +
-        String(anonymitySet[anonymitySet.length - 1][0] * G[0]) +
-        String(anonymitySet[anonymitySet.length - 1][1] * G[0]) +
-        String(anonymitySet[anonymitySet.length - 1][0] * G[1]) +
-        String(anonymitySet[anonymitySet.length - 1][1] * G[1]);
-      cees.push(BigInt(keccak256(content)));
-    }
+    cees.push(BigInt("0x" + keccak256(content)));
   }
   return cees;
 }
@@ -138,7 +124,7 @@ function generateResponses(
   privateKey: bigint,
   alpha: bigint,
   anonymitySet: [bigint, bigint][],
-): bigint[] {
+): [bigint[], bigint] {
   const responses: bigint[] = [];
 
   // set the number of fake responses to the size of the anonimity set.
@@ -147,8 +133,8 @@ function generateResponses(
     String(BigInt("0x" + keccak256(message))) + alpha * G[0] + alpha * G[1];
   const c = BigInt("0x" + keccak256(m));
 
-  const l = 1n; // quelle valeur ?
   const rSigner = modulo(alpha - c * privateKey, l); // alpha = (rSigner + c * privateKey) mod l
+  console.log("anoni: ", anonymitySet.length);
   for (let i = 0; i < anonymitySet.length; i++) {
     if (i != signerIndex) {
       responses.push(randomBigint(maxBigInt));
@@ -156,5 +142,6 @@ function generateResponses(
       responses.push(rSigner);
     }
   }
-  return responses;
+  console.log("responses len: ", responses.length);
+  return [responses, c]; // c = cSigner
 }
