@@ -1,1 +1,4 @@
-export { altSchnorrSignature, altSchnorrVerify } from './shnorrSignature/alt_Schnorr';
+export {
+  altSchnorrSignature,
+  altSchnorrVerify,
+} from "./shnorrSignature/alt_Schnorr";
