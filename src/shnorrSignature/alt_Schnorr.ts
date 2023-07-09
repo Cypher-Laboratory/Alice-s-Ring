@@ -7,28 +7,28 @@ import { G, randomBigint } from "../utils";
 // a priori la signature et la verif ne fonctionnent pas avec des clés compressées
 
 export function altSchnorrSignature(
-    message: string,
-    privateKey: bigint,
-    alpha: bigint = randomBigint(
-        0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141n,
-    ), // bon choix de max ?
+  message: string,
+  privateKey: bigint,
+  alpha: bigint = randomBigint(
+    0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141n,
+  ), // bon choix de max ?
 ): [bigint, bigint] {
-    console.log("hashed message: ", String(BigInt("0x" + keccak256(message))));
-    const m =
+  console.log("hashed message: ", String(BigInt("0x" + keccak256(message))));
+  const m =
     String(BigInt("0x" + keccak256(message))) + alpha * G[0] + alpha * G[1];
-    console.log("m: ", m);
-    // hash m
-    const c = BigInt("0x" + keccak256(m));
+  console.log("m: ", m);
+  // hash m
+  const c = BigInt("0x" + keccak256(m));
 
-    // define r (r = alpha - c * k)
-    const r = alpha - c * privateKey;
-    console.log("alpha: ", alpha);
-    return [c, r];
+  // define r (r = alpha - c * k)
+  const r = alpha - c * privateKey;
+  console.log("alpha: ", alpha);
+  return [c, r];
 }
 
 const privateKey =
   randomBigint(
-      0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141n,
+    0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141n,
   );
 const publicKey: [bigint, bigint] = [privateKey * G[0], privateKey * G[1]];
 console.log("private key: ", privateKey);
@@ -38,23 +38,23 @@ console.log("c: ", sig[0]);
 console.log("r: ", sig[1]);
 
 export function altSchnorrVerify(
-    message: string,
-    publicKey: [bigint, bigint],
-    signature: [bigint, bigint],
+  message: string,
+  publicKey: [bigint, bigint],
+  signature: [bigint, bigint],
 ): boolean {
-    const c = signature[0];
-    const r = signature[1];
-    // Calculate the challenge
-    const comp = [r * G[0] + c * publicKey[0], r * G[1] + c * publicKey[1]];
-    const m =
+  const c = signature[0];
+  const r = signature[1];
+  // Calculate the challenge
+  const comp = [r * G[0] + c * publicKey[0], r * G[1] + c * publicKey[1]];
+  const m =
     String(BigInt("0x" + keccak256(message))) +
     String(comp[0]) +
     String(comp[1]);
-    console.log("challenge: ", m);
-    return c == BigInt("0x" + keccak256(m));
+  console.log("challenge: ", m);
+  return c == BigInt("0x" + keccak256(m));
 }
 
 console.log(
-    "Verify signature: ",
-    altSchnorrVerify("Hello World !", publicKey, sig),
+  "Verify signature: ",
+  altSchnorrVerify("Hello World !", publicKey, sig),
 );
