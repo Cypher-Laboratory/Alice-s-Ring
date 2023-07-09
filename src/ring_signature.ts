@@ -17,6 +17,7 @@ export function ringSignature(
   const signerIndex = Math.floor(Math.random() * anonymitySet.length);
 
   // slice the anonimity set to add the signer's pubkey
+  // look there if it is not better to add the signer pubkey at the end and then mix the array
   const signerPubkey: [bigint, bigint] = [privateKey * G[0], privateKey * G[1]];
   const pubkeys = anonymitySet
     .slice(0, signerIndex)
