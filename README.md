@@ -1,2 +1,2 @@
 # types-Ring-Signature
-A typeScript implementation on ring signature
+A typeScript implementation of ring signature
