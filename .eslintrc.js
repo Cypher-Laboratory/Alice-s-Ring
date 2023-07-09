@@ -23,8 +23,10 @@ module.exports = {
   },
   plugins: ["@typescript-eslint"],
   rules: {
-    indent: ["error", 4],
-    "linebreak-style": ["error", "windows"],
+    indent: ["error", 2],
     semi: ["error", "always"],
+    "max-len": ["error", 200],
+    camelcase: "off",
+    "@typescript-eslint/no-unused-vars": "error",
   },
 };
