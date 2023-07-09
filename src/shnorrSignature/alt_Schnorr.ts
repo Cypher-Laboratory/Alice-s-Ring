@@ -1,4 +1,4 @@
-import { keccak256 } from "js-sha3"; // fonction de hashage reconnue ?
+import { keccak256 } from "js-sha3"; // implementation de fonction de hashage safe ?
 import { G, randomBigint } from "../utils";
 
 // k : private key
