@@ -25,7 +25,6 @@ module.exports = {
   rules: {
     indent: ["error", 2],
     semi: ["error", "always"],
-    "tsdoc/syntax": "warn",
     "max-len": ["error", 200],
     camelcase: "off",
     "@typescript-eslint/no-unused-vars": "error",
