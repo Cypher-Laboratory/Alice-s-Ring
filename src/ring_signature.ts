@@ -1,5 +1,5 @@
 import { keccak256 } from "js-sha3";
-import { randomBigint, G, modulo } from "./utils";
+import { randomBigint, G, modulo, getRandomSecuredNumber } from "./utils";
 
 const maxBigInt =
   0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141n; // est ce que c'est un bon choix ?
@@ -14,7 +14,10 @@ export function ringSignature(
 
   // randomly set the index of the signer using randomly secured function
   // Regarder si Math.random est secure ou jsi c'est du pseudo random
-  const signerIndex = Math.floor(Math.random() * anonymitySet.length);
+
+  const signerIndex = Math.floor(
+    getRandomSecuredNumber() * anonymitySet.length,
+  );
 
   // slice the anonimity set to add the signer's pubkey
   // what's better ? adding the signer pubkey at the end and then mix the array or doing like this ?

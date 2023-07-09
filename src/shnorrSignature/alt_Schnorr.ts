@@ -6,12 +6,13 @@ import { G, randomBigint } from "../utils";
 
 // a priori la signature et la verif ne fonctionnent pas avec des clés compressées
 
+const maxBigInt =
+  0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141n;
+
 export function altSchnorrSignature(
   message: string,
   privateKey: bigint,
-  alpha: bigint = randomBigint(
-    0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141n,
-  ), // bon choix de max ?
+  alpha: bigint = randomBigint(maxBigInt), // bon choix de max ?
 ): [bigint, bigint] {
   console.log("hashed message: ", String(BigInt("0x" + keccak256(message))));
   const m =
