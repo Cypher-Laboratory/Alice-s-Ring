@@ -13,6 +13,7 @@ export function ringSignature(
   const alpha = randomBigint(maxBigInt);
 
   // randomly set the index of the signer
+  // Regarder si Math.random est secure ou jsi c'est du pseudo random
   const signerIndex = Math.floor(Math.random() * anonymitySet.length);
 
   // slice the anonimity set to add the signer's pubkey
