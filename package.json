@@ -12,10 +12,9 @@
     "fmt:check": "npm run prettier && npm run lint",
     "fmt": "npm run prettier:fix && npm run lint:fix"
   },
-  "author": "",
+  "author": "Elli610 && LeJamon",
   "license": "ISC",
   "dependencies": {
-    "crypto": "^1.0.1",
     "js-sha3": "^0.8.0",
     "prettier": "^3.0.0",
     "ts-node": "^10.9.1"

@@ -1,9 +1,9 @@
-import crypto from 'crypto';
+import crypto from "crypto";
 
 export const randomBigint = (max: bigint): bigint => {
   const maxBytes = max.toString(16).length;
   const array = crypto.randomBytes(maxBytes);
-  const randomHex = array.toString('hex');
+  const randomHex = array.toString("hex");
   const randomBig = BigInt("0x" + randomHex);
   return randomBig % max;
 };
