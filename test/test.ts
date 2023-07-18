@@ -24,5 +24,4 @@ for (let i = 0; i < 9; i++) {
 }
 
 const r = sign(ring, 0n, "test");
-console.log(r);
 console.log(verify(r, ring, "test"));

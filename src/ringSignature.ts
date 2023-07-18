@@ -32,7 +32,6 @@ export function sign(
   );
 
   for (let i = pi + 2; i < witnesses.length; i++) {
-    console.log("i: ", i);
     cValuesPI1N.push(
       keccak256(
         witnesses +
@@ -65,7 +64,6 @@ export function sign(
   );
 
   for (let i = 1; i < pi + 1; i++) {
-    console.log("j: ", i);
     cValues0PI1[i] = keccak256(
       witnesses +
         message +
@@ -80,15 +78,12 @@ export function sign(
 
   //concatenate CVAlues0PI1 and CVAluesPI1N
   const cValues: string[] = cValues0PI1.concat(cValuesPI1N);
-  console.log("cValues: ", cValues);
 
   //define the signer response
   const signerResponse = modulo(
     alpha - BigInt("0x" + cValues[pi]) * signerPk,
     P,
   ); //module L, quelle est la valeur de L ?
-  console.log("fakeResponses: ", fakeResponses);
-  console.log("signerResponse: ", signerResponse);
 
   return {
     cees: cValues,
@@ -133,9 +128,6 @@ export function verify(
           sig.responses[sig.responses.length - 1] * G[1],
       ),
   );
-  console.log([firstValue].concat(values));
 
-  console.log("sig.cees[0]: ", sig.cees[0]);
-  console.log("firstValue: ", [firstValue].concat(values)[0]);
   return [firstValue].concat(values)[0] === sig.cees[0];
 }
