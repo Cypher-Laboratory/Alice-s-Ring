@@ -10,10 +10,9 @@ export function sigVerif(message: string, cValue: string,responses: bigint[],rin
          if(j == ring.length-1){
              newCValues[0] = keccak256(ring+message+responses[j]*G[0]+responses[j]*G[1]+BigInt("0x"+cValue[j])*ring[j][0]+BigInt("0x"+cValue[j])*ring[j][1]); 
          }
-         console.log(newCValues[j+1]+"/n")
+         console.log(newCValues[j+1])
          }
     
-    console.log(newCValues[0])
     console.log(cValue)
 
     if(newCValues[0] == cValue){

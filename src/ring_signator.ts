@@ -28,9 +28,10 @@ export function ringSignature(
     /*const signerIndex = Math.floor(
         getRandomSecuredNumber() * anonymitySet.length,
     );*/
+    const signerIndex = 0;
+    console.log("signerIndex: ", signerIndex);
     //add the signer pubkey to the anonymity set
     anonymitySet.push([privateKey * G[0], privateKey * G[1]]);
-    const signerIndex = anonymitySet.length - 1;
     if (BigInt(signerIndex) !== privateKey) {
         // slice the anonimity set to add the signer's pubkey
         // what's better ? adding the signer pubkey at the end and then mix the array or doing like this ?
@@ -53,28 +54,6 @@ export function ringSignature(
 
         // calcul of C pi+1
         let cValues: string[] = [];
-        if (signerIndex === anonymitySet.length - 1) {
-            cValues[0] = keccak256(anonymitySet + message + alpha * G[0] + alpha * G[1]);
-            console.log(cValues[0])
-            console.log(signerIndex)
-        } else {
-            cValues[signerIndex + 1] = keccak256(anonymitySet + message + alpha * G[0] + alpha * G[1]);
-        }
-
-        // calcul of C pi+2 to n
-        for (let j = signerIndex + 2; j < anonymitySet.length; j++) {
-            console.log(j)
-            cValues[j] = keccak256(anonymitySet + message + fakeResponses[j - 1] * G[0] + fakeResponses[j - 1] * G[1] + BigInt(cValues[j - 1]) * pubkeys[j][0] + BigInt(cValues[j - 1]) * pubkeys[j][1]);
-
-        }
-
-        // calcul of C 1 to pi-1
-        for (let i = 0; i < signerIndex; i++) {
-            if (i !== signerIndex) {
-                console.log(i)
-                //cValues[i] = keccak256(anonymitySet+message+fakeResponses[signerIndex-i]*G[0]+fakeResponses[signerIndex-i]*G[1]+BigInt(cValues[signerIndex-i])*pubkeys[i][0]+BigInt(cValues[signerIndex-i])*pubkeys[i][1]);
-            }
-        }
 
         // calcul of C pi
         const m = String(BigInt(message) + alpha * G[0] + alpha * G[1]);
@@ -82,12 +61,42 @@ export function ringSignature(
         const rSigner = modulo(alpha - c * privateKey, P);
         cValues[signerIndex] = String(rSigner);
 
+        if (signerIndex === anonymitySet.length - 1) {
+            cValues[0] = keccak256(anonymitySet + message + alpha * G[0] + alpha * G[1]);
+            console.log(cValues[0])
+            console.log("signer index == length")
+        } else {
+            cValues[signerIndex + 1] = keccak256(anonymitySet + message + alpha * G[0] + alpha * G[1]);
+            console.log("signer index != length")
+        }
+
+        // calcul of C pi+2 to n
+        for (let j = signerIndex + 2; j < anonymitySet.length; j++) {
+            console.log(j)
+            cValues[j] = keccak256(anonymitySet + message + fakeResponses[j - 1] * G[0] + fakeResponses[j - 1] * G[1] + BigInt("0x" + cValues[j - 1]) * pubkeys[j][0] + BigInt("0x" + cValues[j - 1]) * pubkeys[j][1]);
+
+        }
+        cValues[0] = keccak256(anonymitySet + message + fakeResponses[anonymitySet.length - 1] * G[0] + fakeResponses[anonymitySet.length - 1] * G[1] + BigInt("0x" + cValues[anonymitySet.length - 1]) * pubkeys[0][0] + BigInt("0x" + cValues[anonymitySet.length - 1]) * pubkeys[0][1]);
+        // calcul of C 1 to pi-1
+        console.log("signerIndex: ", cValues[0]);
+        for (let i = 1; i < signerIndex; i++) {
+            if (i !== signerIndex) {
+                console.log(i);
+                console.log("0x" + cValues[signerIndex - i]);
+                console.log("previous", signerIndex - i);
+                cValues[i] = keccak256(anonymitySet + message + fakeResponses[signerIndex - i] * G[0] + fakeResponses[signerIndex - i] * G[1] + BigInt("0x" + cValues[signerIndex - i]) * pubkeys[i][0] + BigInt("0x" + cValues[signerIndex - i]) * pubkeys[i][1]);
+            }
+        }
+
+
+        console.log("cValues: ", cValues);
+
         return {
             "cvalue": cValues[0],
             "responses": fakeResponses,
             "ring": anonymitySet
         };
-
+    }
         /*
 
 
@@ -175,4 +184,3 @@ export function ringSignature(
         }
         return cees;
     }
-}
