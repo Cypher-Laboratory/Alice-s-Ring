@@ -32,3 +32,4 @@ const sig: RingSig = r.toRingSig();
 
 // object to RingSignature
 const givenSig: RingSig = RingSignature.fromRingSig(sig);
+console.log(givenSig);
