@@ -1,4 +1,4 @@
-import { sign, verify } from "../src/ringSignature";
+import { RingSignature, RingSig } from "../src/ringSignature";
 import { G, randomBigint } from "../src/utils";
 
 const ring: [[bigint, bigint]] = [
@@ -23,5 +23,12 @@ for (let i = 0; i < 9; i++) {
   ]);
 }
 
-const r = sign(ring, 0n, "test");
-console.log(verify(r, ring, "test"));
+// signature and verification
+const r = RingSignature.sign(ring, 0n, "test");
+console.log(r.verify());
+
+// convert the signature to an object
+const sig: RingSig = r.toRingSig();
+
+// object to RingSignature
+const givenSig: RingSig = RingSignature.fromRingSig(sig);
