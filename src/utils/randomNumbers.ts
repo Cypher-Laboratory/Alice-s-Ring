@@ -1,12 +1,12 @@
 import crypto from "crypto";
 
-export const randomBigint = (max: bigint): bigint => {
+export function randomBigint(max: bigint): bigint {
   const maxBytes = max.toString(16).length;
   const array = crypto.randomBytes(maxBytes);
   const randomHex = array.toString("hex");
   const randomBig = BigInt("0x" + randomHex);
   return randomBig % max;
-};
+}
 
 export function getRandomSecuredNumber(): number {
   const buffer = crypto.randomBytes(4); // 4 bytes = 32 bits
