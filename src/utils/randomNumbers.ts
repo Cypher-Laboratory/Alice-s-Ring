@@ -8,9 +8,6 @@ export function randomBigint(max: bigint): bigint {
   return randomBig % max;
 }
 
-export function getRandomSecuredNumber(): number {
-  const buffer = crypto.randomBytes(4); // 4 bytes = 32 bits
-  const randomInt = buffer.readUInt32BE();
-  const randomFloat = randomInt / 0xffffffff; // Divide by the maximum value to get a number between 0 and 1
-  return randomFloat;
+export function getRandomSecuredNumber(min: number, max: number): number {
+  return Math.floor(Math.random() * (max - min + 1) + min);
 }
