@@ -28,25 +28,37 @@ function randomRing(ringLength = 1000): [[bigint, bigint]] {
   return ring;
 }
 
-const testRingLength = [10, 100, 500, 1000, 5000, 10000];
-console.log("\nTest ring signature generation and verification :\n");
-for (const ringLength of testRingLength) {
-  const ring = randomRing(ringLength);
-  console.log("Ring length: " + ringLength);
-  // get timestamp
-  const start = Date.now();
-  // signature and verification
-  const r = RingSignature.sign(ring, 0n, "test");
-  const generationDuration = Date.now() - start;
-  console.log(" Sig generated in: " + generationDuration + "ms");
-  console.log("Is sig valid ? ", r.verify());
-  const verificationDuration = Date.now() - generationDuration - start;
-  console.log(" Sig verified in: " + verificationDuration + "ms");
-  console.log(
-    "Total time: " + (generationDuration + verificationDuration) + "ms",
-  );
-  console.log("--------------------------------------------------");
+/* TEST SIGNATURE GENERATION AND VERIFICATION */
+const ring = randomRing(100);
+const maxBigint = 0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141n;
+const signerPrivKey = randomBigint(maxBigint);
+let r = RingSignature.sign(ring, signerPrivKey, "test");
+// r.cees[0] = 555555555555555555n;
+console.log("Is sig valid ? ", r.verify());
+if(!r.verify()) {
+  console.log("Ring signature verification failed");
+  process.exit(1);
 }
+/* TEST COMPUTATION TIME */
+// const testRingLength = [10, 100, 500, 1000, 5000, 10000];
+// console.log("\nTest ring signature generation and verification :\n");
+// for (const ringLength of testRingLength) {
+//   const ring = randomRing(ringLength);
+//   console.log("Ring length: " + ringLength);
+//   // get timestamp
+//   const start = Date.now();
+//   // signature and verification
+//   const r = RingSignature.sign(ring, 0n, "test");
+//   const generationDuration = Date.now() - start;
+//   console.log(" Sig generated in: " + generationDuration + "ms");
+//   console.log("Is sig valid ? ", r.verify());
+//   const verificationDuration = Date.now() - generationDuration - start;
+//   console.log(" Sig verified in: " + verificationDuration + "ms");
+//   console.log(
+//     "Total time: " + (generationDuration + verificationDuration) + "ms",
+//   );
+//   console.log("--------------------------------------------------");
+// }
 // // convert the signature to an object
 // const sig: RingSig = r.toRingSig();
 

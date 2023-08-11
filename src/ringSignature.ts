@@ -61,14 +61,14 @@ export class RingSignature {
    * Sign a message using ring signatures
    *
    * @param ring - Ring of public keys
-   * @param signerPk - Public key of the signer
+   * @param signerPrivKey - Private key of the signer
    * @param message - Clear message to sign
    *
    * @returns A RingSignature
    */
   static sign(
     ring: [[bigint, bigint]], // ring.length = n
-    signerPk: bigint,
+    signerPrivKey: bigint,
     message: string,
   ): RingSignature {
     // generate random number alpha
@@ -158,7 +158,7 @@ export class RingSignature {
 
     // compute the signer response
     const signerResponse = modulo(
-      alpha - BigInt("0x" + cees[pi]) * signerPk,
+      alpha - BigInt("0x" + cees[pi]) * signerPrivKey,
       P,
     );
 
