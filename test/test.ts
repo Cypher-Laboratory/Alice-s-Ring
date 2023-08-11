@@ -50,7 +50,7 @@ for (const ringLength of testRingLength) {
   const start = Date.now();
   // signature and verification
   const maxBigint =
-  0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141n;
+    0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141n;
   const signerPrivKey = randomBigint(maxBigint);
   const r = RingSignature.sign(ring, signerPrivKey, "test");
   const generationDuration = Date.now() - start;
