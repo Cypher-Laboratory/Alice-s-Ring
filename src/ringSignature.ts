@@ -39,7 +39,7 @@ export class RingSignature {
    * Create a RingSignature from a RingSig
    *
    * @param sig - The RingSig to convert
-   * 
+   *
    * @returns A RingSignature
    */
   static fromRingSig(sig: RingSig): RingSignature {
