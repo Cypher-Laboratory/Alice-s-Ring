@@ -1,5 +1,6 @@
 import { keccak256 } from "js-sha3";
-import { G, P, modulo, randomBigint, getRandomSecuredNumber } from "./utils";
+import { G, P, randomBigint, getRandomSecuredNumber } from "./utils";
+import { piSignature } from "./signature/piSignature";
 export interface RingSig {
   message: string; // clear message
   ring: [[bigint, bigint]];
@@ -73,7 +74,6 @@ export class RingSignature {
   ): RingSignature {
     // generate random number alpha
     const alpha = randomBigint(P);
-
     const pi = getRandomSecuredNumber(0, ring.length - 1); // signer index
 
     // generate random fake responses for everybody except the signer
@@ -157,10 +157,7 @@ export class RingSignature {
     const cees: bigint[] = cValues0PI1.concat(cValuesPI1N);
 
     // compute the signer response
-    const signerResponse = modulo(
-      alpha - BigInt("0x" + cees[pi]) * signerPrivKey,
-      P,
-    );
+    const signerResponse = piSignature(alpha, cees[pi], signerPrivKey, P);
 
     return new RingSignature(
       message,
