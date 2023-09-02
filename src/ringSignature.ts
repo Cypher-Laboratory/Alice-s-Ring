@@ -1,6 +1,7 @@
 import { keccak256 } from "js-sha3";
 import { G, P, randomBigint, getRandomSecuredNumber } from "./utils";
 import { piSignature } from "./signature/piSignature";
+
 export interface RingSig {
   message: string; // clear message
   ring: [[bigint, bigint]];
@@ -38,6 +39,7 @@ export class RingSignature {
    * Create a RingSignature from a RingSig
    *
    * @param sig - The RingSig to convert
+   * 
    * @returns A RingSignature
    */
   static fromRingSig(sig: RingSig): RingSignature {
