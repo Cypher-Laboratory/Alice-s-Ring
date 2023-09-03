@@ -138,7 +138,7 @@ export class RingSignature {
       ),
     );
 
-    // compute C 1 to C pi
+    // compute C 1 to C pi -1
     for (let i = 1; i < pi + 1; i++) {
       cValues0PI1[i] = BigInt(
         "0x" +
