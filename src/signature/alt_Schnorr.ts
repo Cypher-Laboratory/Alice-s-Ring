@@ -9,6 +9,7 @@ import { G, randomBigint } from "../utils";
 const maxBigInt =
   0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141n;
 
+// Schnorr signature -> TODO: test if it natively works with our ring signature
 export function altSchnorrSignature(
   message: string,
   privateKey: bigint,
