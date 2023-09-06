@@ -1,4 +1,4 @@
-import crypto from "crypto";
+import * as crypto from "crypto";
 
 export function randomBigint(max: bigint): bigint {
   const maxBytes = max.toString(16).length;

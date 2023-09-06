@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "build": "tsc",
     "test": "echo \"no test specified\" && exit 0",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
