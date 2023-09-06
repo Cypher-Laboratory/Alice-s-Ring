@@ -1,7 +1,4 @@
-export {
-  altSchnorrSignature,
-  altSchnorrVerify,
-} from "./signature/alt_Schnorr";
+export { altSchnorrSignature, altSchnorrVerify } from "./signature/alt_Schnorr";
 
 export { piSignature } from "./signature/piSignature";
 
