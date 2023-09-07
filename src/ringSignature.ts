@@ -30,6 +30,8 @@ export interface PartialSignature {
   message: string;
   ring: [[bigint, bigint]];
   cees: bigint[];
+  alpha: bigint;
+  signerIndex: number;
   fakeResponses_0_pi: bigint[];
   fakeResponses_pi_n: bigint[];
 }
@@ -141,11 +143,11 @@ export class RingSignature {
       );
     }
 
-    // supposed to contains all the c from 0 to pi-1
-    const cValues0PI1: bigint[] = [];
+    // supposed to contains all the c from 0 to pi
+    const cValues0PI: bigint[] = [];
 
     // compute C 0
-    cValues0PI1.push(
+    cValues0PI.push(
       BigInt(
         "0x" +
           keccak256(
@@ -165,23 +167,23 @@ export class RingSignature {
 
     // compute C 1 to C pi -1
     for (let i = 1; i < pi + 1; i++) {
-      cValues0PI1[i] = BigInt(
+      cValues0PI[i] = BigInt(
         "0x" +
           keccak256(
             ring +
               message +
               String(
                 fakeResponses[i] * G[0] +
-                  BigInt("0x" + cValues0PI1[i - 1]) * ring[i][0] +
-                  BigInt("0x" + cValues0PI1[i - 1]) * ring[i][1] +
+                  BigInt("0x" + cValues0PI[i - 1]) * ring[i][0] +
+                  BigInt("0x" + cValues0PI[i - 1]) * ring[i][1] +
                   fakeResponses[i] * G[1],
               ),
           ),
       );
     }
 
-    // concatenate CValues0PI1 and CValuesPI1N to get all the c values
-    const cees: bigint[] = cValues0PI1.concat(cValuesPI1N);
+    // concatenate CValues0PI, cpi and CValuesPI1N to get all the c values
+    const cees: bigint[] = cValues0PI.concat(cValuesPI1N);
 
     // compute the signer response
     const signerResponse = piSignature(alpha, cees[pi], signerPrivKey, P);
@@ -252,11 +254,11 @@ export class RingSignature {
       );
     }
 
-    // supposed to contains all the c from 0 to pi-1
-    const cValues0PI1: bigint[] = [];
+    // supposed to contains all the c from 0 to pi
+    const cValues0PI: bigint[] = [];
 
     // compute C 0
-    cValues0PI1.push(
+    cValues0PI.push(
       BigInt(
         "0x" +
           keccak256(
@@ -276,28 +278,30 @@ export class RingSignature {
 
     // compute C 1 to C pi -1
     for (let i = 1; i < pi + 1; i++) {
-      cValues0PI1[i] = BigInt(
+      cValues0PI[i] = BigInt(
         "0x" +
           keccak256(
             ring +
               message +
               String(
                 fakeResponses[i] * G[0] +
-                  BigInt("0x" + cValues0PI1[i - 1]) * ring[i][0] +
-                  BigInt("0x" + cValues0PI1[i - 1]) * ring[i][1] +
+                  BigInt("0x" + cValues0PI[i - 1]) * ring[i][0] +
+                  BigInt("0x" + cValues0PI[i - 1]) * ring[i][1] +
                   fakeResponses[i] * G[1],
               ),
           ),
       );
     }
 
-    // concatenate CValues0PI1 and CValuesPI1N to get all the c values
-    const cees: bigint[] = cValues0PI1.concat(cValuesPI1N);
+    // concatenate cValues0PI and CValuesPI1N to get all the c values
+    const cees: bigint[] = cValues0PI.concat(cValuesPI1N);
 
     return {
       message: message,
       ring: ring,
       cees: cees,
+      alpha: alpha,
+      signerIndex: pi,
       fakeResponses_0_pi: fakeResponses.slice(0, pi),
       fakeResponses_pi_n: fakeResponses.slice(pi, fakeResponses.length),
     } as PartialSignature;

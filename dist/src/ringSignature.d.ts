@@ -1,8 +1,32 @@
+/**
+ * Ring signature interface
+ *
+ * @see message - Clear message
+ * @see ring - Ring of public keys
+ * @see cees - c values
+ * @see responses - Responses for each public key in the ring
+ */
 export interface RingSig {
     message: string;
     ring: [[bigint, bigint]];
     cees: bigint[];
     responses: bigint[];
+}
+/**
+ * Partial ring signature interface
+ *
+ * @see message - Clear message
+ * @see ring - Ring of public keys
+ * @see cees - c values
+ * @see fakeResponses_0_pi - Fake responses from 0 to pi-1
+ * @see fakeResponses_pi_n - Fake responses from pi+1 to n
+ */
+export interface PartialSignature {
+    message: string;
+    ring: [[bigint, bigint]];
+    cees: bigint[];
+    fakeResponses_0_pi: bigint[];
+    fakeResponses_pi_n: bigint[];
 }
 export declare class RingSignature {
     message: string;
@@ -43,6 +67,25 @@ export declare class RingSignature {
      */
     static sign(ring: [[bigint, bigint]], // ring.length = n
     signerPrivKey: bigint, message: string): RingSignature;
+    /**
+     * Sign a message using ring signatures
+     *
+     * @param ring - Ring of public keys
+     * @param message - Clear message to sign
+     *
+     * @returns A PartialSignature
+     */
+    static partialSign(ring: [[bigint, bigint]], // ring.length = n
+    message: string): PartialSignature;
+    /**
+     * Combine partial signatures into a RingSignature
+     *
+     * @param partialSig - Partial signatures to combine
+     * @param signerResponse - Response of the signer
+     *
+     * @returns A RingSignature
+     */
+    static combine(partialSig: PartialSignature, signerResponse: bigint): RingSignature;
     /**
      * Verify a RingSignature
      *
