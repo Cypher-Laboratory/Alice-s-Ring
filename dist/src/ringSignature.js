@@ -110,6 +110,82 @@ class RingSignature {
             .concat(fakeResponses.slice(pi, fakeResponses.length)));
     }
     /**
+     * Sign a message using ring signatures
+     *
+     * @param ring - Ring of public keys
+     * @param message - Clear message to sign
+     *
+     * @returns A PartialSignature
+     */
+    static partialSign(ring, // ring.length = n
+    message) {
+        // generate random number alpha
+        const alpha = (0, utils_1.randomBigint)(utils_1.P);
+        const pi = (0, utils_1.getRandomSecuredNumber)(0, ring.length - 1); // signer index
+        // generate random fake responses for everybody except the signer
+        const fakeResponses = [];
+        for (let i = 0; i < ring.length; i++) {
+            fakeResponses.push((0, utils_1.randomBigint)(utils_1.P));
+        }
+        // supposed to contains all the cees from pi+1 to n (pi+1, pi+2, ..., n)(n = ring.length)
+        const cValuesPI1N = [];
+        // compute C pi+1
+        cValuesPI1N.push(BigInt("0x" +
+            (0, js_sha3_1.keccak256)(ring + message + String(alpha * utils_1.G[0]) + String(alpha * utils_1.G[1]))));
+        // compute C pi+2 to C n
+        for (let i = pi + 2; i < ring.length; i++) {
+            cValuesPI1N.push(BigInt("0x" +
+                (0, js_sha3_1.keccak256)(ring +
+                    message +
+                    String(fakeResponses[i] * utils_1.G[0] +
+                        BigInt("0x" + cValuesPI1N[i - pi - 2]) * ring[i][0] +
+                        BigInt("0x" + cValuesPI1N[i - pi - 2]) * ring[i][1] +
+                        fakeResponses[i] * utils_1.G[1]))));
+        }
+        // supposed to contains all the c from 0 to pi-1
+        const cValues0PI1 = [];
+        // compute C 0
+        cValues0PI1.push(BigInt("0x" +
+            (0, js_sha3_1.keccak256)(ring +
+                message +
+                String(fakeResponses[ring.length - 1] * utils_1.G[0] +
+                    BigInt("0x" + cValuesPI1N[cValuesPI1N.length - 1]) *
+                        ring[ring.length - 1][0] +
+                    BigInt("0x" + cValuesPI1N[cValuesPI1N.length - 1]) *
+                        ring[ring.length - 1][1] +
+                    fakeResponses[ring.length - 1] * utils_1.G[1]))));
+        // compute C 1 to C pi -1
+        for (let i = 1; i < pi + 1; i++) {
+            cValues0PI1[i] = BigInt("0x" +
+                (0, js_sha3_1.keccak256)(ring +
+                    message +
+                    String(fakeResponses[i] * utils_1.G[0] +
+                        BigInt("0x" + cValues0PI1[i - 1]) * ring[i][0] +
+                        BigInt("0x" + cValues0PI1[i - 1]) * ring[i][1] +
+                        fakeResponses[i] * utils_1.G[1])));
+        }
+        // concatenate CValues0PI1 and CValuesPI1N to get all the c values
+        const cees = cValues0PI1.concat(cValuesPI1N);
+        return {
+            message: message,
+            ring: ring,
+            cees: cees,
+            fakeResponses_0_pi: fakeResponses.slice(0, pi),
+            fakeResponses_pi_n: fakeResponses.slice(pi, fakeResponses.length),
+        };
+    }
+    /**
+     * Combine partial signatures into a RingSignature
+     *
+     * @param partialSig - Partial signatures to combine
+     * @param signerResponse - Response of the signer
+     *
+     * @returns A RingSignature
+     */
+    static combine(partialSig, signerResponse) {
+        return new RingSignature(partialSig.message, partialSig.ring, partialSig.cees, partialSig.fakeResponses_0_pi.concat(signerResponse, partialSig.fakeResponses_pi_n));
+    }
+    /**
      * Verify a RingSignature
      *
      * @returns True if the signature is valid, false otherwise
