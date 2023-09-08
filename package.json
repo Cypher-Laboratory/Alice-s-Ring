@@ -18,11 +18,13 @@
   "author": "Elli610 && LeJamon",
   "license": "ISC",
   "dependencies": {
+    "elliptic": "^6.5.4",
     "js-sha3": "^0.8.0",
     "prettier": "^3.0.0",
     "ts-node": "^10.9.1"
   },
   "devDependencies": {
+    "@types/elliptic": "^6.4.14",
     "@types/node": "^20.4.2",
     "@typescript-eslint/eslint-plugin": "^5.61.0",
     "@typescript-eslint/parser": "^5.61.0",

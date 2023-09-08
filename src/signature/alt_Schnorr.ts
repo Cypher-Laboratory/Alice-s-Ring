@@ -55,8 +55,3 @@ export function altSchnorrVerify(
   console.log("challenge: ", m);
   return c == BigInt("0x" + keccak256(m));
 }
-
-console.log(
-  "Verify signature: ",
-  altSchnorrVerify("Hello World !", publicKey, sig),
-);

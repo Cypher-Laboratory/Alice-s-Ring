@@ -16,5 +16,5 @@ export function piSignature(
   signerPrivKey: bigint,
   p: bigint,
 ): bigint {
-  return modulo(alpha - c * signerPrivKey, p);
+  return alpha - modulo(c * signerPrivKey, p);
 }

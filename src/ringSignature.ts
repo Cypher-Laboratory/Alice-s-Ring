@@ -1,5 +1,12 @@
 import { keccak256 } from "js-sha3";
-import { G, P, randomBigint, getRandomSecuredNumber } from "./utils";
+import {
+  G,
+  P,
+  randomBigint,
+  getRandomSecuredNumber,
+  Curve,
+  modulo,
+} from "./utils";
 import { piSignature } from "./signature/piSignature";
 
 /**
@@ -23,8 +30,8 @@ export interface RingSig {
  * @see message - Clear message
  * @see ring - Ring of public keys
  * @see cees - c values
- * @see fakeResponses_0_pi - Fake responses from 0 to pi-1
- * @see fakeResponses_pi_n - Fake responses from pi+1 to n
+ * @see responses_0_pi - Fake responses from 0 to pi-1
+ * @see responses_pi_n - Fake responses from pi+1 to n
  */
 export interface PartialSignature {
   message: string;
@@ -32,10 +39,15 @@ export interface PartialSignature {
   cees: bigint[];
   alpha: bigint;
   signerIndex: number;
-  fakeResponses_0_pi: bigint[];
-  fakeResponses_pi_n: bigint[];
+  responses_0_pi: bigint[];
+  responses_pi_n: bigint[];
 }
 
+/**
+ * Ring signature class.
+ * This class is used to sign messages using ring signatures.
+ * It can also be used to verify ring signatures.
+ */
 export class RingSignature {
   message: string; // clear message
   cees: bigint[];
@@ -90,7 +102,7 @@ export class RingSignature {
   /**
    * Sign a message using ring signatures
    *
-   * @param ring - Ring of public keys
+   * @param ring - Ring of public keys (does not contain the signer public key)
    * @param signerPrivKey - Private key of the signer
    * @param message - Clear message to sign
    *
@@ -100,15 +112,43 @@ export class RingSignature {
     ring: [[bigint, bigint]], // ring.length = n
     signerPrivKey: bigint,
     message: string,
+    curve = Curve.SECP256K1,
   ): RingSignature {
+    // hash the message
+    const messageDigest = keccak256(message);
+
     // generate random number alpha
     const alpha = randomBigint(P);
+
+    // set the signer position in the ring
+    if (curve !== Curve.SECP256K1) throw new Error("Curve not supported");
+
+    const signerPubKey = [
+      modulo(signerPrivKey * G[0], P),
+      modulo(signerPrivKey * G[1], P),
+    ] as [bigint, bigint];
+
     const pi = getRandomSecuredNumber(0, ring.length - 1); // signer index
 
-    // generate random fake responses for everybody except the signer
-    const fakeResponses: bigint[] = [];
+    // add the signer public key to the ring
+    ring = ring.slice(0, pi).concat([signerPubKey], ring.slice(pi)) as [
+      [bigint, bigint],
+    ];
+
+    // check for duplicates
     for (let i = 0; i < ring.length; i++) {
-      fakeResponses.push(randomBigint(P));
+      // complexity.. :(
+      for (let j = i + 1; j < ring.length; j++) {
+        if (ring[i][0] === ring[j][0] && ring[i][1] === ring[j][1]) {
+          throw new Error("Ring contains duplicate public keys");
+        }
+      }
+    }
+
+    // generate random fake responses for everybody except the signer
+    const responses: bigint[] = [];
+    for (let i = 0; i < ring.length; i++) {
+      responses.push(randomBigint(P));
     }
 
     // supposed to contains all the cees from pi+1 to n (pi+1, pi+2, ..., n)(n = ring.length)
@@ -119,24 +159,35 @@ export class RingSignature {
       BigInt(
         "0x" +
           keccak256(
-            ring + message + String(alpha * G[0]) + String(alpha * G[1]),
+            ring +
+              messageDigest +
+              String(modulo(alpha * G[0], P)) +
+              String(modulo(alpha * G[1], P)),
           ),
       ),
     );
 
-    // compute C pi+2 to C n
+    // compute Cpi+2 to Cn
     for (let i = pi + 2; i < ring.length; i++) {
       cValuesPI1N.push(
         BigInt(
           "0x" +
             keccak256(
               ring +
-                message +
+                messageDigest +
                 String(
-                  fakeResponses[i] * G[0] +
-                    BigInt("0x" + cValuesPI1N[i - pi - 2]) * ring[i][0] +
-                    BigInt("0x" + cValuesPI1N[i - pi - 2]) * ring[i][1] +
-                    fakeResponses[i] * G[1],
+                  modulo(
+                    responses[i - 1] * G[0] +
+                      cValuesPI1N[i - pi - 2] * ring[i - 1][0],
+                    P,
+                  ),
+                ) +
+                String(
+                  modulo(
+                    responses[i - 1] * G[1] +
+                      cValuesPI1N[i - pi - 2] * ring[i - 1][1],
+                    P,
+                  ),
                 ),
             ),
         ),
@@ -152,31 +203,45 @@ export class RingSignature {
         "0x" +
           keccak256(
             ring +
-              message +
+              messageDigest +
               String(
-                fakeResponses[ring.length - 1] * G[0] +
-                  BigInt("0x" + cValuesPI1N[cValuesPI1N.length - 1]) *
-                    ring[ring.length - 1][0] +
-                  BigInt("0x" + cValuesPI1N[cValuesPI1N.length - 1]) *
-                    ring[ring.length - 1][1] +
-                  fakeResponses[ring.length - 1] * G[1],
+                modulo(
+                  responses[responses.length - 1] * G[0] +
+                    cValuesPI1N[cValuesPI1N.length - 1] *
+                      ring[ring.length - 1][0],
+                  P,
+                ),
+              ) +
+              String(
+                modulo(
+                  responses[responses.length - 1] * G[1] +
+                    cValuesPI1N[cValuesPI1N.length - 1] *
+                      ring[ring.length - 1][1],
+                  P,
+                ),
               ),
           ),
       ),
     );
 
-    // compute C 1 to C pi -1
+    // compute C0 to C pi -1
     for (let i = 1; i < pi + 1; i++) {
       cValues0PI[i] = BigInt(
         "0x" +
           keccak256(
             ring +
-              message +
+              messageDigest +
               String(
-                fakeResponses[i] * G[0] +
-                  BigInt("0x" + cValues0PI[i - 1]) * ring[i][0] +
-                  BigInt("0x" + cValues0PI[i - 1]) * ring[i][1] +
-                  fakeResponses[i] * G[1],
+                modulo(
+                  responses[i - 1] * G[0] + cValues0PI[i - 1] * ring[i - 1][0],
+                  P,
+                ),
+              ) +
+              String(
+                modulo(
+                  responses[i - 1] * G[1] + cValues0PI[i - 1] * ring[i - 1][1],
+                  P,
+                ),
               ),
           ),
       );
@@ -192,34 +257,52 @@ export class RingSignature {
       message,
       ring,
       cees,
-      // concatenate all the fake responses with the signer response (respecting the order)
-      fakeResponses
-        .slice(0, pi)
-        .concat([signerResponse])
-        .concat(fakeResponses.slice(pi, fakeResponses.length)),
+      // replace responses[pi] with the signer response
+      responses.slice(0, pi).concat([signerResponse], responses.slice(pi + 1)),
     );
   }
 
   /**
    * Sign a message using ring signatures
    *
-   * @param ring - Ring of public keys
+   * @param ring - Ring of public keys (does not contain the signer public key)
    * @param message - Clear message to sign
+   * @param signerPubKey - Public key of the signer
    *
    * @returns A PartialSignature
    */
   static partialSign(
     ring: [[bigint, bigint]], // ring.length = n
     message: string,
+    signerPubKey: [bigint, bigint],
   ): PartialSignature {
+    // hash the message
+    const messageDigest = keccak256(message);
+
     // generate random number alpha
     const alpha = randomBigint(P);
+
     const pi = getRandomSecuredNumber(0, ring.length - 1); // signer index
 
-    // generate random fake responses for everybody except the signer
-    const fakeResponses: bigint[] = [];
+    // add the signer public key to the ring
+    ring = ring.slice(0, pi).concat([signerPubKey], ring.slice(pi)) as [
+      [bigint, bigint],
+    ];
+
+    // check for duplicates
     for (let i = 0; i < ring.length; i++) {
-      fakeResponses.push(randomBigint(P));
+      // complexity.. :(
+      for (let j = i + 1; j < ring.length; j++) {
+        if (ring[i][0] === ring[j][0] && ring[i][1] === ring[j][1]) {
+          throw new Error("Ring contains duplicate public keys");
+        }
+      }
+    }
+
+    // generate random fake responses for everybody except the signer
+    const responses: bigint[] = [];
+    for (let i = 0; i < ring.length; i++) {
+      responses.push(randomBigint(P));
     }
 
     // supposed to contains all the cees from pi+1 to n (pi+1, pi+2, ..., n)(n = ring.length)
@@ -230,24 +313,35 @@ export class RingSignature {
       BigInt(
         "0x" +
           keccak256(
-            ring + message + String(alpha * G[0]) + String(alpha * G[1]),
+            ring +
+              messageDigest +
+              String(modulo(alpha * G[0], P)) +
+              String(modulo(alpha * G[1], P)),
           ),
       ),
     );
 
-    // compute C pi+2 to C n
+    // compute Cpi+2 to Cn
     for (let i = pi + 2; i < ring.length; i++) {
       cValuesPI1N.push(
         BigInt(
           "0x" +
             keccak256(
               ring +
-                message +
+                messageDigest +
                 String(
-                  fakeResponses[i] * G[0] +
-                    BigInt("0x" + cValuesPI1N[i - pi - 2]) * ring[i][0] +
-                    BigInt("0x" + cValuesPI1N[i - pi - 2]) * ring[i][1] +
-                    fakeResponses[i] * G[1],
+                  modulo(
+                    responses[i - 1] * G[0] +
+                      cValuesPI1N[i - pi - 2] * ring[i - 1][0],
+                    P,
+                  ),
+                ) +
+                String(
+                  modulo(
+                    responses[i - 1] * G[1] +
+                      cValuesPI1N[i - pi - 2] * ring[i - 1][1],
+                    P,
+                  ),
                 ),
             ),
         ),
@@ -263,37 +357,51 @@ export class RingSignature {
         "0x" +
           keccak256(
             ring +
-              message +
+              messageDigest +
               String(
-                fakeResponses[ring.length - 1] * G[0] +
-                  BigInt("0x" + cValuesPI1N[cValuesPI1N.length - 1]) *
-                    ring[ring.length - 1][0] +
-                  BigInt("0x" + cValuesPI1N[cValuesPI1N.length - 1]) *
-                    ring[ring.length - 1][1] +
-                  fakeResponses[ring.length - 1] * G[1],
+                modulo(
+                  responses[responses.length - 1] * G[0] +
+                    cValuesPI1N[cValuesPI1N.length - 1] *
+                      ring[ring.length - 1][0],
+                  P,
+                ),
+              ) +
+              String(
+                modulo(
+                  responses[responses.length - 1] * G[1] +
+                    cValuesPI1N[cValuesPI1N.length - 1] *
+                      ring[ring.length - 1][1],
+                  P,
+                ),
               ),
           ),
       ),
     );
 
-    // compute C 1 to C pi -1
+    // compute C0 to C pi -1
     for (let i = 1; i < pi + 1; i++) {
       cValues0PI[i] = BigInt(
         "0x" +
           keccak256(
             ring +
-              message +
+              messageDigest +
               String(
-                fakeResponses[i] * G[0] +
-                  BigInt("0x" + cValues0PI[i - 1]) * ring[i][0] +
-                  BigInt("0x" + cValues0PI[i - 1]) * ring[i][1] +
-                  fakeResponses[i] * G[1],
+                modulo(
+                  responses[i - 1] * G[0] + cValues0PI[i - 1] * ring[i - 1][0],
+                  P,
+                ),
+              ) +
+              String(
+                modulo(
+                  responses[i - 1] * G[1] + cValues0PI[i - 1] * ring[i - 1][1],
+                  P,
+                ),
               ),
           ),
       );
     }
 
-    // concatenate cValues0PI and CValuesPI1N to get all the c values
+    // concatenate CValues0PI, cpi and CValuesPI1N to get all the c values
     const cees: bigint[] = cValues0PI.concat(cValuesPI1N);
 
     return {
@@ -302,8 +410,8 @@ export class RingSignature {
       cees: cees,
       alpha: alpha,
       signerIndex: pi,
-      fakeResponses_0_pi: fakeResponses.slice(0, pi),
-      fakeResponses_pi_n: fakeResponses.slice(pi, fakeResponses.length),
+      responses_0_pi: responses.slice(0, pi),
+      responses_pi_n: responses.slice(pi, responses.length),
     } as PartialSignature;
   }
 
@@ -323,9 +431,9 @@ export class RingSignature {
       partialSig.message,
       partialSig.ring,
       partialSig.cees,
-      partialSig.fakeResponses_0_pi.concat(
+      partialSig.responses_0_pi.concat(
         signerResponse,
-        partialSig.fakeResponses_pi_n,
+        partialSig.responses_pi_n,
       ),
     );
   }
@@ -335,25 +443,87 @@ export class RingSignature {
    *
    * @returns True if the signature is valid, false otherwise
    */
-  verify() {
-    // compare c1 with the computed c'1 = keccak256(ring, message, rn*Gx + rn*Gy + cn*Kx + cn*Ky)
+  verify(): boolean {
+    // we compute c1' = Hash(Ring, m, [r0G, c0K0])
+    // then, for each ci (i > 1), compute ci' = Hash(Ring, message, [riG + ciKi])
     // (G = generator, K = ring public key)
-    return (
-      BigInt(
+    // finally, if we substitute lastC for lastC' and c0' = c0, the signature is valid
+
+    if (this.ring.length > 1) {
+      // hash the message
+      const messageDigest = keccak256(this.message);
+
+      // computes the cees
+      let lastComputedCp = BigInt(
         "0x" +
           keccak256(
             this.ring +
-              this.message +
+              messageDigest +
               String(
-                this.responses[this.responses.length - 1] * G[0] +
-                  BigInt("0x" + this.cees[this.cees.length - 1]) *
-                    this.ring[this.ring.length - 1][0] +
-                  BigInt("0x" + this.cees[this.cees.length - 1]) *
-                    this.ring[this.ring.length - 1][1] +
-                  this.responses[this.responses.length - 1] * G[1],
+                modulo(
+                  this.responses[0] * G[0] + this.cees[0] * this.ring[0][0],
+                  P,
+                ),
+              ) +
+              String(
+                modulo(
+                  this.responses[0] * G[1] + this.cees[0] * this.ring[0][1],
+                  P,
+                ),
               ),
           ),
-      ) === this.cees[0]
-    );
+      );
+
+      for (let i = 2; i < this.ring.length; i++) {
+        lastComputedCp = BigInt(
+          "0x" +
+            keccak256(
+              this.ring +
+                messageDigest +
+                String(
+                  modulo(
+                    this.responses[i - 1] * G[0] +
+                      lastComputedCp * this.ring[i - 1][0],
+                    P,
+                  ),
+                ) +
+                String(
+                  modulo(
+                    this.responses[i - 1] * G[1] +
+                      lastComputedCp * this.ring[i - 1][1],
+                    P,
+                  ),
+                ),
+            ),
+        );
+      }
+
+      // return true if c0 === c0'
+      return (
+        this.cees[0] ===
+        BigInt(
+          "0x" +
+            keccak256(
+              this.ring +
+                messageDigest +
+                String(
+                  modulo(
+                    this.responses[this.responses.length - 1] * G[0] +
+                      lastComputedCp * this.ring[this.ring.length - 1][0],
+                    P,
+                  ),
+                ) +
+                String(
+                  modulo(
+                    this.responses[this.responses.length - 1] * G[1] +
+                      lastComputedCp * this.ring[this.ring.length - 1][1],
+                    P,
+                  ),
+                ),
+            ),
+        )
+      );
+    }
+    return false;
   }
 }

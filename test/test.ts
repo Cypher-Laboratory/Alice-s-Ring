@@ -2,50 +2,51 @@
 import { piSignature } from "../src";
 import { RingSignature } from "../src/ringSignature";
 
-import { G, P, randomBigint } from "../src/utils";
+import { G, P, modulo, randomBigint } from "../src/utils";
 
 function randomRing(ringLength = 1000): [[bigint, bigint]] {
-  const ring: [[bigint, bigint]] = [
-    [
-      randomBigint(
-        0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141n,
-      ) * G[0],
-      randomBigint(
-        0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141n,
-      ) * G[1],
-    ],
-  ];
+  let k =
+    randomBigint(
+      0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141n,
+    );
+
+  const ring: [[bigint, bigint]] = [[modulo(k * G[0], P), modulo(k * G[1], P)]];
+  const x = ring[0][0];
+  const y = ring[0][1];
+  console.log("on Curve? ", modulo(x * x * x + 7n, P) === modulo(y * y, P));
 
   for (let i = 0; i < ringLength - 1; i++) {
-    ring.push([
+    k =
       randomBigint(
         0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141n,
-      ) * G[0],
-      randomBigint(
-        0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141n,
-      ) * G[1],
-    ]);
+      );
+    ring.push([modulo(k * G[0], P), modulo(k * G[1], P)]);
   }
   return ring;
 }
 
 /* TEST SIGNATURE GENERATION AND VERIFICATION */
-const ring = randomRing(100);
-const maxBigint =
-  0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141n;
-const signerPrivKey = randomBigint(maxBigint);
-const r = RingSignature.sign(ring, signerPrivKey, "test");
-console.log("Is sig valid ? ", r.verify());
-if (!r.verify()) {
+const ring = randomRing(10);
+
+const signerPrivKey =
+  25492685131648303913676486147365321410553162645346980248069629262609756314572n; // randomBigint(maxBigint);
+const signerPubKey = [
+  modulo(signerPrivKey * G[0], P),
+  modulo(signerPrivKey * G[1], P),
+] as [bigint, bigint];
+const signature = RingSignature.sign(ring, signerPrivKey, "test");
+console.log("Is sig valid ? ", signature.verify());
+console.log("ring size: ", signature.ring.length);
+
+if (!signature.verify()) {
   console.log("Ring signature verification failed");
   process.exit(1);
 }
 
 // test partial signature
 
-const partialSig = RingSignature.partialSign(ring, "test");
+const partialSig = RingSignature.partialSign(ring, "test", signerPubKey);
 // end signing
-console.log(partialSig.cees[partialSig.signerIndex]);
 const signerResponse = piSignature(
   partialSig.alpha,
   partialSig.cees[partialSig.signerIndex],
@@ -88,3 +89,19 @@ if (!sig.verify()) {
 // // object to RingSignature
 // const givenSig: RingSig = RingSignature.fromRingSig(sig);
 // console.log(givenSig);
+
+// function randomRing(ringLength = 1000): [[bigint, bigint]] {
+//   let k = randomBigint(
+//     0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141n,
+//   );
+
+//   const ring: [[bigint, bigint]] = [getPublicKey(k, Curve.SECP256K1)];
+
+//   for (let i = 0; i < ringLength - 1; i++) {
+//     k = randomBigint(
+//       0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141n,
+//     );
+//     ring.push(getPublicKey(k, Curve.SECP256K1));
+//   }
+//   return ring;
+// }
