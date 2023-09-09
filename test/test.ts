@@ -2,7 +2,7 @@
 import { piSignature } from "../src";
 import { RingSignature } from "../src/ringSignature";
 
-import { G, P, modulo, randomBigint } from "../src/utils";
+import { G, P, modulo, mult, randomBigint } from "../src/utils";
 
 function randomRing(ringLength = 1000): [[bigint, bigint]] {
   let k =
@@ -10,17 +10,14 @@ function randomRing(ringLength = 1000): [[bigint, bigint]] {
       0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141n,
     );
 
-  const ring: [[bigint, bigint]] = [[modulo(k * G[0], P), modulo(k * G[1], P)]];
-  const x = ring[0][0];
-  const y = ring[0][1];
-  console.log("on Curve? ", modulo(x * x * x + 7n, P) === modulo(y * y, P));
+  const ring: [[bigint, bigint]] = [mult(k, G) as [bigint, bigint]];
 
   for (let i = 0; i < ringLength - 1; i++) {
     k =
       randomBigint(
         0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141n,
       );
-    ring.push([modulo(k * G[0], P), modulo(k * G[1], P)]);
+    ring.push(mult(k, G));
   }
   return ring;
 }
@@ -30,10 +27,7 @@ const ring = randomRing(10);
 
 const signerPrivKey =
   25492685131648303913676486147365321410553162645346980248069629262609756314572n; // randomBigint(maxBigint);
-const signerPubKey = [
-  modulo(signerPrivKey * G[0], P),
-  modulo(signerPrivKey * G[1], P),
-] as [bigint, bigint];
+const signerPubKey = mult(signerPrivKey, G) as [bigint, bigint];
 const signature = RingSignature.sign(ring, signerPrivKey, "test");
 console.log("Is sig valid ? ", signature.verify());
 console.log("ring size: ", signature.ring.length);

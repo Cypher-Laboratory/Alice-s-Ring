@@ -6,6 +6,7 @@ import {
   getRandomSecuredNumber,
   Curve,
   modulo,
+  mult,
 } from "./utils";
 import { piSignature } from "./signature/piSignature";
 
@@ -123,13 +124,10 @@ export class RingSignature {
     // set the signer position in the ring
     if (curve !== Curve.SECP256K1) throw new Error("Curve not supported");
 
-    const signerPubKey = [
-      modulo(signerPrivKey * G[0], P),
-      modulo(signerPrivKey * G[1], P),
-    ] as [bigint, bigint];
+    const signerPubKey = mult(signerPrivKey, G);
 
-    const pi = getRandomSecuredNumber(0, ring.length - 1); // signer index
-
+    const pi = 5; // getRandomSecuredNumber(0, ring.length - 1); // signer index
+    console.log("pi: ", pi);
     // add the signer public key to the ring
     ring = ring.slice(0, pi).concat([signerPubKey], ring.slice(pi)) as [
       [bigint, bigint],
@@ -155,20 +153,23 @@ export class RingSignature {
     const cValuesPI1N: bigint[] = [];
 
     // compute C pi+1
+    let scalarTimesPoint = mult(alpha, G); // temporary variable
     cValuesPI1N.push(
       BigInt(
         "0x" +
           keccak256(
             ring +
               messageDigest +
-              String(modulo(alpha * G[0], P)) +
-              String(modulo(alpha * G[1], P)),
+              String(modulo(scalarTimesPoint[0], P)) +
+              String(modulo(scalarTimesPoint[1], P)),
           ),
       ),
     );
+    console.log("cpi+1: ", scalarTimesPoint[0], '\n', scalarTimesPoint[1]);
 
     // compute Cpi+2 to Cn
     for (let i = pi + 2; i < ring.length; i++) {
+      scalarTimesPoint = mult(responses[i - 1],  G);
       cValuesPI1N.push(
         BigInt(
           "0x" +
@@ -177,14 +178,14 @@ export class RingSignature {
                 messageDigest +
                 String(
                   modulo(
-                    responses[i - 1] * G[0] +
+                    scalarTimesPoint[0] +
                       cValuesPI1N[i - pi - 2] * ring[i - 1][0],
                     P,
                   ),
                 ) +
                 String(
                   modulo(
-                    responses[i - 1] * G[1] +
+                    scalarTimesPoint[0] +
                       cValuesPI1N[i - pi - 2] * ring[i - 1][1],
                     P,
                   ),
@@ -197,7 +198,8 @@ export class RingSignature {
     // supposed to contains all the c from 0 to pi
     const cValues0PI: bigint[] = [];
 
-    // compute C 0
+    // compute C0
+    scalarTimesPoint = mult(responses[responses.length - 1], G);
     cValues0PI.push(
       BigInt(
         "0x" +
@@ -206,7 +208,7 @@ export class RingSignature {
               messageDigest +
               String(
                 modulo(
-                  responses[responses.length - 1] * G[0] +
+                  scalarTimesPoint[0] +
                     cValuesPI1N[cValuesPI1N.length - 1] *
                       ring[ring.length - 1][0],
                   P,
@@ -214,7 +216,7 @@ export class RingSignature {
               ) +
               String(
                 modulo(
-                  responses[responses.length - 1] * G[1] +
+                  scalarTimesPoint[1] +
                     cValuesPI1N[cValuesPI1N.length - 1] *
                       ring[ring.length - 1][1],
                   P,
@@ -226,6 +228,7 @@ export class RingSignature {
 
     // compute C0 to C pi -1
     for (let i = 1; i < pi + 1; i++) {
+      scalarTimesPoint = mult(responses[i - 1], G);
       cValues0PI[i] = BigInt(
         "0x" +
           keccak256(
@@ -233,13 +236,13 @@ export class RingSignature {
               messageDigest +
               String(
                 modulo(
-                  responses[i - 1] * G[0] + cValues0PI[i - 1] * ring[i - 1][0],
+                  scalarTimesPoint[0] + cValues0PI[i - 1] * ring[i - 1][0],
                   P,
                 ),
               ) +
               String(
                 modulo(
-                  responses[i - 1] * G[1] + cValues0PI[i - 1] * ring[i - 1][1],
+                  scalarTimesPoint[1] + cValues0PI[i - 1] * ring[i - 1][1],
                   P,
                 ),
               ),
@@ -252,6 +255,9 @@ export class RingSignature {
 
     // compute the signer response
     const signerResponse = piSignature(alpha, cees[pi], signerPrivKey, P);
+    for (let i=0; i<cees.length; i++) {
+      console.log("c"+i+": ", cees[i]);
+    }
 
     return new RingSignature(
       message,
@@ -454,6 +460,7 @@ export class RingSignature {
       const messageDigest = keccak256(this.message);
 
       // computes the cees
+      let scalarTimesPoint = mult(this.responses[0], G);
       let lastComputedCp = BigInt(
         "0x" +
           keccak256(
@@ -461,20 +468,21 @@ export class RingSignature {
               messageDigest +
               String(
                 modulo(
-                  this.responses[0] * G[0] + this.cees[0] * this.ring[0][0],
+                  scalarTimesPoint[0] + this.cees[0] * this.ring[0][0],
                   P,
                 ),
               ) +
               String(
                 modulo(
-                  this.responses[0] * G[1] + this.cees[0] * this.ring[0][1],
+                  scalarTimesPoint[1] + this.cees[0] * this.ring[0][1],
                   P,
                 ),
               ),
           ),
       );
-
+      console.log("c1': ", lastComputedCp);
       for (let i = 2; i < this.ring.length; i++) {
+        scalarTimesPoint = mult(this.responses[i - 1], G);
         lastComputedCp = BigInt(
           "0x" +
             keccak256(
@@ -482,23 +490,33 @@ export class RingSignature {
                 messageDigest +
                 String(
                   modulo(
-                    this.responses[i - 1] * G[0] +
+                    scalarTimesPoint[0] +
                       lastComputedCp * this.ring[i - 1][0],
                     P,
                   ),
                 ) +
                 String(
                   modulo(
-                    this.responses[i - 1] * G[1] +
+                    scalarTimesPoint[1] +
                       lastComputedCp * this.ring[i - 1][1],
                     P,
                   ),
                 ),
             ),
         );
+        if(i == 6){
+          console.log("c'pi+1 : ", 
+          scalarTimesPoint[0] +
+                      lastComputedCp * this.ring[i - 1][0] + '\n' +
+                      scalarTimesPoint[1] +
+                      lastComputedCp * this.ring[i - 1][1]
+                      );
+        }
+        console.log("c'" + i + ': ', lastComputedCp);
       }
 
       // return true if c0 === c0'
+      scalarTimesPoint = mult(this.responses[this.responses.length - 1], G);
       return (
         this.cees[0] ===
         BigInt(
@@ -508,14 +526,14 @@ export class RingSignature {
                 messageDigest +
                 String(
                   modulo(
-                    this.responses[this.responses.length - 1] * G[0] +
+                    scalarTimesPoint[0] +
                       lastComputedCp * this.ring[this.ring.length - 1][0],
                     P,
                   ),
                 ) +
                 String(
                   modulo(
-                    this.responses[this.responses.length - 1] * G[1] +
+                    scalarTimesPoint[1] +
                       lastComputedCp * this.ring[this.ring.length - 1][1],
                     P,
                   ),
