@@ -1,5 +1,5 @@
 import { keccak256 } from "js-sha3";
-import { G, P, modulo, mult, randomBigint } from "../src/utils";
+import { G, P, add, modulo, mult, randomBigint } from "../src/utils";
 const max = 0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141n;
 
 // ring pubkeys
@@ -37,8 +37,7 @@ const c3 = BigInt(
     ),
 );
 console.log("c3: \n",
-mult(alpha, G)[0], '\n',
-mult(alpha, G)[1], '\n',
+mult(alpha, G), '\n',
 )
 
 // Iterate:
@@ -96,16 +95,14 @@ const c3p = BigInt(
         String(modulo(mult(r2, G)[0] + mult(c2p, K2)[0], P)) +
         String(modulo(mult(r2, G)[1] + mult(c2p, K2)[1], P)),
     ),
-
 );
 console.log("K2: ", K2);
-console.log(modulo(mult(c2p, K2)[0] + mult(r2, G)[0], P)); // c3p
-console.log(modulo(mult(modulo(alpha, P), G)[0], P)); // c3
+console.log(modulo(add(mult(c2p, K2), mult(r2, G))[0], P)); // c3p
+console.log(modulo(mult(alpha, G)[0], P)); // c3
 console.log(modulo(mult(c2p, K2)[0] + mult(r2, G)[0], P) == modulo(mult(alpha, G)[0], P));
 
 console.log("c3p: \n",
-mult(r2, G)[0] + mult(c2p, K2)[0], '\n',
-mult(r2, G)[1] + mult(c2p, K2)[1], '\n',
+add(mult(r2, G), mult(c2p, K2)), '\n',
 )
 
 // c3 should be equal to c3p
