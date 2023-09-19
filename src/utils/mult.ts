@@ -1,4 +1,4 @@
-import { ProjectivePoint } from "./noble";
+import { ProjectivePoint } from "./noble-SECP256k1";
 
 /**
  * Multiplies a scalar by a point on the elliptic curve.

@@ -97,9 +97,9 @@ const c3p = BigInt(
     ),
 );
 console.log("K2: ", K2);
-console.log(modulo(add(mult(c2p, K2), mult(r2, G))[0], P)); // c3p
-console.log(modulo(mult(alpha, G)[0], P)); // c3
-console.log(modulo(mult(c2p, K2)[0] + mult(r2, G)[0], P) == modulo(mult(alpha, G)[0], P));
+console.log(modulo(add([c2p * K2[0], c2p * K2[1]], mult(r2, G))[0], P)); // c3p = c2p * K2 + r2 * G
+console.log(modulo(mult(alpha, G)[0], P)); // c3 = alpha * G (should be = c2 * K2 + r2 * G)
+
 
 console.log("c3p: \n",
 add(mult(r2, G), mult(c2p, K2)), '\n',
@@ -120,15 +120,7 @@ const c1p = BigInt(
 
 // c1 should be equal to c1p
 console.log("c1 === c1p: ", c1 === c1p);
-// console.log('c1: \n',
-//   String(modulo(r3 * G[0] + c3 * K3[0], P)), '\n',
-//   String(modulo(r3 * G[1] + c3 * K3[1], P)),
-// );
 
-// console.log('c1p: \n',
-//   String(modulo(r3 * G[0] + c3p * K3[0], P)), '\n',
-//   String(modulo(r3 * G[1] + c3p * K3[1], P)), '\n',
-// );
 
 if (c1 === c1p) {
   console.log("Example signature is valid");
