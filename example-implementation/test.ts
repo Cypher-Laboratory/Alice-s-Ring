@@ -1,32 +1,34 @@
 import { keccak256 } from "js-sha3";
-import { G, P, add, modulo, mult, randomBigint, Curve } from "../src/utils";
+import {
+  SECP256K1,
+  add,
+  modulo,
+  mult,
+  randomBigint,
+  Curve,
+} from "../src/utils";
 import { piSignature } from "../src";
 
-const max = 0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141n;
+const P = SECP256K1.P;
+const G = SECP256K1.G;
 
 // ring pubkeys
-const K1 = mult(modulo(randomBigint(max), P) as bigint, G);
+const K1 = mult(randomBigint(P) as bigint, G);
 
-const K3 = mult(modulo(randomBigint(max), P) as bigint, G);
+const K3 = mult(randomBigint(P) as bigint, G);
 
 // signer keys
-const k2 = modulo(randomBigint(max), P) as bigint;
+const k2 = randomBigint(P);
 const K2 = mult(k2, G);
 
 /* -------SIGNING------- */
 
 // alpha
-const alpha = modulo(randomBigint(max), P) as bigint;
+const alpha = randomBigint(P);
 
 // fake responses
-const r1 = [modulo(randomBigint(max), P), modulo(randomBigint(max), P)] as [
-  bigint,
-  bigint,
-];
-const r3 = [modulo(randomBigint(max), P), modulo(randomBigint(max), P)] as [
-  bigint,
-  bigint,
-];
+const r1 = [randomBigint(P), randomBigint(P)] as [bigint, bigint];
+const r3 = [randomBigint(P), randomBigint(P)] as [bigint, bigint];
 
 // pi = 2
 const ring = [K1, K2, K3];

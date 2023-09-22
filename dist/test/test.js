@@ -1,31 +1,39 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 // import { RingSignature, RingSig } from "../src/ringSignature";
+const src_1 = require("../src");
 const ringSignature_1 = require("../src/ringSignature");
 const utils_1 = require("../src/utils");
+const G = utils_1.SECP256K1.G;
 function randomRing(ringLength = 1000) {
-    const ring = [
-        [
-            (0, utils_1.randomBigint)(0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141n) * utils_1.G[0],
-            (0, utils_1.randomBigint)(0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141n) * utils_1.G[1],
-        ],
-    ];
+    let k = (0, utils_1.randomBigint)(0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141n);
+    const ring = [(0, utils_1.mult)(k, G)];
     for (let i = 0; i < ringLength - 1; i++) {
-        ring.push([
-            (0, utils_1.randomBigint)(0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141n) * utils_1.G[0],
-            (0, utils_1.randomBigint)(0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141n) * utils_1.G[1],
-        ]);
+        k =
+            (0, utils_1.randomBigint)(0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141n);
+        ring.push((0, utils_1.mult)(k, G));
     }
     return ring;
 }
 /* TEST SIGNATURE GENERATION AND VERIFICATION */
-const ring = randomRing(100);
-const maxBigint = 0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141n;
-const signerPrivKey = (0, utils_1.randomBigint)(maxBigint);
-const r = ringSignature_1.RingSignature.sign(ring, signerPrivKey, "test");
-console.log("Is sig valid ? ", r.verify());
-if (!r.verify()) {
-    console.log("Ring signature verification failed");
+const ring = randomRing(10);
+const signerPrivKey = 25492685131648303913676486147365321410553162645346980248069629262609756314572n; // randomBigint(maxBigint);
+const signerPubKey = (0, utils_1.mult)(signerPrivKey, G);
+const signature = ringSignature_1.RingSignature.sign(ring, signerPrivKey, "test");
+console.log("Is sig valid ? ", signature.verify());
+console.log("ring size: ", signature.ring.length);
+if (!signature.verify()) {
+    console.log("Error: Ring signature verification failed");
+    process.exit(1);
+}
+// test partial signature
+const partialSig = ringSignature_1.RingSignature.partialSign(ring, "test", signerPubKey);
+// end signing
+const signerResponse = (0, src_1.piSignature)(partialSig.alpha, partialSig.cees[partialSig.signerIndex], signerPrivKey, utils_1.Curve.SECP256K1);
+const sig = ringSignature_1.RingSignature.combine(partialSig, signerResponse);
+console.log("Is partial sig valid ? ", sig.verify());
+if (!sig.verify()) {
+    console.log("Error: Partial signature verification failed");
     process.exit(1);
 }
 /* TEST COMPUTATION TIME */
@@ -56,3 +64,16 @@ if (!r.verify()) {
 // // object to RingSignature
 // const givenSig: RingSig = RingSignature.fromRingSig(sig);
 // console.log(givenSig);
+// function randomRing(ringLength = 1000): [[bigint, bigint]] {
+//   let k = randomBigint(
+//     0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141n,
+//   );
+//   const ring: [[bigint, bigint]] = [getPublicKey(k, Curve.SECP256K1)];
+//   for (let i = 0; i < ringLength - 1; i++) {
+//     k = randomBigint(
+//       0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141n,
+//     );
+//     ring.push(getPublicKey(k, Curve.SECP256K1));
+//   }
+//   return ring;
+// }

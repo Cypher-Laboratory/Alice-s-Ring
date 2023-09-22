@@ -14,10 +14,7 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.piSignature = exports.altSchnorrVerify = exports.altSchnorrSignature = void 0;
-var alt_Schnorr_1 = require("./signature/alt_Schnorr");
-Object.defineProperty(exports, "altSchnorrSignature", { enumerable: true, get: function () { return alt_Schnorr_1.altSchnorrSignature; } });
-Object.defineProperty(exports, "altSchnorrVerify", { enumerable: true, get: function () { return alt_Schnorr_1.altSchnorrVerify; } });
+exports.piSignature = void 0;
 var piSignature_1 = require("./signature/piSignature");
 Object.defineProperty(exports, "piSignature", { enumerable: true, get: function () { return piSignature_1.piSignature; } });
 __exportStar(require("./ringSignature"), exports);
