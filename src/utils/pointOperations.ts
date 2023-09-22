@@ -14,20 +14,20 @@ export function mult(
   curve: Curve = Curve.SECP256K1,
 ): [bigint, bigint] {
   switch (curve) {
-      case Curve.SECP256K1: {
-        const result = ProjectivePoint.fromAffine({
-          x: point[0],
-          y: point[1],
-        }).mul(scalar);
+    case Curve.SECP256K1: {
+      const result = ProjectivePoint.fromAffine({
+        x: point[0],
+        y: point[1],
+      }).mul(scalar);
 
-        return [result.x, result.y];
-      }
-      case Curve.ED25519: {
-        throw new Error("Not implemented");
-      }
-      default: {
-        throw new Error("Unknown curve");
-      }
+      return [result.x, result.y];
+    }
+    case Curve.ED25519: {
+      throw new Error("Not implemented");
+    }
+    default: {
+      throw new Error("Unknown curve");
+    }
   }
 }
 
@@ -37,25 +37,25 @@ export function add(
   curve: Curve = Curve.SECP256K1,
 ): [bigint, bigint] {
   switch (curve) {
-      case Curve.SECP256K1: {
-        const result = ProjectivePoint.fromAffine({
-          x: point1[0],
-          y: point1[1],
-        }).add(
-          ProjectivePoint.fromAffine({
-            x: point2[0],
-            y: point2[1],
-          }),
-        );
+    case Curve.SECP256K1: {
+      const result = ProjectivePoint.fromAffine({
+        x: point1[0],
+        y: point1[1],
+      }).add(
+        ProjectivePoint.fromAffine({
+          x: point2[0],
+          y: point2[1],
+        }),
+      );
 
-        return [result.x, result.y];
-      }
-      case Curve.ED25519: {
-        throw new Error("Not implemented");
-      }
-      default: {
-        throw new Error("Unknown curve");
-      }
+      return [result.x, result.y];
+    }
+    case Curve.ED25519: {
+      throw new Error("Not implemented");
+    }
+    default: {
+      throw new Error("Unknown curve");
+    }
   }
 }
 
@@ -72,19 +72,19 @@ export function negate(
   curve: Curve = Curve.SECP256K1,
 ): [bigint, bigint] {
   switch (curve) {
-      case Curve.SECP256K1: {
-        const result = ProjectivePoint.fromAffine({
-          x: point[0],
-          y: point[1],
-        }).negate();
+    case Curve.SECP256K1: {
+      const result = ProjectivePoint.fromAffine({
+        x: point[0],
+        y: point[1],
+      }).negate();
 
-        return [result.x, result.y];
-      }
-      case Curve.ED25519: {
-        throw new Error("Not implemented");
-      }
-      default: {
-        throw new Error("Unknown curve");
-      }
+      return [result.x, result.y];
+    }
+    case Curve.ED25519: {
+      throw new Error("Not implemented");
+    }
+    default: {
+      throw new Error("Unknown curve");
+    }
   }
 }

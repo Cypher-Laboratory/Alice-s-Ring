@@ -136,14 +136,14 @@ export class RingSignature {
     let G: [bigint, bigint]; // generator point
 
     switch (curve) {
-        case Curve.SECP256K1:
-          P = SECP256K1.P;
-          G = SECP256K1.G;
-          break;
-        case Curve.ED25519:
-          throw new Error("ED25519 signing is not implemented yet");
-        default:
-          throw new Error("unknown curve");
+      case Curve.SECP256K1:
+        P = SECP256K1.P;
+        G = SECP256K1.G;
+        break;
+      case Curve.ED25519:
+        throw new Error("ED25519 signing is not implemented yet");
+      default:
+        throw new Error("unknown curve");
     }
 
     // hash the message
@@ -290,14 +290,14 @@ export class RingSignature {
     let G: [bigint, bigint]; // generator point
 
     switch (curve) {
-        case Curve.SECP256K1:
-          P = SECP256K1.P;
-          G = SECP256K1.G;
-          break;
-        case Curve.ED25519:
-          throw new Error("ED25519 signing is not implemented yet");
-        default:
-          throw new Error("unknown curve");
+      case Curve.SECP256K1:
+        P = SECP256K1.P;
+        G = SECP256K1.G;
+        break;
+      case Curve.ED25519:
+        throw new Error("ED25519 signing is not implemented yet");
+      default:
+        throw new Error("unknown curve");
     }
 
     // hash the message
@@ -467,18 +467,18 @@ export class RingSignature {
     let P: bigint; // order of the curve
 
     switch (this.curve) {
-        case Curve.SECP256K1: {
-          P = SECP256K1.P;
-          break;
-        }
-        case Curve.ED25519: {
-          throw new Error(
-            "ED25519 signature verification is not implemented yet",
-          );
-        }
-        default: {
-          throw new Error("unknown curve");
-        }
+      case Curve.SECP256K1: {
+        P = SECP256K1.P;
+        break;
+      }
+      case Curve.ED25519: {
+        throw new Error(
+          "ED25519 signature verification is not implemented yet",
+        );
+      }
+      default: {
+        throw new Error("unknown curve");
+      }
     }
 
     if (this.ring.length > 1) {
