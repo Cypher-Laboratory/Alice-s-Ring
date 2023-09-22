@@ -1,3 +1,11 @@
+/**
+ * List of supported curves
+ */
+export enum Curve {
+  SECP256K1 = "SECP256K1",
+  ED25519 = "ED25519",
+}
+
 // SECP256K1 curve constants
 export const P: bigint = 2n ** 256n - 2n ** 32n - 977n;
 export const Gx =
@@ -5,6 +13,3 @@ export const Gx =
 export const Gy =
   32670510020758816978083085130507043184471273380659243275938904335757337482424n;
 export const G: [bigint, bigint] = [Gx, Gy];
-export const l = BigInt(
-  "0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141",
-); // n = hl

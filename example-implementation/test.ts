@@ -1,24 +1,32 @@
 import { keccak256 } from "js-sha3";
-import { G, P, add, modulo, mult, randomBigint } from "../src/utils";
+import { G, P, add, modulo, mult, randomBigint, Curve } from "../src/utils";
+import { piSignature } from "../src";
+
 const max = 0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141n;
 
 // ring pubkeys
-const K1 = mult(modulo(randomBigint(max), P), G);
+const K1 = mult(modulo(randomBigint(max), P) as bigint, G);
 
-const K3 = mult(modulo(randomBigint(max), P), G)
+const K3 = mult(modulo(randomBigint(max), P) as bigint, G);
 
 // signer keys
-const k2 = modulo(randomBigint(max), P);
+const k2 = modulo(randomBigint(max), P) as bigint;
 const K2 = mult(k2, G);
 
 /* -------SIGNING------- */
 
 // alpha
-const alpha = modulo(randomBigint(max), P);
+const alpha = modulo(randomBigint(max), P) as bigint;
 
 // fake responses
-const r1 = modulo(randomBigint(max), P);
-const r3 = modulo(randomBigint(max), P);
+const r1 = [modulo(randomBigint(max), P), modulo(randomBigint(max), P)] as [
+  bigint,
+  bigint,
+];
+const r3 = [modulo(randomBigint(max), P), modulo(randomBigint(max), P)] as [
+  bigint,
+  bigint,
+];
 
 // pi = 2
 const ring = [K1, K2, K3];
@@ -28,41 +36,21 @@ const message = keccak256("test");
 
 // seed the loop
 const c3 = BigInt(
-  "0x" +
-    keccak256(
-      ring +
-        message +
-        String(modulo(mult(alpha, G)[0], P)) +
-        String(modulo(mult(alpha, G)[1], P)),
-    ),
+  "0x" + keccak256(ring + message + String(modulo(mult(alpha, G), P))),
 );
-console.log("c3: \n",
-mult(alpha, G), '\n',
-)
+console.log("c3: \n", mult(alpha, G), "\n");
 
 // Iterate:
 const c1 = BigInt(
-  "0x" +
-    keccak256(
-      ring +
-        message +
-        String(modulo(mult(r3, G)[0] + mult(c3, K3)[0], P)) +
-        String(modulo(mult(r3, G)[1] + mult(c3, K3)[1], P)),
-    ),
+  "0x" + keccak256(ring + message + String(modulo(add(r3, mult(c3, K3)), P))),
 );
 
 const c2 = BigInt(
-  "0x" +
-    keccak256(
-      ring +
-        message +
-        String(modulo(mult(r1, G)[0] + mult(c1, K1)[0], P)) +
-        String(modulo(mult(r1, G)[1] + mult(c1, K1)[1], P)),
-    ),
+  "0x" + keccak256(ring + message + String(modulo(add(r1, mult(c1, K1)), P))),
 );
 
 // signer response
-const r2 = modulo(alpha - c2 * k2, P);
+const r2 = piSignature(alpha, c2, k2, Curve.SECP256K1);
 
 // this shouldn't change the value of c3
 // c3 = BigInt('0x' + keccak256(
@@ -75,52 +63,25 @@ const r2 = modulo(alpha - c2 * k2, P);
 /* -------VERIFICATION------- */
 
 const c2p = BigInt(
-  "0x" +
-    keccak256(
-      ring +
-        message +
-        String(modulo(mult(r1, G)[0] + mult(c1, K1)[0], P)) +
-        String(modulo(mult(r1, G)[1] + mult(c1, K1)[1], P)),
-    ),
+  "0x" + keccak256(ring + message + String(modulo(add(r1, mult(c1, K1)), P))),
 );
 
 // c2 should be equal to c2p
 console.log("c2 === c2p: ", c2 === c2p);
 
 const c3p = BigInt(
-  "0x" +
-    keccak256(
-      ring +
-        message +
-        String(modulo(mult(r2, G)[0] + mult(c2p, K2)[0], P)) +
-        String(modulo(mult(r2, G)[1] + mult(c2p, K2)[1], P)),
-    ),
+  "0x" + keccak256(ring + message + String(modulo(add(r2, mult(c2p, K2)), P))),
 );
-console.log("K2: ", K2);
-console.log(modulo(add([c2p * K2[0], c2p * K2[1]], mult(r2, G))[0], P)); // c3p = c2p * K2 + r2 * G
-console.log(modulo(mult(alpha, G)[0], P)); // c3 = alpha * G (should be = c2 * K2 + r2 * G)
-
-
-console.log("c3p: \n",
-add(mult(r2, G), mult(c2p, K2)), '\n',
-)
 
 // c3 should be equal to c3p
 console.log("c3 === c3p: ", c3 === c3p);
 
 const c1p = BigInt(
-  "0x" +
-    keccak256(
-      ring +
-        message +
-        String(modulo(mult(r3, G)[0] + mult(c3p, K3)[0], P)) +
-        String(modulo(mult(r3, G)[1] + mult(c3p, K3)[1], P)),
-    ),
+  "0x" + keccak256(ring + message + String(modulo(add(r3, mult(c3p, K3)), P))),
 );
 
 // c1 should be equal to c1p
 console.log("c1 === c1p: ", c1 === c1p);
-
 
 if (c1 === c1p) {
   console.log("Example signature is valid");

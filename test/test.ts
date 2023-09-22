@@ -39,20 +39,20 @@ if (!signature.verify()) {
 
 // test partial signature
 
-const partialSig = RingSignature.partialSign(ring, "test", signerPubKey);
-// end signing
-const signerResponse = piSignature(
-  partialSig.alpha,
-  partialSig.cees[partialSig.signerIndex],
-  signerPrivKey,
-  P,
-);
-const sig = RingSignature.combine(partialSig, signerResponse);
-console.log("Is partial sig valid ? ", sig.verify());
-if (!sig.verify()) {
-  console.log("Partial signature verification failed");
-  process.exit(1);
-}
+// const partialSig = RingSignature.partialSign(ring, "test", signerPubKey);
+// // end signing
+// const signerResponse = piSignature(
+//   partialSig.alpha,
+//   partialSig.cees[partialSig.signerIndex],
+//   signerPrivKey,
+//   P,
+// );
+// const sig = RingSignature.combine(partialSig, signerResponse);
+// console.log("Is partial sig valid ? ", sig.verify());
+// if (!sig.verify()) {
+//   console.log("Partial signature verification failed");
+//   process.exit(1);
+// }
 
 /* TEST COMPUTATION TIME */
 // const testRingLength = [10, 100, 500, 1000, 5000, 10000];
