@@ -28,7 +28,7 @@ function randomRing(ringLength = 1000): [[bigint, bigint]] {
 const ring = randomRing(10);
 
 const signerPrivKey =
-  25492685131648303913676486147365321410553162645346980248069629262609756314572n; // randomBigint(maxBigint);
+  25492685131648303913676486147365321410553162645346980248069629262609756314572n;
 const signerPubKey = mult(signerPrivKey, G) as [bigint, bigint];
 const signature = RingSignature.sign(ring, signerPrivKey, "test");
 console.log("Is sig valid ? ", signature.verify());
