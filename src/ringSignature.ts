@@ -152,11 +152,11 @@ export class RingSignature {
     // generate random number alpha
     const alpha = randomBigint(P);
 
-    // set the signer position in the ring
     if (curve !== Curve.SECP256K1) throw new Error("Curve not supported");
 
     const signerPubKey = mult(signerPrivKey, G);
 
+    // set the signer position in the ring
     const pi = getRandomSecuredNumber(0, ring.length - 1); // signer index
     // add the signer public key to the ring
     ring = ring.slice(0, pi).concat([signerPubKey], ring.slice(pi)) as [
@@ -173,7 +173,7 @@ export class RingSignature {
       }
     }
 
-    // generate random fake responses for everybody except the signer
+    // generate random responses for everybody except the signer
     const responses: [bigint, bigint][] = [];
     for (let i = 0; i < ring.length; i++) {
       responses.push(mult(randomBigint(P), G));

@@ -20,13 +20,13 @@ export function piSignature(
   alpha: bigint,
   c: bigint,
   signerPrivKey: bigint,
-  Curve: Curve,
+  curve: Curve,
 ): [bigint, bigint] {
   let P: bigint; // order of the curve
   let G: [bigint, bigint]; // generator point
 
-  switch (Curve) {
-    case "SECP256K1":
+  switch (curve) {
+    case Curve.SECP256K1:
       P = 2n ** 256n - 2n ** 32n - 977n;
       G = [
         55066263022277343669578718895168534326250603453777594175500187360389116729240n,
@@ -37,7 +37,7 @@ export function piSignature(
         add(mult(alpha, G), negate(mult(c, mult(signerPrivKey, G)))),
         P,
       ) as [bigint, bigint];
-    case "ED25519":
+    case Curve.ED25519:
       throw new Error("ED25519 not implemented yet");
     default:
       throw new Error("unknown curve");
