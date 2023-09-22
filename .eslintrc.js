@@ -23,7 +23,7 @@ module.exports = {
   },
   plugins: ["@typescript-eslint"],
   rules: {
-    indent: ["error", 2],
+    indent: ["error", 2, { SwitchCase: 2 }],
     semi: ["error", "always"],
     "max-len": ["error", 200],
     camelcase: "off",

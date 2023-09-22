@@ -1,6 +1,5 @@
 // taken from https://github.com/paulmillr/noble-secp256k1/blob/097b60b10805058355f49924d6a5c5746ee116c9/index.ts
 /*! noble-secp256k1 - MIT License (c) 2019 Paul Miller (paulmillr.com) */
-
 const B256 = 2n ** 256n; // secp256k1 is short weierstrass curve
 const P = B256 - 0x1000003d1n; // curve's field prime
 const N = B256 - 0x14551231950b75fc4402da1732fc9bebfn; // curve (group) order
@@ -30,7 +29,7 @@ const au8 = (
 const u8n = (data?: any) => new Uint8Array(data); // creates Uint8Array
 const toU8 = (a: Hex, len?: number) => au8(str(a) ? h2b(a) : u8n(a), len); // norm(hex/u8a) to u8a
 const mod = (a: bigint, b = P) => {
-  let r = a % b;
+  const r = a % b;
   return r >= 0n ? r : b + r;
 }; // mod division
 const isPoint = (p: unknown) =>
@@ -613,7 +612,7 @@ const wNAF = (n: bigint): { p: Point; f: Point } => {
   // Compared to other point mult methods,
   const comp = Gpows || (Gpows = precompute()); // stores 2x less points using subtraction
   const neg = (cnd: boolean, p: Point) => {
-    let n = p.negate();
+    const n = p.negate();
     return cnd ? n : p;
   }; // negate
   let p = I,

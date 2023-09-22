@@ -2,7 +2,9 @@
 import { piSignature } from "../src";
 import { RingSignature } from "../src/ringSignature";
 
-import { G, P, modulo, mult, randomBigint } from "../src/utils";
+import { Curve, mult, randomBigint, SECP256K1 } from "../src/utils";
+
+const G = SECP256K1.G;
 
 function randomRing(ringLength = 1000): [[bigint, bigint]] {
   let k =
@@ -33,26 +35,26 @@ console.log("Is sig valid ? ", signature.verify());
 console.log("ring size: ", signature.ring.length);
 
 if (!signature.verify()) {
-  console.log("Ring signature verification failed");
+  console.log("Error: Ring signature verification failed");
   process.exit(1);
 }
 
 // test partial signature
 
-// const partialSig = RingSignature.partialSign(ring, "test", signerPubKey);
-// // end signing
-// const signerResponse = piSignature(
-//   partialSig.alpha,
-//   partialSig.cees[partialSig.signerIndex],
-//   signerPrivKey,
-//   P,
-// );
-// const sig = RingSignature.combine(partialSig, signerResponse);
-// console.log("Is partial sig valid ? ", sig.verify());
-// if (!sig.verify()) {
-//   console.log("Partial signature verification failed");
-//   process.exit(1);
-// }
+const partialSig = RingSignature.partialSign(ring, "test", signerPubKey);
+// end signing
+const signerResponse = piSignature(
+  partialSig.alpha,
+  partialSig.cees[partialSig.signerIndex],
+  signerPrivKey,
+  Curve.SECP256K1,
+);
+const sig = RingSignature.combine(partialSig, signerResponse);
+console.log("Is partial sig valid ? ", sig.verify());
+if (!sig.verify()) {
+  console.log("Error: Partial signature verification failed");
+  process.exit(1);
+}
 
 /* TEST COMPUTATION TIME */
 // const testRingLength = [10, 100, 500, 1000, 5000, 10000];
