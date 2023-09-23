@@ -334,28 +334,34 @@ export class RingSignature {
 
     // compute C pi+1
     cValuesPI1N.push(
-      BigInt(
-        "0x" +
-        keccak256(ring + messageDigest + G.mult(alpha).modulo(N).toString()),
+      modulo(
+        BigInt(
+          "0x" +
+          keccak256(ring + messageDigest + G.mult(alpha).modulo(N).toString()),
+        ),
+        N
       ),
     );
 
     // compute Cpi+2 to Cn
     for (let i = pi + 2; i < ring.length; i++) {
       cValuesPI1N.push(
-        BigInt(
-          "0x" +
-          keccak256(
-            ring +
-            messageDigest +
-            responses[i - 1]
-              .add(
-                ring[i - 1]
-                  .mult(cValuesPI1N[i - pi - 2])
-              )
-              .modulo(N)
-              .toString(),
+        modulo(
+          BigInt(
+            "0x" +
+            keccak256(
+              ring +
+              messageDigest +
+              responses[i - 1]
+                .add(
+                  ring[i - 1]
+                    .mult(cValuesPI1N[i - pi - 2])
+                )
+                .modulo(N)
+                .toString(),
+            ),
           ),
+          N
         ),
       );
     }
@@ -365,35 +371,41 @@ export class RingSignature {
 
     // compute C0
     cValues0PI.push(
-      BigInt(
-        "0x" +
-        keccak256(
-          ring +
-          messageDigest +
-          responses[responses.length - 1]
-            .add(
-              ring[ring.length - 1].mult(
-                cValuesPI1N[cValuesPI1N.length - 1],
-              ),
-            )
-            .modulo(N)
-            .toString(),
+      modulo(
+        BigInt(
+          "0x" +
+          keccak256(
+            ring +
+            messageDigest +
+            responses[responses.length - 1]
+              .add(
+                ring[ring.length - 1].mult(
+                  cValuesPI1N[cValuesPI1N.length - 1],
+                ),
+              )
+              .modulo(N)
+              .toString(),
+          ),
         ),
+        N
       ),
     );
 
     // compute C0 to C pi -1
     for (let i = 1; i < pi + 1; i++) {
-      cValues0PI[i] = BigInt(
-        "0x" +
-        keccak256(
-          ring +
-          messageDigest +
-          responses[i - 1]
-            .add(ring[i - 1].mult(cValues0PI[i - 1]))
-            .modulo(N)
-            .toString(),
+      cValues0PI[i] = modulo(
+        BigInt(
+          "0x" +
+          keccak256(
+            ring +
+            messageDigest +
+            responses[i - 1]
+              .add(ring[i - 1].mult(cValues0PI[i - 1]))
+              .modulo(N)
+              .toString(),
+          ),
         ),
+        N
       );
     }
 
