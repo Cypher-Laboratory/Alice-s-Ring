@@ -5,6 +5,7 @@ import {
   getRandomSecuredNumber,
   Curve,
   Point,
+  modulo,
 } from "./utils";
 import { piSignature } from "./signature/piSignature";
 
@@ -130,12 +131,12 @@ export class RingSignature {
     message: string,
     curve = Curve.SECP256K1,
   ): RingSignature {
-    let P: bigint; // order of the curve
+    let N: bigint; // order of the curve
     let G: Point; // generator point
 
     switch (curve) {
       case Curve.SECP256K1:
-        P = SECP256K1.P;
+        N = SECP256K1.N;
         G = new Point(curve, SECP256K1.G);
         break;
       case Curve.ED25519:
@@ -148,7 +149,7 @@ export class RingSignature {
     const messageDigest = keccak256(message);
 
     // generate random number alpha
-    const alpha = randomBigint(P);
+    const alpha = randomBigint(N);
 
     if (curve !== Curve.SECP256K1) throw new Error("Curve not supported");
 
@@ -172,7 +173,7 @@ export class RingSignature {
     // generate random responses for everybody except the signer
     const responses: Point[] = [];
     for (let i = 0; i < ring.length; i++) {
-      responses.push(G.mult(randomBigint(P)));
+      responses.push(G.mult(randomBigint(N)));
     }
 
     // supposed to contains all the cees from pi+1 to n (pi+1, pi+2, ..., n)(n = ring.length)
@@ -180,25 +181,33 @@ export class RingSignature {
 
     // compute C pi+1
     cValuesPI1N.push(
-      BigInt(
-        "0x" +
-          keccak256(ring + messageDigest + G.mult(alpha).modulo(P).toString()),
-      ),
+      modulo(
+        BigInt(
+          "0x" +
+          keccak256(ring + messageDigest + G.mult(alpha).modulo(N).toString()),
+        ),
+        N)
     );
 
     // compute Cpi+2 to Cn
     for (let i = pi + 2; i < ring.length; i++) {
       cValuesPI1N.push(
-        BigInt(
-          "0x" +
+        modulo(
+          BigInt(
+            "0x" +
             keccak256(
               ring +
-                messageDigest +
-                responses[i - 1]
-                  .add(ring[i - 1].mult(cValuesPI1N[i - pi - 2]))
-                  .modulo(P)
-                  .toString(),
+              messageDigest +
+              responses[i - 1]
+                .add(
+                  ring[i - 1]
+                    .mult(cValuesPI1N[i - pi - 2])
+                )
+                .modulo(N)
+                .toString(),
             ),
+          ),
+          N
         ),
       );
     }
@@ -208,32 +217,41 @@ export class RingSignature {
 
     // compute C0
     cValues0PI.push(
-      BigInt(
-        "0x" +
+      modulo(
+        BigInt(
+          "0x" +
           keccak256(
             ring +
-              messageDigest +
-              responses[responses.length - 1]
-                .add(
-                  ring[ring.length - 1].mult(
+            messageDigest +
+            responses[responses.length - 1]
+              .add(
+                ring[ring.length - 1].mult(
+                  modulo(
                     cValuesPI1N[cValuesPI1N.length - 1],
+                    N
                   ),
-                )
-                .modulo(P)
-                .toString(),
+                ),
+              )
+              .modulo(N)
+              .toString(),
           ),
+        ),
+        N
       ),
     );
 
     // compute C0 to C pi -1
     for (let i = 1; i < pi + 1; i++) {
-      cValues0PI[i] = BigInt(
-        "0x" +
+      cValues0PI[i] = modulo(
+        BigInt(
+          "0x" +
           keccak256(
             ring +
-              messageDigest +
-              responses[i - 1].add(ring[i - 1].mult(cValues0PI[i - 1])),
+            messageDigest +
+            responses[i - 1].add(ring[i - 1].mult(cValues0PI[i - 1])),
           ),
+        ),
+        N
       );
     }
 
@@ -268,12 +286,12 @@ export class RingSignature {
     signerPubKey: Point,
     curve = Curve.SECP256K1,
   ): PartialSignature {
-    let P: bigint; // order of the curve
+    let N: bigint; // order of the curve
     let G: Point; // generator point
 
     switch (curve) {
       case Curve.SECP256K1:
-        P = SECP256K1.P;
+        N = SECP256K1.N;
         G = new Point(curve, SECP256K1.G);
         break;
       case Curve.ED25519:
@@ -286,7 +304,7 @@ export class RingSignature {
     const messageDigest = keccak256(message);
 
     // generate random number alpha
-    const alpha = randomBigint(P);
+    const alpha = randomBigint(N);
 
     // set the signer position in the ring
     if (curve !== Curve.SECP256K1) throw new Error("Curve not supported");
@@ -308,7 +326,7 @@ export class RingSignature {
     // generate random fake responses for everybody
     const responses: Point[] = [];
     for (let i = 0; i < ring.length; i++) {
-      responses.push(G.mult(randomBigint(P)));
+      responses.push(G.mult(randomBigint(N)));
     }
 
     // supposed to contains all the cees from pi+1 to n (pi+1, pi+2, ..., n)(n = ring.length)
@@ -318,7 +336,7 @@ export class RingSignature {
     cValuesPI1N.push(
       BigInt(
         "0x" +
-          keccak256(ring + messageDigest + G.mult(alpha).modulo(P).toString()),
+        keccak256(ring + messageDigest + G.mult(alpha).modulo(N).toString()),
       ),
     );
 
@@ -327,14 +345,17 @@ export class RingSignature {
       cValuesPI1N.push(
         BigInt(
           "0x" +
-            keccak256(
-              ring +
-                messageDigest +
-                responses[i - 1]
-                  .add(ring[i - 1].mult(cValuesPI1N[i - pi - 2]))
-                  .modulo(P)
-                  .toString(),
-            ),
+          keccak256(
+            ring +
+            messageDigest +
+            responses[i - 1]
+              .add(
+                ring[i - 1]
+                  .mult(cValuesPI1N[i - pi - 2])
+              )
+              .modulo(N)
+              .toString(),
+          ),
         ),
       );
     }
@@ -346,18 +367,18 @@ export class RingSignature {
     cValues0PI.push(
       BigInt(
         "0x" +
-          keccak256(
-            ring +
-              messageDigest +
-              responses[responses.length - 1]
-                .add(
-                  ring[ring.length - 1].mult(
-                    cValuesPI1N[cValuesPI1N.length - 1],
-                  ),
-                )
-                .modulo(P)
-                .toString(),
-          ),
+        keccak256(
+          ring +
+          messageDigest +
+          responses[responses.length - 1]
+            .add(
+              ring[ring.length - 1].mult(
+                cValuesPI1N[cValuesPI1N.length - 1],
+              ),
+            )
+            .modulo(N)
+            .toString(),
+        ),
       ),
     );
 
@@ -365,14 +386,14 @@ export class RingSignature {
     for (let i = 1; i < pi + 1; i++) {
       cValues0PI[i] = BigInt(
         "0x" +
-          keccak256(
-            ring +
-              messageDigest +
-              responses[i - 1]
-                .add(ring[i - 1].mult(cValues0PI[i - 1]))
-                .modulo(P)
-                .toString(),
-          ),
+        keccak256(
+          ring +
+          messageDigest +
+          responses[i - 1]
+            .add(ring[i - 1].mult(cValues0PI[i - 1]))
+            .modulo(N)
+            .toString(),
+        ),
       );
     }
 
@@ -430,11 +451,11 @@ export class RingSignature {
       throw new Error("ring and responses length mismatch");
     }
 
-    let P: bigint; // order of the curve
+    let N: bigint; // order of the curve
 
     switch (this.curve) {
       case Curve.SECP256K1: {
-        P = SECP256K1.P;
+        N = SECP256K1.N;
         break;
       }
       case Curve.ED25519: {
@@ -452,45 +473,54 @@ export class RingSignature {
       const messageDigest = keccak256(this.message);
 
       // computes the cees
-      let lastComputedCp = BigInt(
-        "0x" +
+      let lastComputedCp = modulo(
+        BigInt(
+          "0x" +
           keccak256(
             this.ring +
-              messageDigest +
-              this.responses[0]
-                .add(this.ring[0].mult(this.c))
-                .modulo(P)
-                .toString(),
+            messageDigest +
+            this.responses[0]
+              .add(this.ring[0].mult(this.c))
+              .modulo(N)
+              .toString(),
           ),
+        ),
+        N
       );
 
       for (let i = 2; i < this.ring.length; i++) {
-        lastComputedCp = BigInt(
-          "0x" +
+        lastComputedCp = modulo(
+          BigInt(
+            "0x" +
             keccak256(
               this.ring +
-                messageDigest +
-                this.responses[i - 1]
-                  .add(this.ring[i - 1].mult(lastComputedCp))
-                  .modulo(P)
-                  .toString(),
+              messageDigest +
+              this.responses[i - 1]
+                .add(this.ring[i - 1].mult(lastComputedCp))
+                .modulo(N)
+                .toString(),
             ),
+          ),
+          N
         );
       }
 
       // return true if c0 === c0'
       return (
         this.c ===
-        BigInt(
-          "0x" +
+        modulo(
+          BigInt(
+            "0x" +
             keccak256(
               this.ring +
-                messageDigest +
-                this.responses[this.responses.length - 1]
-                  .add(this.ring[this.ring.length - 1].mult(lastComputedCp))
-                  .modulo(P)
-                  .toString(),
+              messageDigest +
+              this.responses[this.responses.length - 1]
+                .add(this.ring[this.ring.length - 1].mult(lastComputedCp))
+                .modulo(N)
+                .toString(),
             ),
+          ),
+          N
         )
       );
     }

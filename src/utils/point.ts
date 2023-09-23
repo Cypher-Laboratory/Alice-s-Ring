@@ -63,7 +63,7 @@ export class Point {
         const result = SECP256K1Point.fromAffine({
           x: this.x,
           y: this.y,
-        }).mul(scalar);
+        }).mul(modulo(scalar, SECP256K1.N));
 
         return new Point(this.curve, [result.x, result.y]);
       }
@@ -71,7 +71,7 @@ export class Point {
         const result = ED25519Point.fromAffine({
           x: this.x,
           y: this.y,
-        }).mul(scalar);
+        }).mul(modulo(scalar, ED25519.N));
 
         return new Point(this.curve, [result.x, result.y]);
       }
