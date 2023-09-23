@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ED25519 = exports.SECP256K1 = exports.Curve = void 0;
+const noble_ED25519_1 = require("./noble-libraries/noble-ED25519");
 /**
  * List of supported curves
  */
@@ -8,6 +9,7 @@ var Curve;
 (function (Curve) {
     Curve["SECP256K1"] = "SECP256K1";
     Curve["ED25519"] = "ED25519";
+    Curve["CUSTOM"] = "CUSTOM";
 })(Curve || (exports.Curve = Curve = {}));
 // SECP256K1 curve constants
 exports.SECP256K1 = {
@@ -23,10 +25,5 @@ exports.SECP256K1 = {
 exports.ED25519 = {
     P: 2n ** 255n - 19n,
     N: 2n ** 252n + 27742317777372353535851937790883648493n,
-    Gx: 0x216936d3cd6e53fec0a4e231fdd6dc5c692cc7609525a7b2c9562d608f25d51an,
-    Gy: 0x6666666666666666666666666666666666666666666666666666666666666658n,
-    G: [
-        0x216936d3cd6e53fec0a4e231fdd6dc5c692cc7609525a7b2c9562d608f25d51an,
-        32670510020758816978083085130507043184471273380659243275938904335757337482424n,
-    ],
+    G: [noble_ED25519_1.ExtendedPoint.BASE.toAffine().x, noble_ED25519_1.ExtendedPoint.BASE.toAffine().y],
 };

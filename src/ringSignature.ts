@@ -134,7 +134,6 @@ export class RingSignature {
   ): RingSignature {
     let N: bigint; // order of the curve
     let G: Point; // generator point
-    console.log("curve: ", curve);
     switch (curve) {
       case Curve.SECP256K1:
         N = SECP256K1.N;
@@ -142,7 +141,7 @@ export class RingSignature {
         break;
       case Curve.ED25519:
         N = ED25519.N;
-        G = new Point(curve, ED25519.G);
+        G = new Point(Curve.ED25519, ED25519.G);
         break;
       default:
         throw new Error("unknown curve");
@@ -246,9 +245,10 @@ export class RingSignature {
             keccak256(
               ring +
                 messageDigest +
-                G.mult(responses[i - 1]).add(
-                  ring[i - 1].mult(cValues0PI[i - 1]),
-                ),
+                G.mult(responses[i - 1])
+                  .add(ring[i - 1].mult(cValues0PI[i - 1]))
+                  .modulo(N)
+                  .toString(),
             ),
         ),
         N,
@@ -257,7 +257,7 @@ export class RingSignature {
 
     // concatenate CValues0PI, cpi and CValuesPI1N to get all the c values
     const cees: bigint[] = cValues0PI.concat(cValuesPI1N);
-    console.log(cees);
+
     // compute the signer response
     const signerResponse = piSignature(alpha, cees[pi], signerPrivKey, curve);
 
@@ -472,7 +472,7 @@ export class RingSignature {
         break;
       }
       case Curve.ED25519: {
-        G = new Point(this.curve, ED25519.G);
+        G = new Point(Curve.ED25519, ED25519.G);
         N = ED25519.N;
         break;
       }
@@ -500,7 +500,6 @@ export class RingSignature {
         ),
         N,
       );
-      console.log("c1: ", lastComputedCp);
       for (let i = 2; i < this.ring.length; i++) {
         lastComputedCp = modulo(
           BigInt(
@@ -516,26 +515,26 @@ export class RingSignature {
           ),
           N,
         );
-        console.log("c" + i + ": ", lastComputedCp);
       }
 
       // return true if c0 === c0'
-      const tmp = modulo(
-        BigInt(
-          "0x" +
-            keccak256(
-              this.ring +
-                messageDigest +
-                G.mult(this.responses[this.responses.length - 1])
-                  .add(this.ring[this.ring.length - 1].mult(lastComputedCp))
-                  .modulo(N)
-                  .toString(),
-            ),
-        ),
-        N,
+      return (
+        this.c ===
+        modulo(
+          BigInt(
+            "0x" +
+              keccak256(
+                this.ring +
+                  messageDigest +
+                  G.mult(this.responses[this.responses.length - 1])
+                    .add(this.ring[this.ring.length - 1].mult(lastComputedCp))
+                    .modulo(N)
+                    .toString(),
+              ),
+          ),
+          N,
+        )
       );
-      console.log("c0: ", tmp);
-      return this.c === tmp;
     }
     return false;
   }

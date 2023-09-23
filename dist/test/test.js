@@ -1,79 +1,106 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 // import { RingSignature, RingSig } from "../src/ringSignature";
-const src_1 = require("../src");
 const ringSignature_1 = require("../src/ringSignature");
 const utils_1 = require("../src/utils");
-const G = new utils_1.Point(utils_1.Curve.SECP256K1, utils_1.SECP256K1.G);
-function randomRing(ringLength = 1000) {
-    let k = (0, utils_1.randomBigint)(0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141n);
+const tmp = [
+    "42",
+    "0c",
+    "6f",
+    "0c",
+    "99",
+    "5f",
+    "3f",
+    "78",
+    "15",
+    "0b",
+    "a7",
+    "f5",
+    "d7",
+    "e3",
+    "09",
+    "85",
+    "ae",
+    "be",
+    "14",
+    "61",
+    "15",
+    "4d",
+    "42",
+    "bc",
+    "d4",
+    "0f",
+    "92",
+    "11",
+    "af",
+    "e2",
+    "a5",
+    "05",
+];
+const signerPrivKeyBytes = new Uint8Array(tmp.map((x) => parseInt(x, 16)));
+const signerPrivKey = BigInt("0x" + Buffer.from(signerPrivKeyBytes).toString("hex"));
+const G_SECP = new utils_1.Point(utils_1.Curve.SECP256K1, utils_1.SECP256K1.G);
+const signerPrivKey_secp = (0, utils_1.modulo)(signerPrivKey, utils_1.SECP256K1.N);
+const ring_secp = randomRing(9, G_SECP, utils_1.SECP256K1.N);
+const G_ED = new utils_1.Point(utils_1.Curve.ED25519, utils_1.ED25519.G);
+const signerPrivKey_ed = (0, utils_1.modulo)(signerPrivKey, utils_1.ED25519.N);
+const ring_ed = randomRing(9, G_ED, utils_1.ED25519.N);
+function randomRing(ringLength = 1000, G, N) {
+    let k = (0, utils_1.randomBigint)(N * N);
     const ring = [G.mult(k)];
     for (let i = 0; i < ringLength - 1; i++) {
-        k =
-            (0, utils_1.randomBigint)(0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141n);
+        k = (0, utils_1.randomBigint)(N * N);
         ring.push(G.mult(k));
     }
     return ring;
 }
-/* TEST SIGNATURE GENERATION AND VERIFICATION */
-const ring = randomRing(10);
-const signerPrivKey = 25492685131648303913676486147365321410553162645346980248069629262609756314572n;
-const signerPubKey = G.mult(signerPrivKey);
-const signature = ringSignature_1.RingSignature.sign(ring, signerPrivKey, "test");
-console.log("Is sig valid ? ", signature.verify());
-console.log("ring size: ", signature.ring.length);
-if (!signature.verify()) {
-    console.log("Error: Ring signature verification failed");
+console.log("ring size: ", ring_ed.length + 1);
+/* TEST SIGNATURE GENERATION AND VERIFICATION - SECP256K1 */
+console.log("------ SIGNATURE USING SECP256K1 ------");
+const signature_secp = ringSignature_1.RingSignature.sign(ring_secp, signerPrivKey_secp, "test", utils_1.Curve.SECP256K1);
+const verifiedSig_secp = signature_secp.verify();
+console.log("Is sig valid ? ", verifiedSig_secp);
+if (!verifiedSig_secp) {
+    console.log("Error: Ring signature verification failed on SECP256K1");
     process.exit(1);
 }
-// test partial signature
-const partialSig = ringSignature_1.RingSignature.partialSign(ring, "test", signerPubKey);
-// end signing
-const signerResponse = (0, src_1.piSignature)(partialSig.alpha, partialSig.cees[partialSig.signerIndex], signerPrivKey, utils_1.Curve.SECP256K1);
-const sig = ringSignature_1.RingSignature.combine(partialSig, signerResponse);
-console.log("Is partial sig valid ? ", sig.verify());
-if (!sig.verify()) {
-    console.log("Error: Partial signature verification failed");
+console.log("------ SIGNATURE USING ED25519 ------");
+const signature_ed = ringSignature_1.RingSignature.sign(ring_ed, signerPrivKey_ed, "test", utils_1.Curve.ED25519);
+const verifiedSig_ed = signature_ed.verify();
+console.log("Is sig valid ? ", verifiedSig_ed);
+if (!verifiedSig_ed) {
+    console.log("Error: Ring signature verification failed on ED25519");
     process.exit(1);
 }
-/* TEST COMPUTATION TIME */
-// const testRingLength = [10, 100, 500, 1000, 5000, 10000];
-// console.log("\nTest ring signature generation and verification :\n");
-// for (const ringLength of testRingLength) {
-//   const ring = randomRing(ringLength);
-//   console.log("Ring length: " + ringLength);
-//   // get timestamp
-//   const start = Date.now();
-//   // signature and verification
-//   const maxBigint =
-//     0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141n;
-//   const signerPrivKey = randomBigint(maxBigint);
-//   const r = RingSignature.sign(ring, signerPrivKey, "test");
-//   const generationDuration = Date.now() - start;
-//   console.log(" Sig generated in: " + generationDuration + "ms");
-//   console.log("Is sig valid ? ", r.verify());
-//   const verificationDuration = Date.now() - generationDuration - start;
-//   console.log(" Sig verified in: " + verificationDuration + "ms");
-//   console.log(
-//     "Total time: " + (generationDuration + verificationDuration) + "ms",
-//   );
-//   console.log("--------------------------------------------------");
+/*--------------------- test partial signature ---------------------*/
+// console.log("------ PARTIAL SIGNATURE USING SECP256K1 ------");
+// const partialSig_secp = RingSignature.partialSign(ring_secp, "test", signerPubKey_secp, Curve.SECP256K1);
+// // end signing
+// const signerResponse_secp = piSignature(
+//   partialSig_secp.alpha,
+//   partialSig_secp.c,
+//   signerPrivKey_secp,
+//   Curve.SECP256K1,
+// );
+// const sig_secp = RingSignature.combine(partialSig_secp, signerResponse_secp);
+// console.log(sig_secp);
+// console.log("Is partial sig valid ? ", sig_secp.verify());
+// if (!sig_secp.verify()) {
+//   console.log("Error: Partial signature verification failed on SECP256K1");
+//   process.exit(1);
 // }
-// // convert the signature to an object
-// const sig: RingSig = r.toRingSig();
-// // object to RingSignature
-// const givenSig: RingSig = RingSignature.fromRingSig(sig);
-// console.log(givenSig);
-// function randomRing(ringLength = 1000): [[bigint, bigint]] {
-//   let k = randomBigint(
-//     0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141n,
-//   );
-//   const ring: [[bigint, bigint]] = [getPublicKey(k, Curve.SECP256K1)];
-//   for (let i = 0; i < ringLength - 1; i++) {
-//     k = randomBigint(
-//       0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141n,
-//     );
-//     ring.push(getPublicKey(k, Curve.SECP256K1));
-//   }
-//   return ring;
+// console.log("------ PARTIAL SIGNATURE USING ED25519 ------");
+// const partialSig_ed = RingSignature.partialSign(ring_ed, "test", signerPubKey_ed, Curve.ED25519);
+// // end signing
+// const signerResponse = piSignature(
+//   partialSig_ed.alpha,
+//   partialSig_ed.c,
+//   signerPrivKey_ed,
+//   Curve.ED25519,
+// );
+// const sig_ed = RingSignature.combine(partialSig_ed, signerResponse);
+// console.log("Is partial sig valid ? ", sig_ed.verify());
+// if (!sig_ed.verify()) {
+//   console.log("Error: Partial signature verification failed on ED25519");
+//   process.exit(1);
 // }

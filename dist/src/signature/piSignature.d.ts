@@ -1,4 +1,4 @@
-import { Curve, Point } from "../utils";
+import { Curve } from "../utils";
 /**
  * Compute the signature from the actual signer
  *
@@ -9,4 +9,4 @@ import { Curve, Point } from "../utils";
  *
  * @returns the signer response as a point on the curve
  */
-export declare function piSignature(alpha: bigint, c: bigint, signerPrivKey: bigint, curve: Curve): Point;
+export declare function piSignature(alpha: bigint, c: bigint, signerPrivKey: bigint, curve: Curve): bigint;

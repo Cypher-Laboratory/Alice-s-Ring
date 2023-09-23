@@ -13,7 +13,7 @@ interface AffinePoint {
     x: bigint;
     y: bigint;
 }
-export declare class Point {
+declare class Point {
     readonly ex: bigint;
     readonly ey: bigint;
     readonly ez: bigint;
@@ -74,4 +74,4 @@ declare const utils: {
     precompute(w?: number, p?: Point): Point;
 };
 export { getPublicKey, getPublicKeyAsync, sign, verify, // Remove the export to easily use in REPL
-signAsync, verifyAsync, CURVE, etc, utils, Point as ExtendedPoint };
+signAsync, verifyAsync, CURVE, etc, utils, Point as ExtendedPoint, };

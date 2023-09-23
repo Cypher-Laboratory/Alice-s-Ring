@@ -11,7 +11,7 @@ export interface RingSig {
     message: string;
     ring: Point[];
     c: bigint;
-    responses: Point[];
+    responses: bigint[];
     curve: Curve;
 }
 /**
@@ -26,11 +26,11 @@ export interface RingSig {
 export interface PartialSignature {
     message: string;
     ring: Point[];
-    cees: bigint[];
+    c: bigint;
     alpha: bigint;
     signerIndex: number;
-    responses_0_pi: Point[];
-    responses_pi_n: Point[];
+    responses_0_pi: bigint[];
+    responses_pi_n: bigint[];
     curve: Curve;
 }
 /**
@@ -45,7 +45,7 @@ export interface PartialSignature {
 export declare class RingSignature {
     message: string;
     c: bigint;
-    responses: Point[];
+    responses: bigint[];
     ring: Point[];
     curve: Curve;
     /**
@@ -57,7 +57,7 @@ export declare class RingSignature {
      * @param responses - Responses for each public key in the ring
      * @param curve - Curve used for the signature
      */
-    constructor(message: string, ring: Point[], c: bigint, responses: Point[], curve: Curve);
+    constructor(message: string, ring: Point[], c: bigint, responses: bigint[], curve: Curve);
     /**
      * Create a RingSignature from a RingSig
      *
@@ -102,7 +102,7 @@ export declare class RingSignature {
      *
      * @returns A RingSignature
      */
-    static combine(partialSig: PartialSignature, signerResponse: Point): RingSignature;
+    static combine(partialSig: PartialSignature, signerResponse: bigint): RingSignature;
     /**
      * Verify a RingSignature
      *

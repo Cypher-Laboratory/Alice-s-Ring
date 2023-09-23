@@ -9,10 +9,36 @@ const _1 = require(".");
  * A point on the elliptic curve.
  */
 class Point {
-    constructor(curve, coordinates) {
+    /**
+     *
+     *
+     * @param curve - The curve
+     * @param coordinates - The point coordinates ([x,y])
+     * @param generator - if true, the point is a generator point
+     */
+    constructor(curve, coordinates, P, G) {
         this.curve = curve;
         this.x = coordinates[0];
         this.y = coordinates[1];
+        switch (curve) {
+            case curves_1.Curve.SECP256K1: {
+                this.P = curves_1.SECP256K1.P;
+                this.G = curves_1.SECP256K1.G;
+                break;
+            }
+            case curves_1.Curve.ED25519: {
+                this.P = curves_1.ED25519.P;
+                this.G = curves_1.ED25519.G;
+                break;
+            }
+            default: {
+                if (!P || !G) {
+                    throw new Error("Unknown curve");
+                }
+                this.P = P;
+                this.G = G;
+            }
+        }
     }
     /**
      * Multiplies a scalar by a point on the elliptic curve.
@@ -27,14 +53,14 @@ class Point {
                 const result = noble_SECP256k1_1.ProjectivePoint.fromAffine({
                     x: this.x,
                     y: this.y,
-                }).mul(scalar);
+                }).mul((0, _1.modulo)(scalar, curves_1.SECP256K1.N));
                 return new Point(this.curve, [result.x, result.y]);
             }
             case curves_1.Curve.ED25519: {
-                const result = noble_ED25519_1.Point.fromAffine({
+                const result = noble_ED25519_1.ExtendedPoint.fromAffine({
                     x: this.x,
                     y: this.y,
-                }).mul(scalar);
+                }).mul((0, _1.modulo)(scalar, curves_1.ED25519.N));
                 return new Point(this.curve, [result.x, result.y]);
             }
             default: {
@@ -42,8 +68,8 @@ class Point {
             }
         }
     }
-    add(point, curve = curves_1.Curve.SECP256K1) {
-        switch (curve) {
+    add(point) {
+        switch (this.curve) {
             case curves_1.Curve.SECP256K1: {
                 const result = noble_SECP256k1_1.ProjectivePoint.fromAffine({
                     x: this.x,
@@ -55,11 +81,11 @@ class Point {
                 return new Point(this.curve, [result.x, result.y]);
             }
             case curves_1.Curve.ED25519: {
-                const result = noble_ED25519_1.Point.fromAffine({
+                // does not work
+                const result = noble_ED25519_1.ExtendedPoint.fromAffine({
                     x: this.x,
                     y: this.y,
-                })
-                    .add(noble_ED25519_1.Point.fromAffine({
+                }).add(noble_ED25519_1.ExtendedPoint.fromAffine({
                     x: point.x,
                     y: point.y,
                 }));
@@ -73,10 +99,9 @@ class Point {
     /**
      * Negates a point on the elliptic curve.
      *
-     * @param point
-     * @param curve
+     * @param point - the point to negate
      *
-     * @returns
+     * @returns the negated point
      */
     negate() {
         switch (this.curve) {
@@ -88,7 +113,7 @@ class Point {
                 return new Point(this.curve, [result.x, result.y]);
             }
             case curves_1.Curve.ED25519: {
-                const result = noble_ED25519_1.Point.fromAffine({
+                const result = noble_ED25519_1.ExtendedPoint.fromAffine({
                     x: this.x,
                     y: this.y,
                 }).negate();
@@ -102,7 +127,7 @@ class Point {
     modulo(p) {
         return new Point(this.curve, [(0, _1.modulo)(this.x, p), (0, _1.modulo)(this.y, p)]);
     }
-    toBigintArray() {
+    toAffine() {
         return [this.x, this.y];
     }
     toString() {

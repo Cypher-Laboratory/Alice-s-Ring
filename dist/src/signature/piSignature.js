@@ -18,23 +18,17 @@ const utils_1 = require("../utils");
  * @returns the signer response as a point on the curve
  */
 function piSignature(alpha, c, signerPrivKey, curve) {
-    let P; // order of the curve
-    let G; // generator point
+    let N; // order of the curve
     switch (curve) {
         case utils_1.Curve.SECP256K1:
-            P = utils_1.SECP256K1.P;
-            G = new utils_1.Point(curve, [utils_1.SECP256K1.G[0], utils_1.SECP256K1.G[1]]);
+            N = utils_1.SECP256K1.N;
             break;
         case utils_1.Curve.ED25519:
-            throw new Error("ED25519 not implemented yet");
+            N = utils_1.ED25519.N;
+            break;
         default:
             throw new Error("unknown curve");
     }
-    // return = r * G = alpha * G - c * (k * G)  (mod P)
-    return G.mult(alpha)
-        .add(G.mult(signerPrivKey)
-        .mult(c)
-        .negate()
-        .modulo(P));
+    return (0, utils_1.modulo)(alpha - c * signerPrivKey, N);
 }
 exports.piSignature = piSignature;

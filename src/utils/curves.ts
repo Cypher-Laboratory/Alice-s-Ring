@@ -1,3 +1,5 @@
+import { ExtendedPoint } from "./noble-libraries/noble-ED25519";
+
 /**
  * List of supported curves
  */
@@ -21,11 +23,9 @@ export const SECP256K1 = {
 
 export const ED25519 = {
   P: 2n ** 255n - 19n,
-  N: 2n ** 252n + 27742317777372353535851937790883648493n,
-  Gx: 0x216936d3cd6e53fec0a4e231fdd6dc5c692cc7609525a7b2c9562d608f25d51an, // base point x
-  Gy: 0x6666666666666666666666666666666666666666666666666666666666666658n, // base point y
-  G: [
-    0x216936d3cd6e53fec0a4e231fdd6dc5c692cc7609525a7b2c9562d608f25d51an,
-    32670510020758816978083085130507043184471273380659243275938904335757337482424n,
-  ] as [bigint, bigint],
+  N: 2n ** 252n + 27742317777372353535851937790883648493n, // curve's (group) order
+  G: [ExtendedPoint.BASE.toAffine().x, ExtendedPoint.BASE.toAffine().y] as [
+    bigint,
+    bigint,
+  ],
 };

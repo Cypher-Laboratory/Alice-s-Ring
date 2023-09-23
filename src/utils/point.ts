@@ -151,7 +151,7 @@ export class Point {
     return new Point(this.curve, [modulo(this.x, p), modulo(this.y, p)]);
   }
 
-  toBigintArray(): [bigint, bigint] {
+  toAffine(): [bigint, bigint] {
     return [this.x, this.y];
   }
 
