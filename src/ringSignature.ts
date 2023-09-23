@@ -4,7 +4,6 @@ import {
   randomBigint,
   getRandomSecuredNumber,
   Curve,
-  modulo,
   Point,
 } from "./utils";
 import { piSignature } from "./signature/piSignature";

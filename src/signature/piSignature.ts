@@ -4,7 +4,7 @@
   not limited to selling, licensing, or generating revenue from this code, is strictly prohibited.
 */
 
-import { modulo, Curve, Point, SECP256K1 } from "../utils";
+import { Curve, Point, SECP256K1 } from "../utils";
 
 /**
  * Compute the signature from the actual signer
