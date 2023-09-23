@@ -38,11 +38,11 @@ export interface RingSig {
 export interface PartialSignature {
   message: string;
   ring: Point[];
+  pi: number;
   c: bigint;
   alpha: bigint;
   signerIndex: number;
-  responses_0_pi: bigint[];
-  responses_pi_n: bigint[];
+  responses: bigint[];
   curve: Curve;
 }
 
@@ -128,145 +128,36 @@ export class RingSignature {
    */
   static sign(
     ring: Point[], // ring.length = n
-    signerPrivKey: bigint,
+    signerPrivateKey: bigint,
     message: string,
     curve = Curve.SECP256K1,
   ): RingSignature {
-    let N: bigint; // order of the curve
-    let G: Point; // generator point
-    switch (curve) {
-      case Curve.SECP256K1:
-        N = SECP256K1.N;
-        G = new Point(curve, SECP256K1.G);
-        break;
-      case Curve.ED25519:
-        N = ED25519.N;
-        G = new Point(Curve.ED25519, ED25519.G);
-        break;
-      default:
-        throw new Error("unknown curve");
-    }
-
-    // hash the message
-    const messageDigest = keccak256(message);
-
-    // generate random number alpha
-    const alpha = randomBigint(N);
-
-    const signerPubKey = G.mult(signerPrivKey);
-
-    // set the signer position in the ring
-    const pi = getRandomSecuredNumber(0, ring.length - 1); // signer index
-    // add the signer public key to the ring
-    ring = ring.slice(0, pi).concat([signerPubKey], ring.slice(pi)) as Point[];
-
-    // check for duplicates
-    for (let i = 0; i < ring.length; i++) {
-      // complexity.. :(
-      for (let j = i + 1; j < ring.length; j++) {
-        if (ring[i].x === ring[j].x && ring[i].y === ring[j].y) {
-          throw new Error("Ring contains duplicate public keys");
-        }
-      }
-    }
-
-    // generate random responses for every public key in the ring
-    const responses: bigint[] = [];
-    for (let i = 0; i < ring.length; i++) {
-      responses.push(randomBigint(N));
-    }
-
-    // supposed to contains all the cees from pi+1 to n (pi+1, pi+2, ..., n)(n = ring.length)
-    const cValuesPI1N: bigint[] = [];
-
-    // compute C pi+1
-    cValuesPI1N.push(
-      modulo(
-        BigInt(
-          "0x" +
-            keccak256(
-              ring + messageDigest + G.mult(alpha).modulo(N).toString(),
-            ),
-        ),
-        N,
-      ),
+    const rawSignature = RingSignature.signature(
+      curve,
+      ring,
+      signerPrivateKey,
+      message,
     );
-
-    // compute Cpi+2 to Cn
-    for (let i = pi + 2; i < ring.length; i++) {
-      cValuesPI1N.push(
-        modulo(
-          BigInt(
-            "0x" +
-              keccak256(
-                ring +
-                  messageDigest +
-                  G.mult(responses[i - 1])
-                    .add(ring[i - 1].mult(cValuesPI1N[i - pi - 2]))
-                    .modulo(N)
-                    .toString(),
-              ),
-          ),
-          N,
-        ),
-      );
-    }
-
-    // supposed to contains all the c from 0 to pi
-    const cValues0PI: bigint[] = [];
-
-    // compute C0
-    cValues0PI.push(
-      modulo(
-        BigInt(
-          "0x" +
-            keccak256(
-              ring +
-                messageDigest +
-                G.mult(responses[responses.length - 1])
-                  .add(
-                    ring[ring.length - 1].mult(
-                      modulo(cValuesPI1N[cValuesPI1N.length - 1], N),
-                    ),
-                  )
-                  .modulo(N)
-                  .toString(),
-            ),
-        ),
-        N,
-      ),
-    );
-
-    // compute C0 to C pi -1
-    for (let i = 1; i < pi + 1; i++) {
-      cValues0PI[i] = modulo(
-        BigInt(
-          "0x" +
-            keccak256(
-              ring +
-                messageDigest +
-                G.mult(responses[i - 1])
-                  .add(ring[i - 1].mult(cValues0PI[i - 1]))
-                  .modulo(N)
-                  .toString(),
-            ),
-        ),
-        N,
-      );
-    }
-
-    // concatenate CValues0PI, cpi and CValuesPI1N to get all the c values
-    const cees: bigint[] = cValues0PI.concat(cValuesPI1N);
 
     // compute the signer response
-    const signerResponse = piSignature(alpha, cees[pi], signerPrivKey, curve);
+    const signerResponse = piSignature(
+      rawSignature.alpha,
+      rawSignature.cees[rawSignature.pi],
+      signerPrivateKey,
+      curve,
+    );
 
     return new RingSignature(
       message,
-      ring,
-      cees[0],
+      rawSignature.ring,
+      rawSignature.cees[0],
       // insert the signer response
-      responses.slice(0, pi).concat([signerResponse], responses.slice(pi + 1)),
+      rawSignature.responses
+        .slice(0, rawSignature.pi)
+        .concat(
+          [signerResponse],
+          rawSignature.responses.slice(rawSignature.pi + 1),
+        ),
       curve,
     );
   }
@@ -286,139 +177,21 @@ export class RingSignature {
     signerPubKey: Point,
     curve = Curve.SECP256K1,
   ): PartialSignature {
-    let N: bigint; // order of the curve
-    let G: Point; // generator point
-
-    switch (curve) {
-      case Curve.SECP256K1:
-        N = SECP256K1.N;
-        G = new Point(curve, SECP256K1.G);
-        break;
-      case Curve.ED25519:
-        throw new Error("ED25519 signing is not implemented yet");
-      default:
-        throw new Error("unknown curve");
-    }
-
-    // hash the message
-    const messageDigest = keccak256(message);
-
-    // generate random number alpha
-    const alpha = randomBigint(N);
-
-    // set the signer position in the ring
-    if (curve !== Curve.SECP256K1) throw new Error("Curve not supported");
-
-    const pi = getRandomSecuredNumber(0, ring.length - 1); // signer index
-    // add the signer public key to the ring
-    ring = ring.slice(0, pi).concat([signerPubKey], ring.slice(pi)) as Point[];
-
-    // check for duplicates
-    for (let i = 0; i < ring.length; i++) {
-      // complexity.. :(
-      for (let j = i + 1; j < ring.length; j++) {
-        if (ring[i].x === ring[j].x && ring[i].y === ring[j].y) {
-          throw new Error("Ring contains duplicate public keys");
-        }
-      }
-    }
-
-    // generate random fake responses for everybody
-    const responses: bigint[] = [];
-    for (let i = 0; i < ring.length; i++) {
-      responses.push(randomBigint(N));
-    }
-
-    // supposed to contains all the cees from pi+1 to n (pi+1, pi+2, ..., n)(n = ring.length)
-    const cValuesPI1N: bigint[] = [];
-
-    // compute C pi+1
-    cValuesPI1N.push(
-      modulo(
-        BigInt(
-          "0x" +
-            keccak256(
-              ring + messageDigest + G.mult(alpha).modulo(N).toString(),
-            ),
-        ),
-        N,
-      ),
+    const rawSignature = RingSignature.signature(
+      curve,
+      ring,
+      signerPubKey,
+      message,
     );
-
-    // compute Cpi+2 to Cn
-    for (let i = pi + 2; i < ring.length; i++) {
-      cValuesPI1N.push(
-        modulo(
-          BigInt(
-            "0x" +
-              keccak256(
-                ring +
-                  messageDigest +
-                  G.mult(responses[i - 1])
-                    .add(ring[i - 1].mult(cValuesPI1N[i - pi - 2]))
-                    .modulo(N)
-                    .toString(),
-              ),
-          ),
-          N,
-        ),
-      );
-    }
-
-    // supposed to contains all the c from 0 to pi
-    const cValues0PI: bigint[] = [];
-
-    // compute C0
-    cValues0PI.push(
-      modulo(
-        BigInt(
-          "0x" +
-            keccak256(
-              ring +
-                messageDigest +
-                G.mult(responses[responses.length - 1])
-                  .add(
-                    ring[ring.length - 1].mult(
-                      cValuesPI1N[cValuesPI1N.length - 1],
-                    ),
-                  )
-                  .modulo(N)
-                  .toString(),
-            ),
-        ),
-        N,
-      ),
-    );
-
-    // compute C0 to C pi -1
-    for (let i = 1; i < pi + 1; i++) {
-      cValues0PI[i] = modulo(
-        BigInt(
-          "0x" +
-            keccak256(
-              ring +
-                messageDigest +
-                G.mult(responses[i - 1])
-                  .add(ring[i - 1].mult(cValues0PI[i - 1]))
-                  .modulo(N)
-                  .toString(),
-            ),
-        ),
-        N,
-      );
-    }
-
-    // concatenate CValues0PI, cpi and CValuesPI1N to get all the c values
-    const cees: bigint[] = cValues0PI.concat(cValuesPI1N);
-
+    // console.log("rawSignature cees: ", rawSignature.cees);
     return {
       message: message,
-      ring: ring,
-      c: cees[0],
-      alpha: alpha,
-      signerIndex: pi,
-      responses_0_pi: responses.slice(0, pi),
-      responses_pi_n: responses.slice(pi + 1, responses.length),
+      ring: rawSignature.ring,
+      pi: rawSignature.pi,
+      c: rawSignature.cees[0],
+      alpha: rawSignature.alpha,
+      signerIndex: rawSignature.pi,
+      responses: rawSignature.responses,
       curve: curve,
     } as PartialSignature;
   }
@@ -439,10 +212,13 @@ export class RingSignature {
       partialSig.message,
       partialSig.ring,
       partialSig.c,
-      partialSig.responses_0_pi.concat(
-        [signerResponse],
-        partialSig.responses_pi_n,
-      ),
+      // insert the signer response
+      partialSig.responses
+        .slice(0, partialSig.pi)
+        .concat(
+          [signerResponse],
+          partialSig.responses.slice(partialSig.pi + 1),
+        ),
       partialSig.curve,
     );
   }
@@ -472,7 +248,7 @@ export class RingSignature {
         break;
       }
       case Curve.ED25519: {
-        G = new Point(Curve.ED25519, ED25519.G);
+        G = new Point(this.curve, ED25519.G);
         N = ED25519.N;
         break;
       }
@@ -500,6 +276,14 @@ export class RingSignature {
         ),
         N,
       );
+      console.log(
+        "c1p: ",
+        G.mult(this.responses[1])
+          .add(this.ring[1].mult(this.c))
+          .modulo(N)
+          .toString(),
+      );
+
       for (let i = 2; i < this.ring.length; i++) {
         lastComputedCp = modulo(
           BigInt(
@@ -514,6 +298,13 @@ export class RingSignature {
               ),
           ),
           N,
+        );
+        console.log(
+          "c" + i + "p: ",
+          G.mult(this.responses[i - 1])
+            .add(this.ring[i - 1].mult(lastComputedCp))
+            .modulo(N)
+            .toString(),
         );
       }
 
@@ -539,8 +330,199 @@ export class RingSignature {
     return false;
   }
 
+  /**
+   * Verify a RingSignature stored as a RingSig
+   *
+   * @param signature - The RingSig to verify
+   * @returns True if the signature is valid, false otherwise
+   */
   static verify(signature: RingSig): boolean {
     const ringSignature: RingSignature = RingSignature.fromRingSig(signature);
     return ringSignature.verify();
+  }
+
+  /**
+   * Generate an incomplete ring signature
+   *
+   * @param curve - The curve to use
+   * @param ring - The ring of public keys
+   * @param signerKey - The signer private or public key
+   * @param message - The message to sign
+   * @returns An incomplete ring signature
+   */
+  private static signature(
+    curve: Curve,
+    ring: Point[],
+    signerKey: Point | bigint,
+    message: string,
+  ) {
+    let N: bigint; // order of the curve
+    let G: Point; // generator point
+    switch (curve) {
+      case Curve.SECP256K1:
+        N = SECP256K1.N;
+        G = new Point(curve, SECP256K1.G);
+        break;
+      case Curve.ED25519:
+        N = ED25519.N;
+        G = new Point(Curve.ED25519, ED25519.G);
+        break;
+      default:
+        throw new Error("unknown curve");
+    }
+
+    // hash the message
+    const messageDigest = keccak256(message);
+
+    // generate random number alpha
+    const alpha = randomBigint(N);
+
+    let signerPubKey: Point;
+    if (typeof signerKey === "bigint") {
+      signerPubKey = G.mult(signerKey);
+    } else {
+      signerPubKey = signerKey;
+    }
+
+    // set the signer position in the ring
+    const pi = 1; //getRandomSecuredNumber(0, ring.length - 1); // signer index
+    // add the signer public key to the ring
+    ring = ring.slice(0, pi).concat([signerPubKey], ring.slice(pi)) as Point[];
+
+    // check for duplicates
+    for (let i = 0; i < ring.length; i++) {
+      // complexity.. :(
+      for (let j = i + 1; j < ring.length; j++) {
+        if (ring[i].x === ring[j].x && ring[i].y === ring[j].y) {
+          throw new Error("Ring contains duplicate public keys");
+        }
+      }
+    }
+
+    // generate random responses for every public key in the ring
+    const responses: bigint[] = [];
+    for (let i = 0; i < ring.length; i++) {
+      responses.push(randomBigint(N));
+    }
+
+    // supposed to contains all the cees from pi+1 to n (pi+1, pi+2, ..., n)(n = ring.length)
+    const cValuesPI1N: bigint[] = [];
+
+    // compute C pi+1
+    console.log("c2: ", G.mult(alpha).modulo(N).toString());
+    cValuesPI1N.push(
+      modulo(
+        BigInt(
+          "0x" +
+            keccak256(
+              ring + messageDigest + G.mult(alpha).modulo(N).toString(),
+            ),
+        ),
+        N,
+      ),
+    );
+
+    // compute Cpi+2 to Cn
+    for (let i = pi + 2; i < ring.length; i++) {
+      console.log(
+        "c" + i + ": ",
+        G.mult(responses[i - 1])
+          .add(ring[i - 1].mult(cValuesPI1N[i - pi - 2]))
+          .modulo(N)
+          .toString(),
+      );
+
+      cValuesPI1N.push(
+        modulo(
+          BigInt(
+            "0x" +
+              keccak256(
+                ring +
+                  messageDigest +
+                  G.mult(responses[i - 1])
+                    .add(ring[i - 1].mult(cValuesPI1N[i - pi - 2]))
+                    .modulo(N)
+                    .toString(),
+              ),
+          ),
+          N,
+        ),
+      );
+    }
+
+    // supposed to contains all the c from 0 to pi
+    const cValues0PI: bigint[] = [];
+
+    // compute C0
+    console.log(
+      "c1: ",
+      G.mult(responses[responses.length - 1])
+        .add(
+          ring[ring.length - 1].mult(
+            modulo(cValuesPI1N[cValuesPI1N.length - 1], N),
+          ),
+        )
+        .modulo(N)
+        .toString(),
+    );
+
+    cValues0PI.push(
+      modulo(
+        BigInt(
+          "0x" +
+            keccak256(
+              ring +
+                messageDigest +
+                G.mult(responses[responses.length - 1])
+                  .add(
+                    ring[ring.length - 1].mult(
+                      modulo(cValuesPI1N[cValuesPI1N.length - 1], N),
+                    ),
+                  )
+                  .modulo(N)
+                  .toString(),
+            ),
+        ),
+        N,
+      ),
+    );
+
+    // compute C0 to C pi -1
+    for (let i = 1; i < pi + 1; i++) {
+      console.log(
+        "c" + i + ": ",
+        G.mult(responses[i - 1])
+          .add(ring[i - 1].mult(cValues0PI[i - 1]))
+          .modulo(N)
+          .toString(),
+      );
+
+      cValues0PI[i] = modulo(
+        BigInt(
+          "0x" +
+            keccak256(
+              ring +
+                messageDigest +
+                G.mult(responses[i - 1])
+                  .add(ring[i - 1].mult(cValues0PI[i - 1]))
+                  .modulo(N)
+                  .toString(),
+            ),
+        ),
+        N,
+      );
+    }
+
+    // concatenate CValues0PI, cpi and CValuesPI1N to get all the c values
+    const cees: bigint[] = cValues0PI.concat(cValuesPI1N);
+
+    return {
+      ring: ring,
+      pi: pi,
+      cees: cees,
+      alpha: alpha,
+      signerIndex: pi,
+      responses: responses,
+    };
   }
 }
