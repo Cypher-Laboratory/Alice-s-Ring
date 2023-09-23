@@ -1,4 +1,4 @@
-import { Curve } from "./utils";
+import { Curve, Point } from "./utils";
 /**
  * Ring signature interface
  *
@@ -9,9 +9,9 @@ import { Curve } from "./utils";
  */
 export interface RingSig {
     message: string;
-    ring: [[bigint, bigint]];
+    ring: Point[];
     c: bigint;
-    responses: [bigint, bigint][];
+    responses: Point[];
     curve: Curve;
 }
 /**
@@ -25,12 +25,12 @@ export interface RingSig {
  */
 export interface PartialSignature {
     message: string;
-    ring: [[bigint, bigint]];
+    ring: Point[];
     cees: bigint[];
     alpha: bigint;
     signerIndex: number;
-    responses_0_pi: [bigint, bigint][];
-    responses_pi_n: [bigint, bigint][];
+    responses_0_pi: Point[];
+    responses_pi_n: Point[];
     curve: Curve;
 }
 /**
@@ -45,8 +45,8 @@ export interface PartialSignature {
 export declare class RingSignature {
     message: string;
     c: bigint;
-    responses: [bigint, bigint][];
-    ring: [[bigint, bigint]];
+    responses: Point[];
+    ring: Point[];
     curve: Curve;
     /**
      * Ring signature class constructor
@@ -57,7 +57,7 @@ export declare class RingSignature {
      * @param responses - Responses for each public key in the ring
      * @param curve - Curve used for the signature
      */
-    constructor(message: string, ring: [[bigint, bigint]], c: bigint, responses: [bigint, bigint][], curve: Curve);
+    constructor(message: string, ring: Point[], c: bigint, responses: Point[], curve: Curve);
     /**
      * Create a RingSignature from a RingSig
      *
@@ -81,7 +81,7 @@ export declare class RingSignature {
      *
      * @returns A RingSignature
      */
-    static sign(ring: [[bigint, bigint]], // ring.length = n
+    static sign(ring: Point[], // ring.length = n
     signerPrivKey: bigint, message: string, curve?: Curve): RingSignature;
     /**
      * Sign a message using ring signatures
@@ -92,8 +92,8 @@ export declare class RingSignature {
      *
      * @returns A PartialSignature
      */
-    static partialSign(ring: [[bigint, bigint]], // ring.length = n
-    message: string, signerPubKey: [bigint, bigint], curve?: Curve): PartialSignature;
+    static partialSign(ring: Point[], // ring.length = n
+    message: string, signerPubKey: Point, curve?: Curve): PartialSignature;
     /**
      * Combine partial signatures into a RingSignature
      *
@@ -102,7 +102,7 @@ export declare class RingSignature {
      *
      * @returns A RingSignature
      */
-    static combine(partialSig: PartialSignature, signerResponse: [bigint, bigint]): RingSignature;
+    static combine(partialSig: PartialSignature, signerResponse: Point): RingSignature;
     /**
      * Verify a RingSignature
      *

@@ -2,24 +2,24 @@
 import { piSignature } from "../src";
 import { RingSignature } from "../src/ringSignature";
 
-import { Curve, mult, randomBigint, SECP256K1 } from "../src/utils";
+import { Curve, Point, randomBigint, SECP256K1 } from "../src/utils";
 
-const G = SECP256K1.G;
+const G = new Point(Curve.SECP256K1, SECP256K1.G);
 
-function randomRing(ringLength = 1000): [[bigint, bigint]] {
+function randomRing(ringLength = 1000): Point[] {
   let k =
     randomBigint(
       0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141n,
     );
 
-  const ring: [[bigint, bigint]] = [mult(k, G) as [bigint, bigint]];
+  const ring: Point[] = [G.mult(k)];
 
   for (let i = 0; i < ringLength - 1; i++) {
     k =
       randomBigint(
         0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141n,
       );
-    ring.push(mult(k, G));
+    ring.push(G.mult(k));
   }
   return ring;
 }
@@ -29,7 +29,7 @@ const ring = randomRing(10);
 
 const signerPrivKey =
   25492685131648303913676486147365321410553162645346980248069629262609756314572n;
-const signerPubKey = mult(signerPrivKey, G) as [bigint, bigint];
+const signerPubKey = G.mult(signerPrivKey);
 const signature = RingSignature.sign(ring, signerPrivKey, "test");
 console.log("Is sig valid ? ", signature.verify());
 console.log("ring size: ", signature.ring.length);

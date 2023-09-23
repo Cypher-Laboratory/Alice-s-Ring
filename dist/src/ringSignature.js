@@ -70,7 +70,7 @@ class RingSignature {
         switch (curve) {
             case utils_1.Curve.SECP256K1:
                 P = utils_1.SECP256K1.P;
-                G = utils_1.SECP256K1.G;
+                G = new utils_1.Point(curve, utils_1.SECP256K1.G);
                 break;
             case utils_1.Curve.ED25519:
                 throw new Error("ED25519 signing is not implemented yet");
@@ -81,38 +81,43 @@ class RingSignature {
         const messageDigest = (0, js_sha3_1.keccak256)(message);
         // generate random number alpha
         const alpha = (0, utils_1.randomBigint)(P);
-        // set the signer position in the ring
         if (curve !== utils_1.Curve.SECP256K1)
             throw new Error("Curve not supported");
-        const signerPubKey = (0, utils_1.mult)(signerPrivKey, G);
+        const signerPubKey = G.mult(signerPrivKey);
+        // set the signer position in the ring
         const pi = (0, utils_1.getRandomSecuredNumber)(0, ring.length - 1); // signer index
         // add the signer public key to the ring
-        ring = ring.slice(0, pi).concat([signerPubKey], ring.slice(pi));
+        ring = ring
+            .slice(0, pi)
+            .concat([signerPubKey], ring.slice(pi));
         // check for duplicates
         for (let i = 0; i < ring.length; i++) {
             // complexity.. :(
             for (let j = i + 1; j < ring.length; j++) {
-                if (ring[i][0] === ring[j][0] && ring[i][1] === ring[j][1]) {
+                if (ring[i].x === ring[j].x && ring[i].y === ring[j].y) {
                     throw new Error("Ring contains duplicate public keys");
                 }
             }
         }
-        // generate random fake responses for everybody except the signer
+        // generate random responses for everybody except the signer
         const responses = [];
         for (let i = 0; i < ring.length; i++) {
-            responses.push((0, utils_1.mult)((0, utils_1.randomBigint)(P), G));
+            responses.push(G.mult((0, utils_1.randomBigint)(P)));
         }
         // supposed to contains all the cees from pi+1 to n (pi+1, pi+2, ..., n)(n = ring.length)
         const cValuesPI1N = [];
         // compute C pi+1
         cValuesPI1N.push(BigInt("0x" +
-            (0, js_sha3_1.keccak256)(ring + messageDigest + String((0, utils_1.modulo)((0, utils_1.mult)(alpha, G), P)))));
+            (0, js_sha3_1.keccak256)(ring + messageDigest + G.mult(alpha).modulo(P).toString())));
         // compute Cpi+2 to Cn
         for (let i = pi + 2; i < ring.length; i++) {
             cValuesPI1N.push(BigInt("0x" +
                 (0, js_sha3_1.keccak256)(ring +
                     messageDigest +
-                    String((0, utils_1.modulo)((0, utils_1.add)(responses[i - 1], (0, utils_1.mult)(cValuesPI1N[i - pi - 2], ring[i - 1])), P)))));
+                    responses[i - 1]
+                        .add(ring[i - 1].mult(cValuesPI1N[i - pi - 2]))
+                        .modulo(P)
+                        .toString())));
         }
         // supposed to contains all the c from 0 to pi
         const cValues0PI = [];
@@ -120,13 +125,17 @@ class RingSignature {
         cValues0PI.push(BigInt("0x" +
             (0, js_sha3_1.keccak256)(ring +
                 messageDigest +
-                String((0, utils_1.modulo)((0, utils_1.add)(responses[responses.length - 1], (0, utils_1.mult)(cValuesPI1N[cValuesPI1N.length - 1], ring[ring.length - 1])), P)))));
+                responses[responses.length - 1]
+                    .add(ring[ring.length - 1].mult(cValuesPI1N[cValuesPI1N.length - 1]))
+                    .modulo(P)
+                    .toString())));
         // compute C0 to C pi -1
         for (let i = 1; i < pi + 1; i++) {
             cValues0PI[i] = BigInt("0x" +
                 (0, js_sha3_1.keccak256)(ring +
                     messageDigest +
-                    String((0, utils_1.modulo)((0, utils_1.add)(responses[i - 1], (0, utils_1.mult)(cValues0PI[i - 1], ring[i - 1])), P))));
+                    responses[i - 1]
+                        .add(ring[i - 1].mult(cValues0PI[i - 1]))));
         }
         // concatenate CValues0PI, cpi and CValuesPI1N to get all the c values
         const cees = cValues0PI.concat(cValuesPI1N);
@@ -152,7 +161,7 @@ class RingSignature {
         switch (curve) {
             case utils_1.Curve.SECP256K1:
                 P = utils_1.SECP256K1.P;
-                G = utils_1.SECP256K1.G;
+                G = new utils_1.Point(curve, utils_1.SECP256K1.G);
                 break;
             case utils_1.Curve.ED25519:
                 throw new Error("ED25519 signing is not implemented yet");
@@ -173,7 +182,7 @@ class RingSignature {
         for (let i = 0; i < ring.length; i++) {
             // complexity.. :(
             for (let j = i + 1; j < ring.length; j++) {
-                if (ring[i][0] === ring[j][0] && ring[i][1] === ring[j][1]) {
+                if (ring[i].x === ring[j].x && ring[i].y === ring[j].y) {
                     throw new Error("Ring contains duplicate public keys");
                 }
             }
@@ -181,19 +190,23 @@ class RingSignature {
         // generate random fake responses for everybody
         const responses = [];
         for (let i = 0; i < ring.length; i++) {
-            responses.push((0, utils_1.mult)((0, utils_1.randomBigint)(P), G));
+            responses.push(G.mult((0, utils_1.randomBigint)(P)));
         }
         // supposed to contains all the cees from pi+1 to n (pi+1, pi+2, ..., n)(n = ring.length)
         const cValuesPI1N = [];
         // compute C pi+1
         cValuesPI1N.push(BigInt("0x" +
-            (0, js_sha3_1.keccak256)(ring + messageDigest + String((0, utils_1.modulo)((0, utils_1.mult)(alpha, G), P)))));
+            (0, js_sha3_1.keccak256)(ring + messageDigest + G.mult(alpha).modulo(P).toString())));
         // compute Cpi+2 to Cn
         for (let i = pi + 2; i < ring.length; i++) {
             cValuesPI1N.push(BigInt("0x" +
                 (0, js_sha3_1.keccak256)(ring +
                     messageDigest +
-                    String((0, utils_1.modulo)((0, utils_1.add)(responses[i - 1], (0, utils_1.mult)(cValuesPI1N[i - pi - 2], ring[i - 1])), P)))));
+                    responses[i - 1]
+                        .add(ring[i - 1]
+                        .mult(cValuesPI1N[i - pi - 2]))
+                        .modulo(P)
+                        .toString())));
         }
         // supposed to contains all the c from 0 to pi
         const cValues0PI = [];
@@ -201,13 +214,21 @@ class RingSignature {
         cValues0PI.push(BigInt("0x" +
             (0, js_sha3_1.keccak256)(ring +
                 messageDigest +
-                String((0, utils_1.modulo)((0, utils_1.add)(responses[responses.length - 1], (0, utils_1.mult)(cValuesPI1N[cValuesPI1N.length - 1], ring[ring.length - 1])), P)))));
+                responses[responses.length - 1]
+                    .add(ring[ring.length - 1]
+                    .mult(cValuesPI1N[cValuesPI1N.length - 1]))
+                    .modulo(P)
+                    .toString())));
         // compute C0 to C pi -1
         for (let i = 1; i < pi + 1; i++) {
             cValues0PI[i] = BigInt("0x" +
                 (0, js_sha3_1.keccak256)(ring +
                     messageDigest +
-                    String((0, utils_1.modulo)((0, utils_1.add)(responses[i - 1], (0, utils_1.mult)(cValues0PI[i - 1], ring[i - 1])), P))));
+                    responses[i - 1]
+                        .add(ring[i - 1]
+                        .mult(cValues0PI[i - 1]))
+                        .modulo(P)
+                        .toString()));
         }
         // concatenate CValues0PI, cpi and CValuesPI1N to get all the c values
         const cees = cValues0PI.concat(cValuesPI1N);
@@ -266,19 +287,31 @@ class RingSignature {
             let lastComputedCp = BigInt("0x" +
                 (0, js_sha3_1.keccak256)(this.ring +
                     messageDigest +
-                    String((0, utils_1.modulo)((0, utils_1.add)(this.responses[0], (0, utils_1.mult)(this.c, this.ring[0])), P))));
+                    this.responses[0]
+                        .add(this.ring[0]
+                        .mult(this.c))
+                        .modulo(P)
+                        .toString()));
             for (let i = 2; i < this.ring.length; i++) {
                 lastComputedCp = BigInt("0x" +
                     (0, js_sha3_1.keccak256)(this.ring +
                         messageDigest +
-                        String((0, utils_1.modulo)((0, utils_1.add)(this.responses[i - 1], (0, utils_1.mult)(lastComputedCp, this.ring[i - 1])), P))));
+                        this.responses[i - 1]
+                            .add(this.ring[i - 1]
+                            .mult(lastComputedCp))
+                            .modulo(P)
+                            .toString()));
             }
             // return true if c0 === c0'
             return (this.c ===
                 BigInt("0x" +
                     (0, js_sha3_1.keccak256)(this.ring +
                         messageDigest +
-                        String((0, utils_1.modulo)((0, utils_1.add)(this.responses[this.responses.length - 1], (0, utils_1.mult)(lastComputedCp, this.ring[this.ring.length - 1])), P)))));
+                        this.responses[this.responses.length - 1]
+                            .add(this.ring[this.ring.length - 1]
+                            .mult(lastComputedCp))
+                            .modulo(P)
+                            .toString())));
         }
         return false;
     }

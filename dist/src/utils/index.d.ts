@@ -1,4 +1,4 @@
-export { SECP256K1, Curve } from "./Curves";
+export { SECP256K1, Curve } from "./curves";
 export { randomBigint, getRandomSecuredNumber } from "./randomNumbers";
 export { modulo } from "./modulo";
-export { add, mult, negate } from "./pointOperations";
+export { Point } from "./point";

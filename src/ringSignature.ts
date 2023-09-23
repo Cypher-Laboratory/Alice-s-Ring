@@ -5,8 +5,7 @@ import {
   getRandomSecuredNumber,
   Curve,
   modulo,
-  mult,
-  add,
+  Point,
 } from "./utils";
 import { piSignature } from "./signature/piSignature";
 
@@ -20,9 +19,9 @@ import { piSignature } from "./signature/piSignature";
  */
 export interface RingSig {
   message: string; // clear message
-  ring: [[bigint, bigint]];
+  ring: Point[];
   c: bigint;
-  responses: [bigint, bigint][];
+  responses: Point[];
   curve: Curve;
 }
 
@@ -37,12 +36,12 @@ export interface RingSig {
  */
 export interface PartialSignature {
   message: string;
-  ring: [[bigint, bigint]];
+  ring: Point[];
   cees: bigint[];
   alpha: bigint;
   signerIndex: number;
-  responses_0_pi: [bigint, bigint][];
-  responses_pi_n: [bigint, bigint][];
+  responses_0_pi: Point[];
+  responses_pi_n: Point[];
   curve: Curve;
 }
 
@@ -58,8 +57,8 @@ export interface PartialSignature {
 export class RingSignature {
   message: string; // clear message
   c: bigint;
-  responses: [bigint, bigint][];
-  ring: [[bigint, bigint]];
+  responses: Point[];
+  ring: Point[];
   curve: Curve;
 
   /**
@@ -73,9 +72,9 @@ export class RingSignature {
    */
   constructor(
     message: string,
-    ring: [[bigint, bigint]],
+    ring: Point[],
     c: bigint,
-    responses: [bigint, bigint][],
+    responses: Point[],
     curve: Curve,
   ) {
     this.ring = ring;
@@ -127,18 +126,18 @@ export class RingSignature {
    * @returns A RingSignature
    */
   static sign(
-    ring: [[bigint, bigint]], // ring.length = n
+    ring: Point[], // ring.length = n
     signerPrivKey: bigint,
     message: string,
     curve = Curve.SECP256K1,
   ): RingSignature {
     let P: bigint; // order of the curve
-    let G: [bigint, bigint]; // generator point
+    let G: Point; // generator point
 
     switch (curve) {
       case Curve.SECP256K1:
         P = SECP256K1.P;
-        G = SECP256K1.G;
+        G = new Point(curve, SECP256K1.G);
         break;
       case Curve.ED25519:
         throw new Error("ED25519 signing is not implemented yet");
@@ -154,29 +153,27 @@ export class RingSignature {
 
     if (curve !== Curve.SECP256K1) throw new Error("Curve not supported");
 
-    const signerPubKey = mult(signerPrivKey, G);
+    const signerPubKey = G.mult(signerPrivKey);
 
     // set the signer position in the ring
     const pi = getRandomSecuredNumber(0, ring.length - 1); // signer index
     // add the signer public key to the ring
-    ring = ring.slice(0, pi).concat([signerPubKey], ring.slice(pi)) as [
-      [bigint, bigint],
-    ];
+    ring = ring.slice(0, pi).concat([signerPubKey], ring.slice(pi)) as Point[];
 
     // check for duplicates
     for (let i = 0; i < ring.length; i++) {
       // complexity.. :(
       for (let j = i + 1; j < ring.length; j++) {
-        if (ring[i][0] === ring[j][0] && ring[i][1] === ring[j][1]) {
+        if (ring[i].x === ring[j].x && ring[i].y === ring[j].y) {
           throw new Error("Ring contains duplicate public keys");
         }
       }
     }
 
     // generate random responses for everybody except the signer
-    const responses: [bigint, bigint][] = [];
+    const responses: Point[] = [];
     for (let i = 0; i < ring.length; i++) {
-      responses.push(mult(randomBigint(P), G));
+      responses.push(G.mult(randomBigint(P)));
     }
 
     // supposed to contains all the cees from pi+1 to n (pi+1, pi+2, ..., n)(n = ring.length)
@@ -186,7 +183,7 @@ export class RingSignature {
     cValuesPI1N.push(
       BigInt(
         "0x" +
-          keccak256(ring + messageDigest + String(modulo(mult(alpha, G), P))),
+          keccak256(ring + messageDigest + G.mult(alpha).modulo(P).toString()),
       ),
     );
 
@@ -198,15 +195,10 @@ export class RingSignature {
             keccak256(
               ring +
                 messageDigest +
-                String(
-                  modulo(
-                    add(
-                      responses[i - 1],
-                      mult(cValuesPI1N[i - pi - 2], ring[i - 1]),
-                    ),
-                    P,
-                  ),
-                ),
+                responses[i - 1]
+                  .add(ring[i - 1].mult(cValuesPI1N[i - pi - 2]))
+                  .modulo(P)
+                  .toString(),
             ),
         ),
       );
@@ -222,18 +214,14 @@ export class RingSignature {
           keccak256(
             ring +
               messageDigest +
-              String(
-                modulo(
-                  add(
-                    responses[responses.length - 1],
-                    mult(
-                      cValuesPI1N[cValuesPI1N.length - 1],
-                      ring[ring.length - 1],
-                    ),
+              responses[responses.length - 1]
+                .add(
+                  ring[ring.length - 1].mult(
+                    cValuesPI1N[cValuesPI1N.length - 1],
                   ),
-                  P,
-                ),
-              ),
+                )
+                .modulo(P)
+                .toString(),
           ),
       ),
     );
@@ -245,12 +233,7 @@ export class RingSignature {
           keccak256(
             ring +
               messageDigest +
-              String(
-                modulo(
-                  add(responses[i - 1], mult(cValues0PI[i - 1], ring[i - 1])),
-                  P,
-                ),
-              ),
+              responses[i - 1].add(ring[i - 1].mult(cValues0PI[i - 1])),
           ),
       );
     }
@@ -281,18 +264,18 @@ export class RingSignature {
    * @returns A PartialSignature
    */
   static partialSign(
-    ring: [[bigint, bigint]], // ring.length = n
+    ring: Point[], // ring.length = n
     message: string,
-    signerPubKey: [bigint, bigint],
+    signerPubKey: Point,
     curve = Curve.SECP256K1,
   ): PartialSignature {
     let P: bigint; // order of the curve
-    let G: [bigint, bigint]; // generator point
+    let G: Point; // generator point
 
     switch (curve) {
       case Curve.SECP256K1:
         P = SECP256K1.P;
-        G = SECP256K1.G;
+        G = new Point(curve, SECP256K1.G);
         break;
       case Curve.ED25519:
         throw new Error("ED25519 signing is not implemented yet");
@@ -311,24 +294,22 @@ export class RingSignature {
 
     const pi = getRandomSecuredNumber(0, ring.length - 1); // signer index
     // add the signer public key to the ring
-    ring = ring.slice(0, pi).concat([signerPubKey], ring.slice(pi)) as [
-      [bigint, bigint],
-    ];
+    ring = ring.slice(0, pi).concat([signerPubKey], ring.slice(pi)) as Point[];
 
     // check for duplicates
     for (let i = 0; i < ring.length; i++) {
       // complexity.. :(
       for (let j = i + 1; j < ring.length; j++) {
-        if (ring[i][0] === ring[j][0] && ring[i][1] === ring[j][1]) {
+        if (ring[i].x === ring[j].x && ring[i].y === ring[j].y) {
           throw new Error("Ring contains duplicate public keys");
         }
       }
     }
 
     // generate random fake responses for everybody
-    const responses: [bigint, bigint][] = [];
+    const responses: Point[] = [];
     for (let i = 0; i < ring.length; i++) {
-      responses.push(mult(randomBigint(P), G));
+      responses.push(G.mult(randomBigint(P)));
     }
 
     // supposed to contains all the cees from pi+1 to n (pi+1, pi+2, ..., n)(n = ring.length)
@@ -338,7 +319,7 @@ export class RingSignature {
     cValuesPI1N.push(
       BigInt(
         "0x" +
-          keccak256(ring + messageDigest + String(modulo(mult(alpha, G), P))),
+          keccak256(ring + messageDigest + G.mult(alpha).modulo(P).toString()),
       ),
     );
 
@@ -350,15 +331,10 @@ export class RingSignature {
             keccak256(
               ring +
                 messageDigest +
-                String(
-                  modulo(
-                    add(
-                      responses[i - 1],
-                      mult(cValuesPI1N[i - pi - 2], ring[i - 1]),
-                    ),
-                    P,
-                  ),
-                ),
+                responses[i - 1]
+                  .add(ring[i - 1].mult(cValuesPI1N[i - pi - 2]))
+                  .modulo(P)
+                  .toString(),
             ),
         ),
       );
@@ -374,18 +350,14 @@ export class RingSignature {
           keccak256(
             ring +
               messageDigest +
-              String(
-                modulo(
-                  add(
-                    responses[responses.length - 1],
-                    mult(
-                      cValuesPI1N[cValuesPI1N.length - 1],
-                      ring[ring.length - 1],
-                    ),
+              responses[responses.length - 1]
+                .add(
+                  ring[ring.length - 1].mult(
+                    cValuesPI1N[cValuesPI1N.length - 1],
                   ),
-                  P,
-                ),
-              ),
+                )
+                .modulo(P)
+                .toString(),
           ),
       ),
     );
@@ -397,12 +369,10 @@ export class RingSignature {
           keccak256(
             ring +
               messageDigest +
-              String(
-                modulo(
-                  add(responses[i - 1], mult(cValues0PI[i - 1], ring[i - 1])),
-                  P,
-                ),
-              ),
+              responses[i - 1]
+                .add(ring[i - 1].mult(cValues0PI[i - 1]))
+                .modulo(P)
+                .toString(),
           ),
       );
     }
@@ -416,11 +386,8 @@ export class RingSignature {
       cees: cees,
       alpha: alpha,
       signerIndex: pi,
-      responses_0_pi: responses.slice(0, pi) as [bigint, bigint][],
-      responses_pi_n: responses.slice(pi + 1, responses.length) as [
-        bigint,
-        bigint,
-      ][],
+      responses_0_pi: responses.slice(0, pi) as Point[],
+      responses_pi_n: responses.slice(pi + 1, responses.length) as Point[],
       curve: curve,
     } as PartialSignature;
   }
@@ -435,7 +402,7 @@ export class RingSignature {
    */
   static combine(
     partialSig: PartialSignature,
-    signerResponse: [bigint, bigint],
+    signerResponse: Point,
   ): RingSignature {
     return new RingSignature(
       partialSig.message,
@@ -491,9 +458,10 @@ export class RingSignature {
           keccak256(
             this.ring +
               messageDigest +
-              String(
-                modulo(add(this.responses[0], mult(this.c, this.ring[0])), P),
-              ),
+              this.responses[0]
+                .add(this.ring[0].mult(this.c))
+                .modulo(P)
+                .toString(),
           ),
       );
 
@@ -503,15 +471,10 @@ export class RingSignature {
             keccak256(
               this.ring +
                 messageDigest +
-                String(
-                  modulo(
-                    add(
-                      this.responses[i - 1],
-                      mult(lastComputedCp, this.ring[i - 1]),
-                    ),
-                    P,
-                  ),
-                ),
+                this.responses[i - 1]
+                  .add(this.ring[i - 1].mult(lastComputedCp))
+                  .modulo(P)
+                  .toString(),
             ),
         );
       }
@@ -524,15 +487,10 @@ export class RingSignature {
             keccak256(
               this.ring +
                 messageDigest +
-                String(
-                  modulo(
-                    add(
-                      this.responses[this.responses.length - 1],
-                      mult(lastComputedCp, this.ring[this.ring.length - 1]),
-                    ),
-                    P,
-                  ),
-                ),
+                this.responses[this.responses.length - 1]
+                  .add(this.ring[this.ring.length - 1].mult(lastComputedCp))
+                  .modulo(P)
+                  .toString(),
             ),
         )
       );
