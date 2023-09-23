@@ -4,7 +4,7 @@
   not limited to selling, licensing, or generating revenue from this code, is strictly prohibited.
 */
 
-import { Curve, Point, SECP256K1 } from "../utils";
+import { Curve, ED25519, Point, SECP256K1, modulo } from "../utils";
 
 /**
  * Compute the signature from the actual signer
@@ -18,24 +18,29 @@ import { Curve, Point, SECP256K1 } from "../utils";
  */
 export function piSignature(
   alpha: bigint,
+  // r
   c: bigint,
   signerPrivKey: bigint,
   curve: Curve,
 ): Point {
-  let P: bigint; // order of the curve
+  let N: bigint; // order of the curve
   let G: Point; // generator point
 
   switch (curve) {
     case Curve.SECP256K1:
-      P = SECP256K1.P;
-      G = new Point(curve, [SECP256K1.G[0], SECP256K1.G[1]]);
+      N = SECP256K1.N;
+      G = new Point(curve, SECP256K1.G);
       break;
     case Curve.ED25519:
-      throw new Error("ED25519 not implemented yet");
+      N = ED25519.N;
+      G = new Point(curve, ED25519.G);
+      break;
     default:
       throw new Error("unknown curve");
   }
+  // return: r * G = alpha * G - c * (k * G)  (mod N)
+  return G.mult(alpha).add(G.mult(signerPrivKey).mult(c).negate().modulo(N)); // NON:  G.mult(signerPrivKey) = K => preuve forgeable
+// rpi = addmodn(rpi, mulmodn(k, submodn(alpha, c[pi-1])));
+// return modulo(r + modulo((signerPrivKey * modulo(alpha - c, N)), N), N);
 
-  // return = r * G = alpha * G - c * (k * G)  (mod P)
-  return G.mult(alpha).add(G.mult(signerPrivKey).mult(c).negate().modulo(P));
 }

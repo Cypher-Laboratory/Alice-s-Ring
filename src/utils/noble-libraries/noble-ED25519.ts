@@ -40,7 +40,7 @@ interface AffinePoint {
   x: bigint;
   y: bigint;
 } // Point in 2d xy affine coordinates
-export class Point {
+class Point {
   // Point in xyzt extended coordinates
   constructor(
     readonly ex: bigint,

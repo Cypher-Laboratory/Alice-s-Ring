@@ -1,6 +1,6 @@
 import { Curve, ED25519, SECP256K1 } from "./curves";
 import { ProjectivePoint as SECP256K1Point } from "./noble-libraries/noble-SECP256k1";
-import { Point as ED25519Point } from "./noble-libraries/noble-ED25519";
+import { ExtendedPoint as ED25519Point } from "./noble-libraries/noble-ED25519";
 import { modulo } from ".";
 
 /**
@@ -45,7 +45,7 @@ export class Point {
           throw new Error("Unknown curve");
         }
         this.P = P;
-        this.G = [0n, 0n];
+        this.G = G;
       }
     }
   }
@@ -81,8 +81,8 @@ export class Point {
     }
   }
 
-  add(point: Point, curve: Curve = Curve.SECP256K1): Point {
-    switch (curve) {
+  add(point: Point): Point {
+    switch (this.curve) {
       case Curve.SECP256K1: {
         const result = SECP256K1Point.fromAffine({
           x: this.x,
@@ -96,7 +96,7 @@ export class Point {
 
         return new Point(this.curve, [result.x, result.y]);
       }
-      case Curve.ED25519: {
+      case Curve.ED25519: { // does not work
         const result = ED25519Point.fromAffine({
           x: this.x,
           y: this.y,
@@ -118,10 +118,9 @@ export class Point {
   /**
    * Negates a point on the elliptic curve.
    *
-   * @param point
-   * @param curve
+   * @param point - the point to negate
    *
-   * @returns
+   * @returns the negated point
    */
   negate(): Point {
     switch (this.curve) {
