@@ -1,10 +1,51 @@
 // import { RingSignature, RingSig } from "../src/ringSignature";
-import { piSignature } from "../src";
 import { RingSignature } from "../src/ringSignature";
-import { Curve, Point, randomBigint, SECP256K1, ED25519, modulo } from "../src/utils";
-
-const signerPrivKey =
-  25492685131648303913676486147365321410553162645346980248069629262609756314572n;
+import {
+  Curve,
+  Point,
+  randomBigint,
+  SECP256K1,
+  ED25519,
+  modulo,
+} from "../src/utils";
+const tmp = [
+  "42",
+  "0c",
+  "6f",
+  "0c",
+  "99",
+  "5f",
+  "3f",
+  "78",
+  "15",
+  "0b",
+  "a7",
+  "f5",
+  "d7",
+  "e3",
+  "09",
+  "85",
+  "ae",
+  "be",
+  "14",
+  "61",
+  "15",
+  "4d",
+  "42",
+  "bc",
+  "d4",
+  "0f",
+  "92",
+  "11",
+  "af",
+  "e2",
+  "a5",
+  "05",
+];
+const signerPrivKeyBytes = new Uint8Array(tmp.map((x) => parseInt(x, 16)));
+const signerPrivKey = BigInt(
+  "0x" + Buffer.from(signerPrivKeyBytes).toString("hex"),
+);
 
 const G_SECP = new Point(Curve.SECP256K1, SECP256K1.G);
 const signerPrivKey_secp = modulo(signerPrivKey, SECP256K1.N);
@@ -15,18 +56,12 @@ const signerPrivKey_ed = modulo(signerPrivKey, ED25519.N);
 const ring_ed = randomRing(9, G_ED, ED25519.N);
 
 function randomRing(ringLength = 1000, G: Point, N: bigint): Point[] {
-  let k =
-    randomBigint(
-      N,
-    );
+  let k = randomBigint(N * N);
 
   const ring: Point[] = [G.mult(k)];
 
   for (let i = 0; i < ringLength - 1; i++) {
-    k =
-      randomBigint(
-        N,
-      );
+    k = randomBigint(N * N);
     ring.push(G.mult(k));
   }
   return ring;
@@ -36,7 +71,12 @@ console.log("ring size: ", ring_ed.length + 1);
 
 /* TEST SIGNATURE GENERATION AND VERIFICATION - SECP256K1 */
 console.log("------ SIGNATURE USING SECP256K1 ------");
-const signature_secp = RingSignature.sign(ring_secp, signerPrivKey_secp, "test", Curve.SECP256K1);
+const signature_secp = RingSignature.sign(
+  ring_secp,
+  signerPrivKey_secp,
+  "test",
+  Curve.SECP256K1,
+);
 const verifiedSig_secp = signature_secp.verify();
 console.log("Is sig valid ? ", verifiedSig_secp);
 
@@ -46,7 +86,12 @@ if (!verifiedSig_secp) {
 }
 
 console.log("------ SIGNATURE USING ED25519 ------");
-const signature_ed = RingSignature.sign(ring_ed, signerPrivKey_ed, "test", Curve.ED25519);
+const signature_ed = RingSignature.sign(
+  ring_ed,
+  signerPrivKey_ed,
+  "test",
+  Curve.ED25519,
+);
 const verifiedSig_ed = signature_ed.verify();
 
 console.log("Is sig valid ? ", verifiedSig_ed);

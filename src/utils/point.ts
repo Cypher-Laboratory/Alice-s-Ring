@@ -96,7 +96,8 @@ export class Point {
 
         return new Point(this.curve, [result.x, result.y]);
       }
-      case Curve.ED25519: { // does not work
+      case Curve.ED25519: {
+        // does not work
         const result = ED25519Point.fromAffine({
           x: this.x,
           y: this.y,

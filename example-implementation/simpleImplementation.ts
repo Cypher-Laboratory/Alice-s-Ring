@@ -20,8 +20,8 @@ const K2 = G.mult(k2);
 const alpha = randomBigint(P);
 
 // fake responses
-const r1 = new Point(Curve.SECP256K1, [randomBigint(P), randomBigint(P)]);
-const r3 = new Point(Curve.SECP256K1, [randomBigint(P), randomBigint(P)]);
+const r1 = randomBigint(P);
+const r3 = randomBigint(P);
 
 // pi = 2
 const ring = [K1, K2, K3];
@@ -37,11 +37,17 @@ console.log("c3: \n", G.mult(alpha), "\n");
 
 // Iterate:
 const c1 = BigInt(
-  "0x" + keccak256(ring + message + r3.add(K3.mult(c3)).modulo(P).toString()),
+  "0x" +
+    keccak256(
+      ring + message + G.mult(r3).add(K3.mult(c3)).modulo(P).toString(),
+    ),
 );
 
 const c2 = BigInt(
-  "0x" + keccak256(ring + message + r1.add(K1.mult(c1)).modulo(P).toString()),
+  "0x" +
+    keccak256(
+      ring + message + G.mult(r1).add(K1.mult(c1)).modulo(P).toString(),
+    ),
 );
 
 // signer response
@@ -58,21 +64,30 @@ const r2 = piSignature(alpha, c2, k2, Curve.SECP256K1);
 /* -------VERIFICATION------- */
 
 const c2p = BigInt(
-  "0x" + keccak256(ring + message + r1.add(K1.mult(c1)).modulo(P).toString()),
+  "0x" +
+    keccak256(
+      ring + message + G.mult(r1).add(K1.mult(c1)).modulo(P).toString(),
+    ),
 );
 
 // c2 should be equal to c2p
 console.log("c2 === c2p: ", c2 === c2p);
 
 const c3p = BigInt(
-  "0x" + keccak256(ring + message + r2.add(K2.mult(c2p)).modulo(P).toString()),
+  "0x" +
+    keccak256(
+      ring + message + G.mult(r2).add(K2.mult(c2p)).modulo(P).toString(),
+    ),
 );
 
 // c3 should be equal to c3p
 console.log("c3 === c3p: ", c3 === c3p);
 
 const c1p = BigInt(
-  "0x" + keccak256(ring + message + r3.add(K3.mult(c3p)).modulo(P).toString()),
+  "0x" +
+    keccak256(
+      ring + message + G.mult(r3).add(K3.mult(c3p)).modulo(P).toString(),
+    ),
 );
 
 console.log("c1: ", c1);
