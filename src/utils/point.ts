@@ -1,4 +1,4 @@
-import { Curve } from "./curves";
+import { Curve, ED25519, SECP256K1 } from "./curves";
 import { ProjectivePoint as SECP256K1Point } from "./noble-libraries/noble-SECP256k1";
 import { Point as ED25519Point } from "./noble-libraries/noble-ED25519";
 import { modulo } from ".";
@@ -10,11 +10,44 @@ export class Point {
   public curve: Curve;
   public x: bigint;
   public y: bigint;
+  public P: bigint;
+  public G: [bigint, bigint];
 
-  constructor(curve: Curve, coordinates: [bigint, bigint]) {
+  /**
+   *
+   *
+   * @param curve - The curve
+   * @param coordinates - The point coordinates ([x,y])
+   * @param generator - if true, the point is a generator point
+   */
+  constructor(
+    curve: Curve,
+    coordinates: [bigint, bigint],
+    P?: bigint,
+    G?: [bigint, bigint],
+  ) {
     this.curve = curve;
     this.x = coordinates[0];
     this.y = coordinates[1];
+    switch (curve) {
+      case Curve.SECP256K1: {
+        this.P = SECP256K1.P;
+        this.G = SECP256K1.G;
+        break;
+      }
+      case Curve.ED25519: {
+        this.P = ED25519.P;
+        this.G = ED25519.G;
+        break;
+      }
+      default: {
+        if (!P || !G) {
+          throw new Error("Unknown curve");
+        }
+        this.P = P;
+        this.G = [0n, 0n];
+      }
+    }
   }
 
   /**

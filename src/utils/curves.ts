@@ -4,6 +4,7 @@
 export enum Curve {
   SECP256K1 = "SECP256K1",
   ED25519 = "ED25519",
+  CUSTOM = "CUSTOM",
 }
 
 // SECP256K1 curve constants
