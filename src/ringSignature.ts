@@ -31,9 +31,11 @@ export interface RingSig {
  *
  * @see message - Clear message
  * @see ring - Ring of public keys
- * @see cees - c values
- * @see responses_0_pi - Fake responses from 0 to pi-1
- * @see responses_pi_n - Fake responses from pi+1 to n
+ * @see pi - The signer index -> should be kept secret
+ * @see c - The first c computed during the first part of the signing
+ * @see alpha - The alpha value
+ * @see responses - The generated responses
+ * @see curve - The elliptic curve to use
  */
 export interface PartialSignature {
   message: string;
@@ -41,7 +43,6 @@ export interface PartialSignature {
   pi: number;
   c: bigint;
   alpha: bigint;
-  signerIndex: number;
   responses: bigint[];
   curve: Curve;
 }
@@ -118,11 +119,45 @@ export class RingSignature {
   }
 
   /**
+   * Transforms a Base64 string to a ring signature
+   *
+   * @param base64 - The base64 encoded signature
+   *
+   * @returns The ring signature
+   */
+  static fromBase64(base64: string): RingSignature {
+    const decoded = Buffer.from(base64, "base64").toString("ascii");
+    const json = JSON.parse(decoded);
+    const ring = json.ring.map((point: string) => Point.fromBase64(point));
+    return new RingSignature(
+      json.message,
+      ring,
+      BigInt(json.c),
+      json.responses.map((response: string) => BigInt(response)),
+      json.curve as Curve,
+    );
+  }
+
+  /**
+   * Encode a ring signature to base64 string
+   */
+  toBase64(): string {
+    const json = JSON.stringify({
+      message: this.message,
+      ring: this.ring.map((point: Point) => point.toBase64()),
+      c: this.c.toString(),
+      responses: this.responses.map((response) => response.toString()),
+      curve: this.curve,
+    });
+    return Buffer.from(json).toString("base64");
+  }
+  /**
    * Sign a message using ring signatures
    *
    * @param ring - Ring of public keys (does not contain the signer public key)
    * @param signerPrivKey - Private key of the signer
    * @param message - Clear message to sign
+   * @param curve - The elliptic curve to use
    *
    * @returns A RingSignature
    */
@@ -176,24 +211,49 @@ export class RingSignature {
     message: string,
     signerPubKey: Point,
     curve = Curve.SECP256K1,
-  ): PartialSignature {
+  ) {
+    // const rawSignature = RingSignature.signature(
+    //   curve,
+    //   ring,
+    //   signerPubKey,
+    //   message,
+    // );
+
+    // return {
+    //   message: message,
+    //   ring: rawSignature.ring,
+    //   pi: rawSignature.pi,
+    //   c: rawSignature.cees[0],
+    //   alpha: rawSignature.alpha,
+    //   responses: rawSignature.responses,
+    //   curve: curve,
+    // } as PartialSignature;
+    const signerPrivateKey =
+      4663621002712304654134267866148565564648521986326001983848741804705428459856n;
     const rawSignature = RingSignature.signature(
       curve,
       ring,
-      signerPubKey,
+      signerPrivateKey,
       message,
     );
-    // console.log("rawSignature cees: ", rawSignature.cees);
+
+    // // compute the signer response
+    // const signerResponse = piSignature(
+    //   rawSignature.alpha,
+    //   rawSignature.cees[rawSignature.pi],
+    //   signerPrivateKey,
+    //   curve,
+    // );
+
     return {
-      message: message,
+      message,
       ring: rawSignature.ring,
-      pi: rawSignature.pi,
       c: rawSignature.cees[0],
-      alpha: rawSignature.alpha,
-      signerIndex: rawSignature.pi,
       responses: rawSignature.responses,
+      pi: rawSignature.pi,
+      alpha: rawSignature.alpha,
       curve: curve,
-    } as PartialSignature;
+    };
   }
 
   /**
@@ -208,7 +268,7 @@ export class RingSignature {
     partialSig: PartialSignature,
     signerResponse: bigint,
   ): RingSignature {
-    return new RingSignature(
+    const sig = new RingSignature(
       partialSig.message,
       partialSig.ring,
       partialSig.c,
@@ -221,6 +281,19 @@ export class RingSignature {
         ),
       partialSig.curve,
     );
+    // console.log(partialSig.message,
+    //   partialSig.ring,
+    //   partialSig.c,
+    //   // insert the signer response
+    //   partialSig.responses
+    //     .slice(0, partialSig.pi)
+    //     .concat(
+    //       [signerResponse],
+    //       partialSig.responses.slice(partialSig.pi + 1),
+    //     ),
+    //   partialSig.curve,);
+    // console.log("tmp verifier?: ", sig.verify())
+    return sig;
   }
 
   /**
@@ -230,7 +303,7 @@ export class RingSignature {
    */
   verify(): boolean {
     // we compute c1' = Hash(Ring, m, [r0G, c0K0])
-    // then, for each ci (i > 1), compute ci' = Hash(Ring, message, [riG + ciKi])
+    // then, for each ci (1 < i < n), compute ci' = Hash(Ring, message, [riG + ciKi])
     // (G = generator, K = ring public key)
     // finally, if we substitute lastC for lastC' and c0' == c0, the signature is valid
 
@@ -262,68 +335,39 @@ export class RingSignature {
       const messageDigest = keccak256(this.message);
 
       // computes the cees
-      let lastComputedCp = modulo(
-        BigInt(
-          "0x" +
-            keccak256(
-              this.ring +
-                messageDigest +
-                G.mult(this.responses[0])
-                  .add(this.ring[0].mult(this.c))
-                  .modulo(N)
-                  .toString(),
-            ),
-        ),
+      let lastComputedCp = RingSignature.computeC(
+        this.ring,
+        messageDigest,
+        G,
         N,
-      );
-      console.log(
-        "c1p: ",
-        G.mult(this.responses[1])
-          .add(this.ring[1].mult(this.c))
-          .modulo(N)
-          .toString(),
+        this.responses[0],
+        this.c,
+        this.ring[0],
       );
 
       for (let i = 2; i < this.ring.length; i++) {
-        lastComputedCp = modulo(
-          BigInt(
-            "0x" +
-              keccak256(
-                this.ring +
-                  messageDigest +
-                  G.mult(this.responses[i - 1])
-                    .add(this.ring[i - 1].mult(lastComputedCp))
-                    .modulo(N)
-                    .toString(),
-              ),
-          ),
+        lastComputedCp = RingSignature.computeC(
+          this.ring,
+          messageDigest,
+          G,
           N,
-        );
-        console.log(
-          "c" + i + "p: ",
-          G.mult(this.responses[i - 1])
-            .add(this.ring[i - 1].mult(lastComputedCp))
-            .modulo(N)
-            .toString(),
+          this.responses[i - 1],
+          lastComputedCp,
+          this.ring[i - 1],
         );
       }
 
       // return true if c0 === c0'
       return (
         this.c ===
-        modulo(
-          BigInt(
-            "0x" +
-              keccak256(
-                this.ring +
-                  messageDigest +
-                  G.mult(this.responses[this.responses.length - 1])
-                    .add(this.ring[this.ring.length - 1].mult(lastComputedCp))
-                    .modulo(N)
-                    .toString(),
-              ),
-          ),
+        RingSignature.computeC(
+          this.ring,
+          messageDigest,
+          G,
           N,
+          this.responses[this.responses.length - 1],
+          lastComputedCp,
+          this.ring[this.ring.length - 1],
         )
       );
     }
@@ -385,7 +429,7 @@ export class RingSignature {
     }
 
     // set the signer position in the ring
-    const pi = 1; //getRandomSecuredNumber(0, ring.length - 1); // signer index
+    const pi = getRandomSecuredNumber(0, ring.length - 1); // signer index
     // add the signer public key to the ring
     ring = ring.slice(0, pi).concat([signerPubKey], ring.slice(pi)) as Point[];
 
@@ -405,11 +449,10 @@ export class RingSignature {
       responses.push(randomBigint(N));
     }
 
-    // supposed to contains all the cees from pi+1 to n (pi+1, pi+2, ..., n)(n = ring.length)
+    // contains all the cees from pi+1 to n (pi+1, pi+2, ..., n)(n = ring.length)
     const cValuesPI1N: bigint[] = [];
 
     // compute C pi+1
-    console.log("c2: ", G.mult(alpha).modulo(N).toString());
     cValuesPI1N.push(
       modulo(
         BigInt(
@@ -424,92 +467,45 @@ export class RingSignature {
 
     // compute Cpi+2 to Cn
     for (let i = pi + 2; i < ring.length; i++) {
-      console.log(
-        "c" + i + ": ",
-        G.mult(responses[i - 1])
-          .add(ring[i - 1].mult(cValuesPI1N[i - pi - 2]))
-          .modulo(N)
-          .toString(),
-      );
-
       cValuesPI1N.push(
-        modulo(
-          BigInt(
-            "0x" +
-              keccak256(
-                ring +
-                  messageDigest +
-                  G.mult(responses[i - 1])
-                    .add(ring[i - 1].mult(cValuesPI1N[i - pi - 2]))
-                    .modulo(N)
-                    .toString(),
-              ),
-          ),
+        RingSignature.computeC(
+          ring,
+          messageDigest,
+          G,
           N,
+          responses[i - 1],
+          cValuesPI1N[i - pi - 2],
+          ring[i - 1],
         ),
       );
     }
 
-    // supposed to contains all the c from 0 to pi
+    // contains all the c from 0 to pi
     const cValues0PI: bigint[] = [];
 
     // compute C0
-    console.log(
-      "c1: ",
-      G.mult(responses[responses.length - 1])
-        .add(
-          ring[ring.length - 1].mult(
-            modulo(cValuesPI1N[cValuesPI1N.length - 1], N),
-          ),
-        )
-        .modulo(N)
-        .toString(),
-    );
-
     cValues0PI.push(
-      modulo(
-        BigInt(
-          "0x" +
-            keccak256(
-              ring +
-                messageDigest +
-                G.mult(responses[responses.length - 1])
-                  .add(
-                    ring[ring.length - 1].mult(
-                      modulo(cValuesPI1N[cValuesPI1N.length - 1], N),
-                    ),
-                  )
-                  .modulo(N)
-                  .toString(),
-            ),
-        ),
+      RingSignature.computeC(
+        ring,
+        messageDigest,
+        G,
         N,
+        responses[responses.length - 1],
+        cValuesPI1N[cValuesPI1N.length - 1],
+        ring[ring.length - 1],
       ),
     );
 
     // compute C0 to C pi -1
     for (let i = 1; i < pi + 1; i++) {
-      console.log(
-        "c" + i + ": ",
-        G.mult(responses[i - 1])
-          .add(ring[i - 1].mult(cValues0PI[i - 1]))
-          .modulo(N)
-          .toString(),
-      );
-
-      cValues0PI[i] = modulo(
-        BigInt(
-          "0x" +
-            keccak256(
-              ring +
-                messageDigest +
-                G.mult(responses[i - 1])
-                  .add(ring[i - 1].mult(cValues0PI[i - 1]))
-                  .modulo(N)
-                  .toString(),
-            ),
-        ),
+      cValues0PI[i] = RingSignature.computeC(
+        ring,
+        messageDigest,
+        G,
         N,
+        responses[i - 1],
+        cValues0PI[i - 1],
+        ring[i - 1],
       );
     }
 
@@ -524,5 +520,30 @@ export class RingSignature {
       signerIndex: pi,
       responses: responses,
     };
+  }
+
+  private static computeC(
+    ring: Point[],
+    message: string,
+    G: Point,
+    N: bigint,
+    r: bigint,
+    previousC: bigint,
+    previousPubKey: Point,
+  ): bigint {
+    return modulo(
+      BigInt(
+        "0x" +
+          keccak256(
+            ring +
+              message +
+              G.mult(r)
+                .add(previousPubKey.mult(previousC))
+                .modulo(N)
+                .toString(),
+          ),
+      ),
+      N,
+    );
   }
 }

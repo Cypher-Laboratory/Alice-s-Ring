@@ -105,6 +105,27 @@ if (!verifiedSig_ed) {
   process.exit(1);
 }
 
+/*--------------------- test base64 encoding and decoding ---------------------*/
+console.log("------ TEST BASE64 ENCODING/DECODING ------");
+const signature = RingSignature.sign(
+  ring_ed,
+  signerPrivKey_ed,
+  "test",
+  Curve.ED25519,
+);
+const base64Sig = signature.toBase64();
+// console.log("base64 sg: ", base64Sig);
+
+const retrievedSig = RingSignature.fromBase64(base64Sig);
+// console.log("retrieved sig: ", retrievedSig);
+const verifiedRetrievedSig = retrievedSig.verify();
+
+console.log("Is sig valid ? ", verifiedRetrievedSig);
+if (!verifiedRetrievedSig) {
+  console.log("Error: Signature encoding/decoding to base64 failed");
+  process.exit(1);
+}
+
 /*--------------------- test partial signature ---------------------*/
 console.log("------ PARTIAL SIGNATURE USING SECP256K1 ------");
 const partialSig_secp = RingSignature.partialSign(

@@ -22,7 +22,7 @@ export function piSignature(
   signerPrivKey: bigint,
   curve: Curve,
 ): bigint {
-  let N: bigint; // order of the curve
+  let N: bigint; // curve order
 
   switch (curve) {
     case Curve.SECP256K1:
