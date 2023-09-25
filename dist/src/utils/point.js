@@ -96,6 +96,9 @@ class Point {
             }
         }
     }
+    equals(point) {
+        return this.x === point.x && this.y === point.y;
+    }
     /**
      * Negates a point on the elliptic curve.
      *
@@ -123,9 +126,6 @@ class Point {
                 throw new Error("Unknown curve");
             }
         }
-    }
-    modulo(p) {
-        return new Point(this.curve, [(0, _1.modulo)(this.x, p), (0, _1.modulo)(this.y, p)]);
     }
     toAffine() {
         return [this.x, this.y];

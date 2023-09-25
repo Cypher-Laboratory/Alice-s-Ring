@@ -420,10 +420,7 @@ export class RingSignature {
     cValuesPI1N.push(
       modulo(
         BigInt(
-          "0x" +
-            keccak256(
-              ring + messageDigest + G.mult(alpha).modulo(N).toString(),
-            ),
+          "0x" + keccak256(ring + messageDigest + G.mult(alpha).toString()),
         ),
         N,
       ),
@@ -501,10 +498,7 @@ export class RingSignature {
           keccak256(
             ring +
               message +
-              G.mult(r)
-                .add(previousPubKey.mult(previousC))
-                .modulo(N)
-                .toString(),
+              G.mult(r).add(previousPubKey.mult(previousC)).toString(),
           ),
       ),
       N,

@@ -116,6 +116,10 @@ export class Point {
     }
   }
 
+  equals(point: Point): boolean {
+    return this.x === point.x && this.y === point.y;
+  }
+
   /**
    * Negates a point on the elliptic curve.
    *
@@ -145,10 +149,6 @@ export class Point {
         throw new Error("Unknown curve");
       }
     }
-  }
-
-  modulo(p: bigint): Point {
-    return new Point(this.curve, [modulo(this.x, p), modulo(this.y, p)]);
   }
 
   toAffine(): [bigint, bigint] {

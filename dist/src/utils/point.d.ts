@@ -25,6 +25,7 @@ export declare class Point {
      */
     mult(scalar: bigint): Point;
     add(point: Point): Point;
+    equals(point: Point): boolean;
     /**
      * Negates a point on the elliptic curve.
      *
@@ -33,7 +34,6 @@ export declare class Point {
      * @returns the negated point
      */
     negate(): Point;
-    modulo(p: bigint): Point;
     toAffine(): [bigint, bigint];
     toString(): string;
     toBase64(): string;

@@ -23,13 +23,13 @@ const ring = [K1, K2, K3];
 const message = (0, js_sha3_1.keccak256)("test");
 // console.log("alpha: ", alpha);
 // seed the loop
-const c3 = BigInt("0x" + (0, js_sha3_1.keccak256)(ring + message + G.mult(alpha).modulo(P).toString()));
+const c3 = BigInt("0x" + (0, js_sha3_1.keccak256)(ring + message + G.mult(alpha).toString()));
 console.log("c3: \n", G.mult(alpha), "\n");
 // Iterate:
 const c1 = BigInt("0x" +
-    (0, js_sha3_1.keccak256)(ring + message + G.mult(r3).add(K3.mult(c3)).modulo(P).toString()));
+    (0, js_sha3_1.keccak256)(ring + message + G.mult(r3).add(K3.mult(c3)).toString()));
 const c2 = BigInt("0x" +
-    (0, js_sha3_1.keccak256)(ring + message + G.mult(r1).add(K1.mult(c1)).modulo(P).toString()));
+    (0, js_sha3_1.keccak256)(ring + message + G.mult(r1).add(K1.mult(c1)).toString()));
 // signer response
 const r2 = (0, src_1.piSignature)(alpha, c2, k2, utils_1.Curve.SECP256K1);
 // this shouldn't change the value of c3
@@ -41,15 +41,15 @@ const r2 = (0, src_1.piSignature)(alpha, c2, k2, utils_1.Curve.SECP256K1);
 // ));
 /* -------VERIFICATION------- */
 const c2p = BigInt("0x" +
-    (0, js_sha3_1.keccak256)(ring + message + G.mult(r1).add(K1.mult(c1)).modulo(P).toString()));
+    (0, js_sha3_1.keccak256)(ring + message + G.mult(r1).add(K1.mult(c1)).toString()));
 // c2 should be equal to c2p
 console.log("c2 === c2p: ", c2 === c2p);
 const c3p = BigInt("0x" +
-    (0, js_sha3_1.keccak256)(ring + message + G.mult(r2).add(K2.mult(c2p)).modulo(P).toString()));
+    (0, js_sha3_1.keccak256)(ring + message + G.mult(r2).add(K2.mult(c2p)).toString()));
 // c3 should be equal to c3p
 console.log("c3 === c3p: ", c3 === c3p);
 const c1p = BigInt("0x" +
-    (0, js_sha3_1.keccak256)(ring + message + G.mult(r3).add(K3.mult(c3p)).modulo(P).toString()));
+    (0, js_sha3_1.keccak256)(ring + message + G.mult(r3).add(K3.mult(c3p)).toString()));
 console.log("c1: ", c1);
 console.log("c2: ", c2);
 console.log("c3: ", c3);
