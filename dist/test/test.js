@@ -54,7 +54,8 @@ function randomRing(ringLength = 1000, G, N) {
     if (ringLength == 0)
         return [];
     const ring = [G.mult(k)];
-    for (let i = 1; i < ringLength - 1; i++) { // once we add the signer, we get the wanted ring size
+    for (let i = 1; i < ringLength - 1; i++) {
+        // once we add the signer, we get the wanted ring size
         k = (0, utils_1.randomBigint)(N * N);
         ring.push(G.mult(k));
     }
@@ -148,3 +149,4 @@ function areRingsEquals(ring1, ring2) {
     }
     return true;
 }
+// TODO: test ringSize = 0

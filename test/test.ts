@@ -215,3 +215,5 @@ function areRingsEquals(ring1: Point[], ring2: Point[]): boolean {
   }
   return true;
 }
+
+// TODO: test ringSize = 0

@@ -8,7 +8,7 @@ import {
   modulo,
   ED25519,
 } from "./utils";
-import { piSignature } from "./signature/piSignature";
+import { piSignature, verifyPiSignature } from "./signature/piSignature";
 
 /**
  * Ring signature interface
@@ -77,7 +77,6 @@ export class RingSignature {
     responses: bigint[],
     curve: Curve,
   ) {
-    if (ring.length == 0) throw new Error("Ring length must be greater than 0");
     if (ring.length != responses.length)
       throw new Error("Ring and responses length mismatch");
     this.ring = ring;
@@ -168,6 +167,41 @@ export class RingSignature {
     message: string,
     curve = Curve.SECP256K1,
   ): RingSignature {
+    let G: Point; // generator point
+    let N: bigint; // order of the curve
+
+    switch (curve) {
+      case Curve.SECP256K1:
+        G = new Point(curve, SECP256K1.G);
+        N = SECP256K1.N;
+        break;
+      case Curve.ED25519:
+        G = new Point(Curve.ED25519, ED25519.G);
+        N = ED25519.N;
+        break;
+      default:
+        throw new Error("unknown curve");
+    }
+
+    if (ring.length === 0) {
+      /*
+       * If the ring is empty, we just sign the message using our schnorr-like signature scheme
+       * and return a ring signature with only one response.
+       * Note that alpha is computed from c to allow verification.
+       */
+      const c = randomBigint(N);
+      const alpha = modulo(2n * c - 1n, N);
+      const sig = piSignature(alpha, c, signerPrivateKey, curve);
+
+      return new RingSignature(
+        message,
+        [G.mult(signerPrivateKey)],
+        c,
+        [sig],
+        curve,
+      );
+    }
+
     const rawSignature = RingSignature.signature(
       curve,
       ring,
@@ -213,6 +247,11 @@ export class RingSignature {
     signerPubKey: Point,
     curve = Curve.SECP256K1,
   ) {
+    if (ring.length === 0)
+      throw new Error(
+        "To proceed partial signing, ring length must be greater than 0",
+      );
+
     const rawSignature = RingSignature.signature(
       curve,
       ring,
@@ -334,7 +373,17 @@ export class RingSignature {
         )
       );
     }
-    throw new Error("Ring length must be greater than 1");
+
+    if (this.ring.length === 0)
+      throw new Error("Ring length must be greater than 0");
+
+    return verifyPiSignature(
+      this.ring[0],
+      this.responses[0],
+      modulo(2n * this.c - 1n, N),
+      this.c,
+      this.curve,
+    );
   }
 
   /**

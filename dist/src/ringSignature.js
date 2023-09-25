@@ -20,8 +20,6 @@ class RingSignature {
      * @param curve - Curve used for the signature
      */
     constructor(message, ring, c, responses, curve) {
-        if (ring.length == 0)
-            throw new Error("Ring length must be greater than 0");
         if (ring.length != responses.length)
             throw new Error("Ring and responses length mismatch");
         this.ring = ring;
@@ -92,6 +90,31 @@ class RingSignature {
      */
     static sign(ring, // ring.length = n
     signerPrivateKey, message, curve = utils_1.Curve.SECP256K1) {
+        let G; // generator point
+        let N; // order of the curve
+        switch (curve) {
+            case utils_1.Curve.SECP256K1:
+                G = new utils_1.Point(curve, utils_1.SECP256K1.G);
+                N = utils_1.SECP256K1.N;
+                break;
+            case utils_1.Curve.ED25519:
+                G = new utils_1.Point(utils_1.Curve.ED25519, utils_1.ED25519.G);
+                N = utils_1.ED25519.N;
+                break;
+            default:
+                throw new Error("unknown curve");
+        }
+        if (ring.length === 0) {
+            /*
+              * If the ring is empty, we just sign the message using our schnorr-like signature scheme
+              * and return a ring signature with only one response.
+              * Note that alpha is computed from c to allow verification.
+            */
+            const c = (0, utils_1.randomBigint)(N);
+            const alpha = (0, utils_1.modulo)(2n * c - 1n, N);
+            const sig = (0, piSignature_1.piSignature)(alpha, c, signerPrivateKey, curve);
+            return new RingSignature(message, [G.mult(signerPrivateKey)], c, [sig], curve);
+        }
         const rawSignature = RingSignature.signature(curve, ring, signerPrivateKey, message);
         // compute the signer response
         const signerResponse = (0, piSignature_1.piSignature)(rawSignature.alpha, rawSignature.cees[rawSignature.pi], signerPrivateKey, curve);
@@ -112,6 +135,8 @@ class RingSignature {
      */
     static partialSign(ring, // ring.length = n
     message, signerPubKey, curve = utils_1.Curve.SECP256K1) {
+        if (ring.length === 0)
+            throw new Error("To proceed partial signing, ring length must be greater than 0");
         const rawSignature = RingSignature.signature(curve, ring, signerPubKey, message);
         return {
             message,
@@ -181,7 +206,9 @@ class RingSignature {
             return (this.c ===
                 RingSignature.computeC(this.ring, messageDigest, G, N, this.responses[this.responses.length - 1], lastComputedCp, this.ring[this.ring.length - 1]));
         }
-        throw new Error("Ring length must be greater than 1");
+        if (this.ring.length === 0)
+            throw new Error("Ring length must be greater than 0");
+        return (0, piSignature_1.verifyPiSignature)(this.ring[0], this.responses[0], (0, utils_1.modulo)(2n * this.c - 1n, N), this.c, this.curve);
     }
     /**
      * Verify a RingSignature stored as a RingSig
