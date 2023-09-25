@@ -1,2 +1,3 @@
 export { piSignature } from "./signature/piSignature";
-export { RingSignature, RingSig, PartialSignature, } from "./ringSignature";
+export { Point, randomBigint, getRandomSecuredNumber } from "./utils";
+export { RingSignature, RingSig, PartialSignature } from "./ringSignature";
