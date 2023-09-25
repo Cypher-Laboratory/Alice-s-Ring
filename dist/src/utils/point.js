@@ -122,7 +122,6 @@ class Point {
                 throw new Error("Unknown curve");
             }
         }
-        ;
     }
     /**
      * Negates a point on the elliptic curve.

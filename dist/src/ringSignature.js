@@ -8,10 +8,6 @@ const piSignature_1 = require("./signature/piSignature");
  * Ring signature class.
  * This class is used to sign messages using ring signatures.
  * It can also be used to verify ring signatures.
- *
- * @remarks
- * For know, only SECP256K1 curve is fully supported.
- * ED25519 is on its way and then we would be able to sign using both curves at the same time
  */
 class RingSignature {
     /**
