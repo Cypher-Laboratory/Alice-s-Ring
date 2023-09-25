@@ -97,7 +97,32 @@ class Point {
         }
     }
     equals(point) {
-        return this.x === point.x && this.y === point.y;
+        if (this.curve !== point.curve)
+            return false;
+        switch (this.curve) {
+            case curves_1.Curve.SECP256K1: {
+                return noble_SECP256k1_1.ProjectivePoint.fromAffine({
+                    x: this.x,
+                    y: this.y,
+                }).equals(noble_SECP256k1_1.ProjectivePoint.fromAffine({
+                    x: point.x,
+                    y: point.y,
+                }));
+            }
+            case curves_1.Curve.ED25519: {
+                return noble_ED25519_1.ExtendedPoint.fromAffine({
+                    x: this.x,
+                    y: this.y,
+                }).equals(noble_ED25519_1.ExtendedPoint.fromAffine({
+                    x: point.x,
+                    y: point.y,
+                }));
+            }
+            default: {
+                throw new Error("Unknown curve");
+            }
+        }
+        ;
     }
     /**
      * Negates a point on the elliptic curve.

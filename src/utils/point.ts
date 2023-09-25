@@ -117,7 +117,37 @@ export class Point {
   }
 
   equals(point: Point): boolean {
-    return this.x === point.x && this.y === point.y;
+    if (this.curve !== point.curve) return false;
+
+    switch (this.curve) {
+      case Curve.SECP256K1: {
+        return SECP256K1Point.fromAffine({
+          x: this.x,
+          y: this.y,
+        }).equals(
+          SECP256K1Point.fromAffine({
+            x: point.x,
+            y: point.y,
+          }),
+        );
+      }
+
+      case Curve.ED25519: {
+        return ED25519Point.fromAffine({
+          x: this.x,
+          y: this.y,
+        }).equals(
+          ED25519Point.fromAffine({
+            x: point.x,
+            y: point.y,
+          }),
+        );
+      }
+
+      default: {
+        throw new Error("Unknown curve");
+      }
+    }
   }
 
   /**

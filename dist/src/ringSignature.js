@@ -249,8 +249,7 @@ class RingSignature {
         // contains all the cees from pi+1 to n (pi+1, pi+2, ..., n)(n = ring.length)
         const cValuesPI1N = [];
         // compute C pi+1
-        cValuesPI1N.push((0, utils_1.modulo)(BigInt("0x" +
-            (0, js_sha3_1.keccak256)(ring + messageDigest + G.mult(alpha).toString())), N));
+        cValuesPI1N.push((0, utils_1.modulo)(BigInt("0x" + (0, js_sha3_1.keccak256)(ring + messageDigest + G.mult(alpha).toString())), N));
         // compute Cpi+2 to Cn
         for (let i = pi + 2; i < ring.length; i++) {
             cValuesPI1N.push(RingSignature.computeC(ring, messageDigest, G, N, responses[i - 1], cValuesPI1N[i - pi - 2], ring[i - 1]));
@@ -278,9 +277,7 @@ class RingSignature {
         return (0, utils_1.modulo)(BigInt("0x" +
             (0, js_sha3_1.keccak256)(ring +
                 message +
-                G.mult(r)
-                    .add(previousPubKey.mult(previousC))
-                    .toString())), N);
+                G.mult(r).add(previousPubKey.mult(previousC)).toString())), N);
     }
 }
 exports.RingSignature = RingSignature;
