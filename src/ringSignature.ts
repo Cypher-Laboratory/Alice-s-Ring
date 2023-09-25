@@ -77,6 +77,9 @@ export class RingSignature {
     responses: bigint[],
     curve: Curve,
   ) {
+    if (ring.length == 0) throw new Error("Ring length must be greater than 0");
+    if (ring.length != responses.length)
+      throw new Error("Ring and responses length mismatch");
     this.ring = ring;
     this.message = message;
     this.c = c;
@@ -331,7 +334,7 @@ export class RingSignature {
         )
       );
     }
-    return false;
+    throw new Error("Ring length must be greater than 1");
   }
 
   /**

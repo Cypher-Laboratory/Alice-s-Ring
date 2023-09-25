@@ -40,18 +40,21 @@ const tmp = [
 ];
 const signerPrivKeyBytes = new Uint8Array(tmp.map((x) => parseInt(x, 16)));
 const signerPrivKey = BigInt("0x" + Buffer.from(signerPrivKeyBytes).toString("hex"));
+const ringSize = 9;
 const G_SECP = new utils_1.Point(utils_1.Curve.SECP256K1, utils_1.SECP256K1.G);
 const signerPrivKey_secp = 4663621002712304654134267866148565564648521986326001983848741804705428459856n;
 const signerPubKey_secp = G_SECP.mult(signerPrivKey_secp);
-const ring_secp = randomRing(9, G_SECP, utils_1.SECP256K1.N);
+const ring_secp = randomRing(ringSize, G_SECP, utils_1.SECP256K1.N);
 const G_ED = new utils_1.Point(utils_1.Curve.ED25519, utils_1.ED25519.G);
 const signerPrivKey_ed = (0, utils_1.modulo)(signerPrivKey, utils_1.ED25519.N);
 const signerPubKey_ed = G_ED.mult(signerPrivKey_ed);
-const ring_ed = randomRing(9, G_ED, utils_1.ED25519.N);
+const ring_ed = randomRing(ringSize, G_ED, utils_1.ED25519.N);
 function randomRing(ringLength = 1000, G, N) {
     let k = (0, utils_1.randomBigint)(N * N);
+    if (ringLength == 0)
+        return [];
     const ring = [G.mult(k)];
-    for (let i = 0; i < ringLength - 1; i++) {
+    for (let i = 1; i < ringLength - 1; i++) { // once we add the signer, we get the wanted ring size
         k = (0, utils_1.randomBigint)(N * N);
         ring.push(G.mult(k));
     }

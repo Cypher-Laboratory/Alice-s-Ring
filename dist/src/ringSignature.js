@@ -20,6 +20,10 @@ class RingSignature {
      * @param curve - Curve used for the signature
      */
     constructor(message, ring, c, responses, curve) {
+        if (ring.length == 0)
+            throw new Error("Ring length must be greater than 0");
+        if (ring.length != responses.length)
+            throw new Error("Ring and responses length mismatch");
         this.ring = ring;
         this.message = message;
         this.c = c;
@@ -177,7 +181,7 @@ class RingSignature {
             return (this.c ===
                 RingSignature.computeC(this.ring, messageDigest, G, N, this.responses[this.responses.length - 1], lastComputedCp, this.ring[this.ring.length - 1]));
         }
-        return false;
+        throw new Error("Ring length must be greater than 1");
     }
     /**
      * Verify a RingSignature stored as a RingSig
