@@ -36,4 +36,6 @@ export declare class Point {
     modulo(p: bigint): Point;
     toAffine(): [bigint, bigint];
     toString(): string;
+    toBase64(): string;
+    static fromBase64(base64: string): Point;
 }

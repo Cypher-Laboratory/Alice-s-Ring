@@ -18,7 +18,7 @@ const utils_1 = require("../utils");
  * @returns the signer response as a point on the curve
  */
 function piSignature(alpha, c, signerPrivKey, curve) {
-    let N; // order of the curve
+    let N; // curve order
     switch (curve) {
         case utils_1.Curve.SECP256K1:
             N = utils_1.SECP256K1.N;

@@ -19,18 +19,21 @@ export interface RingSig {
  *
  * @see message - Clear message
  * @see ring - Ring of public keys
- * @see cees - c values
- * @see responses_0_pi - Fake responses from 0 to pi-1
- * @see responses_pi_n - Fake responses from pi+1 to n
+ * @see pi - The signer index -> should be kept secret
+ * @see c - The first c computed during the first part of the signing
+ * @see cpi - The c value of the signer
+ * @see alpha - The alpha value
+ * @see responses - The generated responses
+ * @see curve - The elliptic curve to use
  */
 export interface PartialSignature {
     message: string;
     ring: Point[];
+    pi: number;
     c: bigint;
+    cpi: bigint;
     alpha: bigint;
-    signerIndex: number;
-    responses_0_pi: bigint[];
-    responses_pi_n: bigint[];
+    responses: bigint[];
     curve: Curve;
 }
 /**
@@ -73,16 +76,29 @@ export declare class RingSignature {
      */
     toRingSig(): RingSig;
     /**
+     * Transforms a Base64 string to a ring signature
+     *
+     * @param base64 - The base64 encoded signature
+     *
+     * @returns The ring signature
+     */
+    static fromBase64(base64: string): RingSignature;
+    /**
+     * Encode a ring signature to base64 string
+     */
+    toBase64(): string;
+    /**
      * Sign a message using ring signatures
      *
      * @param ring - Ring of public keys (does not contain the signer public key)
      * @param signerPrivKey - Private key of the signer
      * @param message - Clear message to sign
+     * @param curve - The elliptic curve to use
      *
      * @returns A RingSignature
      */
     static sign(ring: Point[], // ring.length = n
-    signerPrivKey: bigint, message: string, curve?: Curve): RingSignature;
+    signerPrivateKey: bigint, message: string, curve?: Curve): RingSignature;
     /**
      * Sign a message using ring signatures
      *
@@ -109,5 +125,22 @@ export declare class RingSignature {
      * @returns True if the signature is valid, false otherwise
      */
     verify(): boolean;
+    /**
+     * Verify a RingSignature stored as a RingSig
+     *
+     * @param signature - The RingSig to verify
+     * @returns True if the signature is valid, false otherwise
+     */
     static verify(signature: RingSig): boolean;
+    /**
+     * Generate an incomplete ring signature
+     *
+     * @param curve - The curve to use
+     * @param ring - The ring of public keys
+     * @param signerKey - The signer private or public key
+     * @param message - The message to sign
+     * @returns An incomplete ring signature
+     */
+    private static signature;
+    private static computeC;
 }

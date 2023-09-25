@@ -33,6 +33,7 @@ export interface RingSig {
  * @see ring - Ring of public keys
  * @see pi - The signer index -> should be kept secret
  * @see c - The first c computed during the first part of the signing
+ * @see cpi - The c value of the signer
  * @see alpha - The alpha value
  * @see responses - The generated responses
  * @see curve - The elliptic curve to use
@@ -42,6 +43,7 @@ export interface PartialSignature {
   ring: Point[];
   pi: number;
   c: bigint;
+  cpi: bigint;
   alpha: bigint;
   responses: bigint[];
   curve: Curve;
@@ -212,48 +214,23 @@ export class RingSignature {
     signerPubKey: Point,
     curve = Curve.SECP256K1,
   ) {
-    // const rawSignature = RingSignature.signature(
-    //   curve,
-    //   ring,
-    //   signerPubKey,
-    //   message,
-    // );
-
-    // return {
-    //   message: message,
-    //   ring: rawSignature.ring,
-    //   pi: rawSignature.pi,
-    //   c: rawSignature.cees[0],
-    //   alpha: rawSignature.alpha,
-    //   responses: rawSignature.responses,
-    //   curve: curve,
-    // } as PartialSignature;
-    const signerPrivateKey =
-      4663621002712304654134267866148565564648521986326001983848741804705428459856n;
     const rawSignature = RingSignature.signature(
       curve,
       ring,
-      signerPrivateKey,
+      signerPubKey,
       message,
     );
-
-    // // compute the signer response
-    // const signerResponse = piSignature(
-    //   rawSignature.alpha,
-    //   rawSignature.cees[rawSignature.pi],
-    //   signerPrivateKey,
-    //   curve,
-    // );
 
     return {
       message,
       ring: rawSignature.ring,
       c: rawSignature.cees[0],
+      cpi: rawSignature.cees[rawSignature.pi],
       responses: rawSignature.responses,
       pi: rawSignature.pi,
       alpha: rawSignature.alpha,
       curve: curve,
-    };
+    } as PartialSignature;
   }
 
   /**
@@ -268,7 +245,7 @@ export class RingSignature {
     partialSig: PartialSignature,
     signerResponse: bigint,
   ): RingSignature {
-    const sig = new RingSignature(
+    return new RingSignature(
       partialSig.message,
       partialSig.ring,
       partialSig.c,
@@ -281,19 +258,6 @@ export class RingSignature {
         ),
       partialSig.curve,
     );
-    // console.log(partialSig.message,
-    //   partialSig.ring,
-    //   partialSig.c,
-    //   // insert the signer response
-    //   partialSig.responses
-    //     .slice(0, partialSig.pi)
-    //     .concat(
-    //       [signerResponse],
-    //       partialSig.responses.slice(partialSig.pi + 1),
-    //     ),
-    //   partialSig.curve,);
-    // console.log("tmp verifier?: ", sig.verify())
-    return sig;
   }
 
   /**

@@ -114,15 +114,27 @@ const signature = RingSignature.sign(
   Curve.ED25519,
 );
 const base64Sig = signature.toBase64();
-// console.log("base64 sg: ", base64Sig);
 
 const retrievedSig = RingSignature.fromBase64(base64Sig);
-// console.log("retrieved sig: ", retrievedSig);
 const verifiedRetrievedSig = retrievedSig.verify();
 
-console.log("Is sig valid ? ", verifiedRetrievedSig);
+const areIdentical =
+  retrievedSig.message === signature.message &&
+  retrievedSig.c === signature.c &&
+  areResponsesEquals(retrievedSig.responses, signature.responses) &&
+  areRingsEquals(retrievedSig.ring, signature.ring) &&
+  retrievedSig.curve === signature.curve;
+console.log("Is sig valid? ", verifiedRetrievedSig);
+console.log("Are the two signatures identical? ", areIdentical);
+
 if (!verifiedRetrievedSig) {
   console.log("Error: Signature encoding/decoding to base64 failed");
+  process.exit(1);
+}
+if (!areIdentical) {
+  console.log(
+    "Error: Signature encoding/decoding to base64 failed: sig are not identical",
+  );
   process.exit(1);
 }
 
@@ -137,7 +149,7 @@ const partialSig_secp = RingSignature.partialSign(
 // end signing
 const signerResponse_secp = piSignature(
   partialSig_secp.alpha,
-  partialSig_secp.c,
+  partialSig_secp.cpi,
   signerPrivKey_secp,
   Curve.SECP256K1,
 );
@@ -160,15 +172,43 @@ const partialSig_ed = RingSignature.partialSign(
 // end signing
 const signerResponse_ed = piSignature(
   partialSig_ed.alpha,
-  partialSig_ed.c,
+  partialSig_ed.cpi,
   signerPrivKey_ed,
   Curve.ED25519,
 );
 const sig_ed = RingSignature.combine(partialSig_ed, signerResponse_ed);
-console.log(sig_ed);
 const verifiedPartialSig_ed = sig_ed.verify();
 console.log("Is partial sig valid ? ", verifiedPartialSig_ed);
 if (!verifiedPartialSig_ed) {
   console.log("Error: Partial signature verification failed on ED25519");
   process.exit(1);
+}
+
+function areResponsesEquals(
+  responses1: bigint[],
+  responses2: bigint[],
+): boolean {
+  if (responses1.length !== responses2.length) {
+    return false;
+  }
+  for (let i = 0; i < responses1.length; i++) {
+    if (responses1[i] !== responses2[i]) {
+      return false;
+    }
+  }
+  return true;
+}
+function areRingsEquals(ring1: Point[], ring2: Point[]): boolean {
+  if (ring1.length !== ring2.length) {
+    return false;
+  }
+  for (let i = 0; i < ring1.length; i++) {
+    if (ring1[i].x !== ring2[i].x || ring1[i].y !== ring2[i].y) {
+      return false;
+    }
+    if (ring1[i].curve !== ring2[i].curve) {
+      return false;
+    }
+  }
+  return true;
 }

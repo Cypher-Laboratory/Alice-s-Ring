@@ -133,5 +133,20 @@ class Point {
     toString() {
         return String([this.x, this.y]);
     }
+    toBase64() {
+        // save x, y and curve in json and encode it
+        const json = JSON.stringify({
+            x: this.x.toString(),
+            y: this.y.toString(),
+            curve: this.curve,
+        });
+        return Buffer.from(json).toString("base64");
+    }
+    static fromBase64(base64) {
+        // decode base64
+        const json = Buffer.from(base64, "base64").toString("ascii");
+        const { x, y, curve } = JSON.parse(json);
+        return new Point(curve, [BigInt(x), BigInt(y)]);
+    }
 }
 exports.Point = Point;

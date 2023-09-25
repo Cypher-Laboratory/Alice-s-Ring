@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 // import { RingSignature, RingSig } from "../src/ringSignature";
+const src_1 = require("../src");
 const ringSignature_1 = require("../src/ringSignature");
 const utils_1 = require("../src/utils");
 const tmp = [
@@ -40,10 +41,12 @@ const tmp = [
 const signerPrivKeyBytes = new Uint8Array(tmp.map((x) => parseInt(x, 16)));
 const signerPrivKey = BigInt("0x" + Buffer.from(signerPrivKeyBytes).toString("hex"));
 const G_SECP = new utils_1.Point(utils_1.Curve.SECP256K1, utils_1.SECP256K1.G);
-const signerPrivKey_secp = (0, utils_1.modulo)(signerPrivKey, utils_1.SECP256K1.N);
+const signerPrivKey_secp = 4663621002712304654134267866148565564648521986326001983848741804705428459856n;
+const signerPubKey_secp = G_SECP.mult(signerPrivKey_secp);
 const ring_secp = randomRing(9, G_SECP, utils_1.SECP256K1.N);
 const G_ED = new utils_1.Point(utils_1.Curve.ED25519, utils_1.ED25519.G);
 const signerPrivKey_ed = (0, utils_1.modulo)(signerPrivKey, utils_1.ED25519.N);
+const signerPubKey_ed = G_ED.mult(signerPrivKey_ed);
 const ring_ed = randomRing(9, G_ED, utils_1.ED25519.N);
 function randomRing(ringLength = 1000, G, N) {
     let k = (0, utils_1.randomBigint)(N * N);
@@ -72,35 +75,73 @@ if (!verifiedSig_ed) {
     console.log("Error: Ring signature verification failed on ED25519");
     process.exit(1);
 }
+/*--------------------- test base64 encoding and decoding ---------------------*/
+console.log("------ TEST BASE64 ENCODING/DECODING ------");
+const signature = ringSignature_1.RingSignature.sign(ring_ed, signerPrivKey_ed, "test", utils_1.Curve.ED25519);
+const base64Sig = signature.toBase64();
+const retrievedSig = ringSignature_1.RingSignature.fromBase64(base64Sig);
+const verifiedRetrievedSig = retrievedSig.verify();
+const areIdentical = retrievedSig.message === signature.message &&
+    retrievedSig.c === signature.c &&
+    areResponsesEquals(retrievedSig.responses, signature.responses) &&
+    areRingsEquals(retrievedSig.ring, signature.ring) &&
+    retrievedSig.curve === signature.curve;
+console.log("Is sig valid? ", verifiedRetrievedSig);
+console.log("Are the two signatures identical? ", areIdentical);
+if (!verifiedRetrievedSig) {
+    console.log("Error: Signature encoding/decoding to base64 failed");
+    process.exit(1);
+}
+if (!areIdentical) {
+    console.log("Error: Signature encoding/decoding to base64 failed: sig are not identical");
+    process.exit(1);
+}
 /*--------------------- test partial signature ---------------------*/
-// console.log("------ PARTIAL SIGNATURE USING SECP256K1 ------");
-// const partialSig_secp = RingSignature.partialSign(ring_secp, "test", signerPubKey_secp, Curve.SECP256K1);
-// // end signing
-// const signerResponse_secp = piSignature(
-//   partialSig_secp.alpha,
-//   partialSig_secp.c,
-//   signerPrivKey_secp,
-//   Curve.SECP256K1,
-// );
-// const sig_secp = RingSignature.combine(partialSig_secp, signerResponse_secp);
+console.log("------ PARTIAL SIGNATURE USING SECP256K1 ------");
+const partialSig_secp = ringSignature_1.RingSignature.partialSign(ring_secp, "test", signerPubKey_secp, utils_1.Curve.SECP256K1);
+// end signing
+const signerResponse_secp = (0, src_1.piSignature)(partialSig_secp.alpha, partialSig_secp.cpi, signerPrivKey_secp, utils_1.Curve.SECP256K1);
+const sig_secp = ringSignature_1.RingSignature.combine(partialSig_secp, signerResponse_secp);
 // console.log(sig_secp);
-// console.log("Is partial sig valid ? ", sig_secp.verify());
-// if (!sig_secp.verify()) {
-//   console.log("Error: Partial signature verification failed on SECP256K1");
-//   process.exit(1);
-// }
-// console.log("------ PARTIAL SIGNATURE USING ED25519 ------");
-// const partialSig_ed = RingSignature.partialSign(ring_ed, "test", signerPubKey_ed, Curve.ED25519);
-// // end signing
-// const signerResponse = piSignature(
-//   partialSig_ed.alpha,
-//   partialSig_ed.c,
-//   signerPrivKey_ed,
-//   Curve.ED25519,
-// );
-// const sig_ed = RingSignature.combine(partialSig_ed, signerResponse);
-// console.log("Is partial sig valid ? ", sig_ed.verify());
-// if (!sig_ed.verify()) {
-//   console.log("Error: Partial signature verification failed on ED25519");
-//   process.exit(1);
-// }
+const verifiedPartialSig_secp = sig_secp.verify();
+console.log("Is partial sig valid ? ", verifiedPartialSig_secp);
+if (!verifiedPartialSig_secp) {
+    console.log("Error: Partial signature verification failed on SECP256K1");
+    process.exit(1);
+}
+console.log("------ PARTIAL SIGNATURE USING ED25519 ------");
+const partialSig_ed = ringSignature_1.RingSignature.partialSign(ring_ed, "test", signerPubKey_ed, utils_1.Curve.ED25519);
+// end signing
+const signerResponse_ed = (0, src_1.piSignature)(partialSig_ed.alpha, partialSig_ed.cpi, signerPrivKey_ed, utils_1.Curve.ED25519);
+const sig_ed = ringSignature_1.RingSignature.combine(partialSig_ed, signerResponse_ed);
+const verifiedPartialSig_ed = sig_ed.verify();
+console.log("Is partial sig valid ? ", verifiedPartialSig_ed);
+if (!verifiedPartialSig_ed) {
+    console.log("Error: Partial signature verification failed on ED25519");
+    process.exit(1);
+}
+function areResponsesEquals(responses1, responses2) {
+    if (responses1.length !== responses2.length) {
+        return false;
+    }
+    for (let i = 0; i < responses1.length; i++) {
+        if (responses1[i] !== responses2[i]) {
+            return false;
+        }
+    }
+    return true;
+}
+function areRingsEquals(ring1, ring2) {
+    if (ring1.length !== ring2.length) {
+        return false;
+    }
+    for (let i = 0; i < ring1.length; i++) {
+        if (ring1[i].x !== ring2[i].x || ring1[i].y !== ring2[i].y) {
+            return false;
+        }
+        if (ring1[i].curve !== ring2[i].curve) {
+            return false;
+        }
+    }
+    return true;
+}

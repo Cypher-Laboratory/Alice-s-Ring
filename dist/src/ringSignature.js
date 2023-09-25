@@ -55,16 +55,154 @@ class RingSignature {
         };
     }
     /**
+     * Transforms a Base64 string to a ring signature
+     *
+     * @param base64 - The base64 encoded signature
+     *
+     * @returns The ring signature
+     */
+    static fromBase64(base64) {
+        const decoded = Buffer.from(base64, "base64").toString("ascii");
+        const json = JSON.parse(decoded);
+        const ring = json.ring.map((point) => utils_1.Point.fromBase64(point));
+        return new RingSignature(json.message, ring, BigInt(json.c), json.responses.map((response) => BigInt(response)), json.curve);
+    }
+    /**
+     * Encode a ring signature to base64 string
+     */
+    toBase64() {
+        const json = JSON.stringify({
+            message: this.message,
+            ring: this.ring.map((point) => point.toBase64()),
+            c: this.c.toString(),
+            responses: this.responses.map((response) => response.toString()),
+            curve: this.curve,
+        });
+        return Buffer.from(json).toString("base64");
+    }
+    /**
      * Sign a message using ring signatures
      *
      * @param ring - Ring of public keys (does not contain the signer public key)
      * @param signerPrivKey - Private key of the signer
      * @param message - Clear message to sign
+     * @param curve - The elliptic curve to use
      *
      * @returns A RingSignature
      */
     static sign(ring, // ring.length = n
-    signerPrivKey, message, curve = utils_1.Curve.SECP256K1) {
+    signerPrivateKey, message, curve = utils_1.Curve.SECP256K1) {
+        const rawSignature = RingSignature.signature(curve, ring, signerPrivateKey, message);
+        // compute the signer response
+        const signerResponse = (0, piSignature_1.piSignature)(rawSignature.alpha, rawSignature.cees[rawSignature.pi], signerPrivateKey, curve);
+        return new RingSignature(message, rawSignature.ring, rawSignature.cees[0], 
+        // insert the signer response
+        rawSignature.responses
+            .slice(0, rawSignature.pi)
+            .concat([signerResponse], rawSignature.responses.slice(rawSignature.pi + 1)), curve);
+    }
+    /**
+     * Sign a message using ring signatures
+     *
+     * @param ring - Ring of public keys (does not contain the signer public key)
+     * @param message - Clear message to sign
+     * @param signerPubKey - Public key of the signer
+     *
+     * @returns A PartialSignature
+     */
+    static partialSign(ring, // ring.length = n
+    message, signerPubKey, curve = utils_1.Curve.SECP256K1) {
+        const rawSignature = RingSignature.signature(curve, ring, signerPubKey, message);
+        return {
+            message,
+            ring: rawSignature.ring,
+            c: rawSignature.cees[0],
+            cpi: rawSignature.cees[rawSignature.pi],
+            responses: rawSignature.responses,
+            pi: rawSignature.pi,
+            alpha: rawSignature.alpha,
+            curve: curve,
+        };
+    }
+    /**
+     * Combine partial signatures into a RingSignature
+     *
+     * @param partialSig - Partial signatures to combine
+     * @param signerResponse - Response of the signer
+     *
+     * @returns A RingSignature
+     */
+    static combine(partialSig, signerResponse) {
+        return new RingSignature(partialSig.message, partialSig.ring, partialSig.c, 
+        // insert the signer response
+        partialSig.responses
+            .slice(0, partialSig.pi)
+            .concat([signerResponse], partialSig.responses.slice(partialSig.pi + 1)), partialSig.curve);
+    }
+    /**
+     * Verify a RingSignature
+     *
+     * @returns True if the signature is valid, false otherwise
+     */
+    verify() {
+        // we compute c1' = Hash(Ring, m, [r0G, c0K0])
+        // then, for each ci (1 < i < n), compute ci' = Hash(Ring, message, [riG + ciKi])
+        // (G = generator, K = ring public key)
+        // finally, if we substitute lastC for lastC' and c0' == c0, the signature is valid
+        if (this.ring.length !== this.responses.length) {
+            throw new Error("ring and responses length mismatch");
+        }
+        let G; // generator point
+        let N; // order of the curve
+        switch (this.curve) {
+            case utils_1.Curve.SECP256K1: {
+                G = new utils_1.Point(this.curve, utils_1.SECP256K1.G);
+                N = utils_1.SECP256K1.N;
+                break;
+            }
+            case utils_1.Curve.ED25519: {
+                G = new utils_1.Point(this.curve, utils_1.ED25519.G);
+                N = utils_1.ED25519.N;
+                break;
+            }
+            default: {
+                throw new Error("unknown curve");
+            }
+        }
+        if (this.ring.length > 1) {
+            // hash the message
+            const messageDigest = (0, js_sha3_1.keccak256)(this.message);
+            // computes the cees
+            let lastComputedCp = RingSignature.computeC(this.ring, messageDigest, G, N, this.responses[0], this.c, this.ring[0]);
+            for (let i = 2; i < this.ring.length; i++) {
+                lastComputedCp = RingSignature.computeC(this.ring, messageDigest, G, N, this.responses[i - 1], lastComputedCp, this.ring[i - 1]);
+            }
+            // return true if c0 === c0'
+            return (this.c ===
+                RingSignature.computeC(this.ring, messageDigest, G, N, this.responses[this.responses.length - 1], lastComputedCp, this.ring[this.ring.length - 1]));
+        }
+        return false;
+    }
+    /**
+     * Verify a RingSignature stored as a RingSig
+     *
+     * @param signature - The RingSig to verify
+     * @returns True if the signature is valid, false otherwise
+     */
+    static verify(signature) {
+        const ringSignature = RingSignature.fromRingSig(signature);
+        return ringSignature.verify();
+    }
+    /**
+     * Generate an incomplete ring signature
+     *
+     * @param curve - The curve to use
+     * @param ring - The ring of public keys
+     * @param signerKey - The signer private or public key
+     * @param message - The message to sign
+     * @returns An incomplete ring signature
+     */
+    static signature(curve, ring, signerKey, message) {
         let N; // order of the curve
         let G; // generator point
         switch (curve) {
@@ -83,7 +221,13 @@ class RingSignature {
         const messageDigest = (0, js_sha3_1.keccak256)(message);
         // generate random number alpha
         const alpha = (0, utils_1.randomBigint)(N);
-        const signerPubKey = G.mult(signerPrivKey);
+        let signerPubKey;
+        if (typeof signerKey === "bigint") {
+            signerPubKey = G.mult(signerKey);
+        }
+        else {
+            signerPubKey = signerKey;
+        }
         // set the signer position in the ring
         const pi = (0, utils_1.getRandomSecuredNumber)(0, ring.length - 1); // signer index
         // add the signer public key to the ring
@@ -102,220 +246,42 @@ class RingSignature {
         for (let i = 0; i < ring.length; i++) {
             responses.push((0, utils_1.randomBigint)(N));
         }
-        // supposed to contains all the cees from pi+1 to n (pi+1, pi+2, ..., n)(n = ring.length)
+        // contains all the cees from pi+1 to n (pi+1, pi+2, ..., n)(n = ring.length)
         const cValuesPI1N = [];
         // compute C pi+1
         cValuesPI1N.push((0, utils_1.modulo)(BigInt("0x" +
             (0, js_sha3_1.keccak256)(ring + messageDigest + G.mult(alpha).modulo(N).toString())), N));
         // compute Cpi+2 to Cn
         for (let i = pi + 2; i < ring.length; i++) {
-            cValuesPI1N.push((0, utils_1.modulo)(BigInt("0x" +
-                (0, js_sha3_1.keccak256)(ring +
-                    messageDigest +
-                    G.mult(responses[i - 1])
-                        .add(ring[i - 1].mult(cValuesPI1N[i - pi - 2]))
-                        .modulo(N)
-                        .toString())), N));
+            cValuesPI1N.push(RingSignature.computeC(ring, messageDigest, G, N, responses[i - 1], cValuesPI1N[i - pi - 2], ring[i - 1]));
         }
-        // supposed to contains all the c from 0 to pi
+        // contains all the c from 0 to pi
         const cValues0PI = [];
         // compute C0
-        cValues0PI.push((0, utils_1.modulo)(BigInt("0x" +
-            (0, js_sha3_1.keccak256)(ring +
-                messageDigest +
-                G.mult(responses[responses.length - 1])
-                    .add(ring[ring.length - 1].mult((0, utils_1.modulo)(cValuesPI1N[cValuesPI1N.length - 1], N)))
-                    .modulo(N)
-                    .toString())), N));
+        cValues0PI.push(RingSignature.computeC(ring, messageDigest, G, N, responses[responses.length - 1], cValuesPI1N[cValuesPI1N.length - 1], ring[ring.length - 1]));
         // compute C0 to C pi -1
         for (let i = 1; i < pi + 1; i++) {
-            cValues0PI[i] = (0, utils_1.modulo)(BigInt("0x" +
-                (0, js_sha3_1.keccak256)(ring +
-                    messageDigest +
-                    G.mult(responses[i - 1])
-                        .add(ring[i - 1].mult(cValues0PI[i - 1]))
-                        .modulo(N)
-                        .toString())), N);
-        }
-        // concatenate CValues0PI, cpi and CValuesPI1N to get all the c values
-        const cees = cValues0PI.concat(cValuesPI1N);
-        // compute the signer response
-        const signerResponse = (0, piSignature_1.piSignature)(alpha, cees[pi], signerPrivKey, curve);
-        return new RingSignature(message, ring, cees[0], 
-        // insert the signer response
-        responses.slice(0, pi).concat([signerResponse], responses.slice(pi + 1)), curve);
-    }
-    /**
-     * Sign a message using ring signatures
-     *
-     * @param ring - Ring of public keys (does not contain the signer public key)
-     * @param message - Clear message to sign
-     * @param signerPubKey - Public key of the signer
-     *
-     * @returns A PartialSignature
-     */
-    static partialSign(ring, // ring.length = n
-    message, signerPubKey, curve = utils_1.Curve.SECP256K1) {
-        let N; // order of the curve
-        let G; // generator point
-        switch (curve) {
-            case utils_1.Curve.SECP256K1:
-                N = utils_1.SECP256K1.N;
-                G = new utils_1.Point(curve, utils_1.SECP256K1.G);
-                break;
-            case utils_1.Curve.ED25519:
-                throw new Error("ED25519 signing is not implemented yet");
-            default:
-                throw new Error("unknown curve");
-        }
-        // hash the message
-        const messageDigest = (0, js_sha3_1.keccak256)(message);
-        // generate random number alpha
-        const alpha = (0, utils_1.randomBigint)(N);
-        // set the signer position in the ring
-        if (curve !== utils_1.Curve.SECP256K1)
-            throw new Error("Curve not supported");
-        const pi = (0, utils_1.getRandomSecuredNumber)(0, ring.length - 1); // signer index
-        // add the signer public key to the ring
-        ring = ring.slice(0, pi).concat([signerPubKey], ring.slice(pi));
-        // check for duplicates
-        for (let i = 0; i < ring.length; i++) {
-            // complexity.. :(
-            for (let j = i + 1; j < ring.length; j++) {
-                if (ring[i].x === ring[j].x && ring[i].y === ring[j].y) {
-                    throw new Error("Ring contains duplicate public keys");
-                }
-            }
-        }
-        // generate random fake responses for everybody
-        const responses = [];
-        for (let i = 0; i < ring.length; i++) {
-            responses.push((0, utils_1.randomBigint)(N));
-        }
-        // supposed to contains all the cees from pi+1 to n (pi+1, pi+2, ..., n)(n = ring.length)
-        const cValuesPI1N = [];
-        // compute C pi+1
-        cValuesPI1N.push((0, utils_1.modulo)(BigInt("0x" +
-            (0, js_sha3_1.keccak256)(ring + messageDigest + G.mult(alpha).modulo(N).toString())), N));
-        // compute Cpi+2 to Cn
-        for (let i = pi + 2; i < ring.length; i++) {
-            cValuesPI1N.push((0, utils_1.modulo)(BigInt("0x" +
-                (0, js_sha3_1.keccak256)(ring +
-                    messageDigest +
-                    G.mult(responses[i - 1])
-                        .add(ring[i - 1].mult(cValuesPI1N[i - pi - 2]))
-                        .modulo(N)
-                        .toString())), N));
-        }
-        // supposed to contains all the c from 0 to pi
-        const cValues0PI = [];
-        // compute C0
-        cValues0PI.push((0, utils_1.modulo)(BigInt("0x" +
-            (0, js_sha3_1.keccak256)(ring +
-                messageDigest +
-                G.mult(responses[responses.length - 1])
-                    .add(ring[ring.length - 1].mult(cValuesPI1N[cValuesPI1N.length - 1]))
-                    .modulo(N)
-                    .toString())), N));
-        // compute C0 to C pi -1
-        for (let i = 1; i < pi + 1; i++) {
-            cValues0PI[i] = (0, utils_1.modulo)(BigInt("0x" +
-                (0, js_sha3_1.keccak256)(ring +
-                    messageDigest +
-                    G.mult(responses[i - 1])
-                        .add(ring[i - 1].mult(cValues0PI[i - 1]))
-                        .modulo(N)
-                        .toString())), N);
+            cValues0PI[i] = RingSignature.computeC(ring, messageDigest, G, N, responses[i - 1], cValues0PI[i - 1], ring[i - 1]);
         }
         // concatenate CValues0PI, cpi and CValuesPI1N to get all the c values
         const cees = cValues0PI.concat(cValuesPI1N);
         return {
-            message: message,
             ring: ring,
-            c: cees[0],
+            pi: pi,
+            cees: cees,
             alpha: alpha,
             signerIndex: pi,
-            responses_0_pi: responses.slice(0, pi),
-            responses_pi_n: responses.slice(pi + 1, responses.length),
-            curve: curve,
+            responses: responses,
         };
     }
-    /**
-     * Combine partial signatures into a RingSignature
-     *
-     * @param partialSig - Partial signatures to combine
-     * @param signerResponse - Response of the signer
-     *
-     * @returns A RingSignature
-     */
-    static combine(partialSig, signerResponse) {
-        return new RingSignature(partialSig.message, partialSig.ring, partialSig.c, partialSig.responses_0_pi.concat([signerResponse], partialSig.responses_pi_n), partialSig.curve);
-    }
-    /**
-     * Verify a RingSignature
-     *
-     * @returns True if the signature is valid, false otherwise
-     */
-    verify() {
-        // we compute c1' = Hash(Ring, m, [r0G, c0K0])
-        // then, for each ci (i > 1), compute ci' = Hash(Ring, message, [riG + ciKi])
-        // (G = generator, K = ring public key)
-        // finally, if we substitute lastC for lastC' and c0' == c0, the signature is valid
-        if (this.ring.length !== this.responses.length) {
-            throw new Error("ring and responses length mismatch");
-        }
-        let G; // generator point
-        let N; // order of the curve
-        switch (this.curve) {
-            case utils_1.Curve.SECP256K1: {
-                G = new utils_1.Point(this.curve, utils_1.SECP256K1.G);
-                N = utils_1.SECP256K1.N;
-                break;
-            }
-            case utils_1.Curve.ED25519: {
-                G = new utils_1.Point(utils_1.Curve.ED25519, utils_1.ED25519.G);
-                N = utils_1.ED25519.N;
-                break;
-            }
-            default: {
-                throw new Error("unknown curve");
-            }
-        }
-        if (this.ring.length > 1) {
-            // hash the message
-            const messageDigest = (0, js_sha3_1.keccak256)(this.message);
-            // computes the cees
-            let lastComputedCp = (0, utils_1.modulo)(BigInt("0x" +
-                (0, js_sha3_1.keccak256)(this.ring +
-                    messageDigest +
-                    G.mult(this.responses[0])
-                        .add(this.ring[0].mult(this.c))
-                        .modulo(N)
-                        .toString())), N);
-            for (let i = 2; i < this.ring.length; i++) {
-                lastComputedCp = (0, utils_1.modulo)(BigInt("0x" +
-                    (0, js_sha3_1.keccak256)(this.ring +
-                        messageDigest +
-                        G.mult(this.responses[i - 1])
-                            .add(this.ring[i - 1].mult(lastComputedCp))
-                            .modulo(N)
-                            .toString())), N);
-            }
-            // return true if c0 === c0'
-            return (this.c ===
-                (0, utils_1.modulo)(BigInt("0x" +
-                    (0, js_sha3_1.keccak256)(this.ring +
-                        messageDigest +
-                        G.mult(this.responses[this.responses.length - 1])
-                            .add(this.ring[this.ring.length - 1].mult(lastComputedCp))
-                            .modulo(N)
-                            .toString())), N));
-        }
-        return false;
-    }
-    static verify(signature) {
-        const ringSignature = RingSignature.fromRingSig(signature);
-        return ringSignature.verify();
+    static computeC(ring, message, G, N, r, previousC, previousPubKey) {
+        return (0, utils_1.modulo)(BigInt("0x" +
+            (0, js_sha3_1.keccak256)(ring +
+                message +
+                G.mult(r)
+                    .add(previousPubKey.mult(previousC))
+                    .modulo(N)
+                    .toString())), N);
     }
 }
 exports.RingSignature = RingSignature;
