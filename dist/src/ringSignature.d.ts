@@ -129,7 +129,8 @@ export declare class RingSignature {
      */
     static verify(signature: RingSig): boolean;
     /**
-     * Generate an incomplete ring signature
+     * Generate an incomplete ring signature.
+     * Allow the user to use its private key from an external software (external software/hardware wallet)
      *
      * @param curve - The curve to use
      * @param ring - The ring of public keys

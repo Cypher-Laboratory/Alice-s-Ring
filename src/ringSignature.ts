@@ -338,6 +338,7 @@ export class RingSignature {
 
       // computes the cees
       let lastComputedCp = RingSignature.computeC(
+        // c1'
         this.ring,
         messageDigest,
         G,
@@ -348,6 +349,7 @@ export class RingSignature {
       );
 
       for (let i = 2; i < this.ring.length; i++) {
+        // c2' -> cn'
         lastComputedCp = RingSignature.computeC(
           this.ring,
           messageDigest,
@@ -398,7 +400,8 @@ export class RingSignature {
   }
 
   /**
-   * Generate an incomplete ring signature
+   * Generate an incomplete ring signature.
+   * Allow the user to use its private key from an external software (external software/hardware wallet)
    *
    * @param curve - The curve to use
    * @param ring - The ring of public keys

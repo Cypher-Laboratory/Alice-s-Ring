@@ -198,8 +198,9 @@ class RingSignature {
             // hash the message
             const messageDigest = (0, js_sha3_1.keccak256)(this.message);
             // computes the cees
-            let lastComputedCp = RingSignature.computeC(this.ring, messageDigest, G, N, this.responses[0], this.c, this.ring[0]);
-            for (let i = 2; i < this.ring.length; i++) {
+            let lastComputedCp = RingSignature.computeC(// c1'
+            this.ring, messageDigest, G, N, this.responses[0], this.c, this.ring[0]);
+            for (let i = 2; i < this.ring.length; i++) { // c2' -> cn'
                 lastComputedCp = RingSignature.computeC(this.ring, messageDigest, G, N, this.responses[i - 1], lastComputedCp, this.ring[i - 1]);
             }
             // return true if c0 === c0'
@@ -221,7 +222,8 @@ class RingSignature {
         return ringSignature.verify();
     }
     /**
-     * Generate an incomplete ring signature
+     * Generate an incomplete ring signature.
+     * Allow the user to use its private key from an external software (external software/hardware wallet)
      *
      * @param curve - The curve to use
      * @param ring - The ring of public keys
