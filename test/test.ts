@@ -216,4 +216,58 @@ function areRingsEquals(ring1: Point[], ring2: Point[]): boolean {
   return true;
 }
 
-// TODO: test ringSize = 0
+/*--------------------- test signature with ringSize = 0 ---------------------*/
+console.log("------ TEST RING_SIZE = 0 USING SECP256K1 ------");
+const signature_secp_empty_ring = RingSignature.sign(
+  [],
+  signerPrivKey_secp,
+  "test",
+  Curve.SECP256K1,
+);
+const verifiedSig_secp_empty_ring = signature_secp_empty_ring.verify();
+console.log("Is sig valid ? ", verifiedSig_secp_empty_ring);
+
+if (!verifiedSig_secp_empty_ring) {
+  console.log(
+    "Error: Ring signature verification failed with ringSize=0 on SECP256K1",
+  );
+  process.exit(1);
+}
+
+console.log("------ TEST RING_SIZE = 0 USING ED25519 ------");
+const signature_ed_empty_ring = RingSignature.sign(
+  [],
+  signerPrivKey_ed,
+  "test",
+  Curve.ED25519,
+);
+const verifiedSig_ed_empty_ring = signature_ed_empty_ring.verify();
+console.log("Is sig valid ? ", verifiedSig_ed_empty_ring);
+
+if (!verifiedSig_ed_empty_ring) {
+  console.log(
+    "Error: Ring signature verification with ringSize=0 failed on ED25519",
+  );
+  process.exit(1);
+}
+
+/*--------------------- test partial signature with ringSize = 0 ---------------------*/
+console.log("------ PARTIAL SIGNATURE WITH RING_SIZE=0 USING SECP256K1 ------");
+try {
+  RingSignature.partialSign([], "test", signerPubKey_secp, Curve.SECP256K1);
+  process.exit(1);
+} catch (e) {
+  console.log(
+    "Partial Signature with ringSize = 0 on SECP256K1 failed as expected",
+  );
+}
+
+console.log("------ PARTIAL SIGNATURE WITH RING_SIZE=0 USING ED25519 ------");
+try {
+  RingSignature.partialSign([], "test", signerPubKey_ed, Curve.ED25519);
+  process.exit(1);
+} catch (e) {
+  console.log(
+    "Partial Signature with ringSize = 0 on ED25519 failed as expected",
+  );
+}

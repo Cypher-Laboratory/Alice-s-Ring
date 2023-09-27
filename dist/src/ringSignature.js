@@ -106,10 +106,10 @@ class RingSignature {
         }
         if (ring.length === 0) {
             /*
-              * If the ring is empty, we just sign the message using our schnorr-like signature scheme
-              * and return a ring signature with only one response.
-              * Note that alpha is computed from c to allow verification.
-            */
+             * If the ring is empty, we just sign the message using our schnorr-like signature scheme
+             * and return a ring signature with only one response.
+             * Note that alpha is computed from c to allow verification.
+             */
             const c = (0, utils_1.randomBigint)(N);
             const alpha = (0, utils_1.modulo)(2n * c - 1n, N);
             const sig = (0, piSignature_1.piSignature)(alpha, c, signerPrivateKey, curve);
