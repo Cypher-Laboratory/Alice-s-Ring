@@ -407,7 +407,6 @@ export class RingSignature {
       throw new Error("Ring contains duplicates");
     }
 
-
     // generate random responses for every public key in the ring
     const responses: bigint[] = [];
     for (let i = 0; i < ring.length; i++) {
