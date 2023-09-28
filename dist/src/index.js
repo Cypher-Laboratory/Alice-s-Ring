@@ -1,23 +1,12 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __exportStar = (this && this.__exportStar) || function(m, exports) {
-    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.piSignature = exports.altSchnorrVerify = exports.altSchnorrSignature = void 0;
-var alt_Schnorr_1 = require("./signature/alt_Schnorr");
-Object.defineProperty(exports, "altSchnorrSignature", { enumerable: true, get: function () { return alt_Schnorr_1.altSchnorrSignature; } });
-Object.defineProperty(exports, "altSchnorrVerify", { enumerable: true, get: function () { return alt_Schnorr_1.altSchnorrVerify; } });
+exports.RingSignature = exports.getRandomSecuredNumber = exports.randomBigint = exports.Point = exports.Curve = exports.piSignature = void 0;
 var piSignature_1 = require("./signature/piSignature");
 Object.defineProperty(exports, "piSignature", { enumerable: true, get: function () { return piSignature_1.piSignature; } });
-__exportStar(require("./ringSignature"), exports);
+var utils_1 = require("./utils");
+Object.defineProperty(exports, "Curve", { enumerable: true, get: function () { return utils_1.Curve; } });
+Object.defineProperty(exports, "Point", { enumerable: true, get: function () { return utils_1.Point; } });
+Object.defineProperty(exports, "randomBigint", { enumerable: true, get: function () { return utils_1.randomBigint; } });
+Object.defineProperty(exports, "getRandomSecuredNumber", { enumerable: true, get: function () { return utils_1.getRandomSecuredNumber; } });
+var ringSignature_1 = require("./ringSignature");
+Object.defineProperty(exports, "RingSignature", { enumerable: true, get: function () { return ringSignature_1.RingSignature; } });

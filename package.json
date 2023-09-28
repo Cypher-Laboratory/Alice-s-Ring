@@ -13,12 +13,14 @@
     "prettier": "prettier --check .",
     "prettier:fix": "prettier --write .",
     "fmt:check": "npm run prettier && npm run lint",
-    "fmt": "npm run prettier:fix && npm run lint:fix"
+    "fmt": "npm run prettier:fix && npm run fmt:check"
   },
   "author": "Elli610 && LeJamon",
   "license": "ISC",
   "dependencies": {
+    "@noble/secp256k1": "^2.0.0",
     "js-sha3": "^0.8.0",
+    "md-to-pdf-ng": "^2.8.9",
     "prettier": "^3.0.0",
     "ts-node": "^10.9.1"
   },

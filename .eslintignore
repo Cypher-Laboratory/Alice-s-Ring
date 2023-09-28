@@ -4,3 +4,5 @@ node_modules
 bundle.*
 docs
 dist
+noble-SECP256k1.ts
+noble-ED25519.ts

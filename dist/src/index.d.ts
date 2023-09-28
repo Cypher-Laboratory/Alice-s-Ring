@@ -1,3 +1,3 @@
-export { altSchnorrSignature, altSchnorrVerify } from "./signature/alt_Schnorr";
 export { piSignature } from "./signature/piSignature";
-export * from "./ringSignature";
+export { Curve, Point, randomBigint, getRandomSecuredNumber } from "./utils";
+export { RingSignature, PartialSignature } from "./ringSignature";
