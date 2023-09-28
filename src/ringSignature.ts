@@ -444,7 +444,7 @@ export class RingSignature {
     // contains all the c from 0 to pi
     const cValues0PI: bigint[] = [];
 
-    // compute C0
+    // compute c0 using cn
     cValues0PI.push(
       RingSignature.computeC(
         ring,
