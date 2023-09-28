@@ -42,7 +42,7 @@ const signerPrivKey = BigInt(
   "0x" + Buffer.from(signerPrivKeyBytes).toString("hex"),
 );
 
-const ringSize = 2;
+const ringSize = 10;
 const secp256k1 = new Curve(CurveName.SECP256K1);
 const ed25519 = new Curve(CurveName.ED25519);
 
@@ -113,7 +113,6 @@ const signature = RingSignature.sign(
   ed25519,
 );
 const base64Sig = signature.toBase64();
-
 const retrievedSig = RingSignature.fromBase64(base64Sig);
 const verifiedRetrievedSig = retrievedSig.verify();
 
@@ -261,10 +260,20 @@ function areRingsEquals(ring1: Point[], ring2: Point[]): boolean {
   }
   for (let i = 0; i < ring1.length; i++) {
     if (ring1[i].x !== ring2[i].x || ring1[i].y !== ring2[i].y) {
-      console.log("expected: ", ring1[i]);
-      console.log("received: ", ring2[i]);
       return false;
     }
   }
   return true;
+}
+
+/*--------------------- test ring signature <--> JSON conversion ---------------------*/
+console.log("------ CONVERT RING SIGNATURE TO JSON AND RETRIEVE IT ------");
+const json = signature_ed_empty_ring.toJsonString();
+const retrievedSigFromJson = RingSignature.fromJsonString(json);
+const verifiedRetrievedSigFromJson = retrievedSigFromJson.verify();
+
+console.log("Is sig from JSON valid? ", verifiedRetrievedSigFromJson);
+if (!verifiedRetrievedSigFromJson) {
+  console.log("Error: Signature conversion to JSON failed");
+  process.exit(1);
 }

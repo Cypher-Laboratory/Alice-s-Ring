@@ -34,6 +34,7 @@ export declare class Point {
     negate(): Point;
     toAffine(): [bigint, bigint];
     toString(): string;
+    static fromString(string: string): Point;
     toBase64(): string;
     static fromBase64(base64: string): Point;
 }

@@ -35,10 +35,10 @@ class RingSignature {
      *
      * @returns A RingSignature
      */
-    static fromJson(json) {
+    static fromJsonString(json) {
         try {
             const sig = JSON.parse(json);
-            return new RingSignature(sig.message, sig.ring, sig.c, sig.responses, sig.curve);
+            return new RingSignature(sig.message, sig.ring.map((point) => utils_1.Point.fromString(point)), BigInt(sig.c), sig.responses.map((response) => BigInt(response)), utils_1.Curve.fromString(sig.curve));
         }
         catch (e) {
             throw new Error("Invalid json: " + e);
@@ -52,7 +52,7 @@ class RingSignature {
     toJsonString() {
         return JSON.stringify({
             message: this.message,
-            ring: this.ring.map((point) => point.toBase64()),
+            ring: this.ring.map((point) => point.toString()),
             c: this.c.toString(),
             responses: this.responses.map((response) => response.toString()),
             curve: this.curve.toString(),
@@ -68,8 +68,7 @@ class RingSignature {
     static fromBase64(base64) {
         const decoded = Buffer.from(base64, "base64").toString("ascii");
         const json = JSON.parse(decoded);
-        const ring = json.ring.map((point) => utils_1.Point.fromBase64(point));
-        console.log("retrieved curve: ", utils_1.Curve.fromString(json.curve));
+        const ring = json.ring.map((point) => utils_1.Point.fromString(point));
         return new RingSignature(json.message, ring, BigInt(json.c), json.responses.map((response) => BigInt(response)), utils_1.Curve.fromString(json.curve));
     }
     /**
@@ -192,7 +191,7 @@ class RingSignature {
      * @returns True if the signature is valid, false otherwise
      */
     static verify(signature) {
-        const ringSignature = RingSignature.fromJson(signature);
+        const ringSignature = RingSignature.fromJsonString(signature);
         return ringSignature.verify();
     }
     /**

@@ -136,7 +136,18 @@ class Point {
         return [this.x, this.y];
     }
     toString() {
-        return String([this.x, this.y]);
+        return JSON.stringify({
+            curve: this.curve.toString(),
+            x: this.x.toString(),
+            y: this.y.toString(),
+        });
+    }
+    static fromString(string) {
+        const data = JSON.parse(string);
+        return new Point(curves_1.Curve.fromString(data.curve), [
+            BigInt(data.x),
+            BigInt(data.y),
+        ]);
     }
     toBase64() {
         // save x, y and curve in json and encode it

@@ -40,7 +40,7 @@ const tmp = [
 ];
 const signerPrivKeyBytes = new Uint8Array(tmp.map((x) => parseInt(x, 16)));
 const signerPrivKey = BigInt("0x" + Buffer.from(signerPrivKeyBytes).toString("hex"));
-const ringSize = 2;
+const ringSize = 10;
 const secp256k1 = new utils_1.Curve(utils_1.CurveName.SECP256K1);
 const ed25519 = new utils_1.Curve(utils_1.CurveName.ED25519);
 const G_SECP = secp256k1.GtoPoint();
@@ -178,10 +178,18 @@ function areRingsEquals(ring1, ring2) {
     }
     for (let i = 0; i < ring1.length; i++) {
         if (ring1[i].x !== ring2[i].x || ring1[i].y !== ring2[i].y) {
-            console.log("expected: ", ring1[i]);
-            console.log("received: ", ring2[i]);
             return false;
         }
     }
     return true;
+}
+/*--------------------- test ring signature <--> JSON conversion ---------------------*/
+console.log("------ CONVERT RING SIGNATURE TO JSON AND RETRIEVE IT ------");
+const json = signature_ed_empty_ring.toJsonString();
+const retrievedSigFromJson = ringSignature_1.RingSignature.fromJsonString(json);
+const verifiedRetrievedSigFromJson = retrievedSigFromJson.verify();
+console.log("Is sig from JSON valid? ", verifiedRetrievedSigFromJson);
+if (!verifiedRetrievedSigFromJson) {
+    console.log("Error: Signature conversion to JSON failed");
+    process.exit(1);
 }

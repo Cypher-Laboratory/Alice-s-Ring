@@ -49,7 +49,7 @@ export declare class RingSignature {
      *
      * @returns A RingSignature
      */
-    static fromJson(json: string): RingSignature;
+    static fromJsonString(json: string): RingSignature;
     /**
      * Create a Json string from a RingSignature
      *

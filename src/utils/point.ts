@@ -160,7 +160,19 @@ export class Point {
   }
 
   toString(): string {
-    return String([this.x, this.y]);
+    return JSON.stringify({
+      curve: this.curve.toString(),
+      x: this.x.toString(),
+      y: this.y.toString(),
+    });
+  }
+
+  static fromString(string: string): Point {
+    const data = JSON.parse(string);
+    return new Point(Curve.fromString(data.curve), [
+      BigInt(data.x),
+      BigInt(data.y),
+    ]);
   }
 
   toBase64(): string {

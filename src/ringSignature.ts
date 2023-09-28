@@ -75,15 +75,21 @@ export class RingSignature {
    *
    * @returns A RingSignature
    */
-  static fromJson(json: string): RingSignature {
+  static fromJsonString(json: string): RingSignature {
     try {
-      const sig = JSON.parse(json);
+      const sig = JSON.parse(json) as {
+        message: string;
+        ring: string[];
+        c: string;
+        responses: string[];
+        curve: string;
+      };
       return new RingSignature(
         sig.message,
-        sig.ring,
-        sig.c,
-        sig.responses,
-        sig.curve,
+        sig.ring.map((point: string) => Point.fromString(point)),
+        BigInt(sig.c),
+        sig.responses.map((response: string) => BigInt(response)),
+        Curve.fromString(sig.curve),
       );
     } catch (e) {
       throw new Error("Invalid json: " + e);
@@ -98,7 +104,7 @@ export class RingSignature {
   toJsonString(): string {
     return JSON.stringify({
       message: this.message,
-      ring: this.ring.map((point: Point) => point.toBase64()),
+      ring: this.ring.map((point: Point) => point.toString()),
       c: this.c.toString(),
       responses: this.responses.map((response) => response.toString()),
       curve: this.curve.toString(),
@@ -115,8 +121,7 @@ export class RingSignature {
   static fromBase64(base64: string): RingSignature {
     const decoded = Buffer.from(base64, "base64").toString("ascii");
     const json = JSON.parse(decoded);
-    const ring = json.ring.map((point: string) => Point.fromBase64(point));
-    console.log("retrieved curve: ", Curve.fromString(json.curve));
+    const ring = json.ring.map((point: string) => Point.fromString(point));
     return new RingSignature(
       json.message,
       ring,
@@ -344,7 +349,8 @@ export class RingSignature {
    * @returns True if the signature is valid, false otherwise
    */
   static verify(signature: string): boolean {
-    const ringSignature: RingSignature = RingSignature.fromJson(signature);
+    const ringSignature: RingSignature =
+      RingSignature.fromJsonString(signature);
     return ringSignature.verify();
   }
 
