@@ -51,6 +51,7 @@ export class RingSignature {
    * @param cees - c values
    * @param responses - Responses for each public key in the ring
    * @param curve - Curve used for the signature
+   * @param safeMode - If true, check if all the points are on the same curve
    */
   constructor(
     message: string,
@@ -58,9 +59,19 @@ export class RingSignature {
     c: bigint,
     responses: bigint[],
     curve: Curve,
+    safeMode = false,
   ) {
     if (ring.length != responses.length)
       throw new Error("Ring and responses length mismatch");
+
+    if (safeMode) {
+      for (const i of ring) {
+        if (i.curve.name != curve.name) {
+          throw new Error("Point not on curve");
+        }
+      }
+    }
+
     this.ring = ring;
     this.message = message;
     this.c = c;

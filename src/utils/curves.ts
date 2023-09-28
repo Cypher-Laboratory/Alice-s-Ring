@@ -14,8 +14,14 @@ export class Curve {
   name: CurveName; // curve name
   N: bigint; // curve order
   G: [bigint, bigint]; // generator point
-  P: bigint; //
+  P: bigint; // field size
 
+  /**
+   * Creates a curve instance.
+   *
+   * @param curve - The curve name
+   * @param params - The curve parameters (optional if curve is SECP256K1 or ED25519)
+   */
   constructor(
     curve: CurveName,
     params?: { P: bigint; G: [bigint, bigint]; N: bigint },
@@ -44,10 +50,18 @@ export class Curve {
     }
   }
 
+  /**
+   * Returns the generator point as a Point instance.
+   *
+   * @returns the generator point
+   */
   GtoPoint(): Point {
     return new Point(this, this.G);
   }
 
+  /**
+   * Returns the curve as a json string.
+   */
   toString(): string {
     return JSON.stringify({
       curve: this.name,
@@ -58,6 +72,12 @@ export class Curve {
     });
   }
 
+  /**
+   * Returns a curve instance from a json string.
+   *
+   * @param curveData - the curve as a json string
+   * @returns the curve instance
+   */
   static fromString(curveData: string): Curve {
     const data = JSON.parse(curveData) as {
       curve: CurveName;
