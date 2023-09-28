@@ -413,7 +413,7 @@ export class RingSignature {
       responses.push(randomBigint(curve.N));
     }
 
-    // contains all the cees from pi+1 to n (pi+1, pi+2, ..., n)(n = ring.length)
+    // contains all the cees from pi+1 to n (pi+1, pi+2, ..., n)(n = ring.length - 1)
     const cValuesPI1N: bigint[] = [];
 
     // compute C pi+1
