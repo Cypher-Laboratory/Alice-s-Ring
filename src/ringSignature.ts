@@ -1,14 +1,13 @@
 import { keccak256 } from "js-sha3";
 import {
-  SECP256K1,
   randomBigint,
   getRandomSecuredNumber,
   Curve,
   Point,
   modulo,
-  ED25519,
 } from "./utils";
 import { piSignature, verifyPiSignature } from "./signature/piSignature";
+import { CurveName } from "./utils/curves";
 
 /**
  * Ring signature interface
@@ -129,12 +128,13 @@ export class RingSignature {
     const decoded = Buffer.from(base64, "base64").toString("ascii");
     const json = JSON.parse(decoded);
     const ring = json.ring.map((point: string) => Point.fromBase64(point));
+    console.log("retrieved curve: ", Curve.fromString(json.curve));
     return new RingSignature(
       json.message,
       ring,
       BigInt(json.c),
       json.responses.map((response: string) => BigInt(response)),
-      json.curve as Curve,
+      Curve.fromString(json.curve),
     );
   }
 
@@ -147,7 +147,7 @@ export class RingSignature {
       ring: this.ring.map((point: Point) => point.toBase64()),
       c: this.c.toString(),
       responses: this.responses.map((response) => response.toString()),
-      curve: this.curve,
+      curve: this.curve.toString(),
     });
     return Buffer.from(json).toString("base64");
   }
@@ -165,23 +165,9 @@ export class RingSignature {
     ring: Point[], // ring.length = n
     signerPrivateKey: bigint,
     message: string,
-    curve = Curve.SECP256K1,
+    curve: Curve,
   ): RingSignature {
-    let G: Point; // generator point
-    let N: bigint; // order of the curve
-
-    switch (curve) {
-      case Curve.SECP256K1:
-        G = new Point(curve, SECP256K1.G);
-        N = SECP256K1.N;
-        break;
-      case Curve.ED25519:
-        G = new Point(Curve.ED25519, ED25519.G);
-        N = ED25519.N;
-        break;
-      default:
-        throw new Error("unknown curve");
-    }
+    const G: Point = curve.GtoPoint(); // generator point
 
     if (ring.length === 0) {
       /*
@@ -189,8 +175,8 @@ export class RingSignature {
        * and return a ring signature with only one response.
        * Note that alpha is computed from c to allow verification.
        */
-      const c = randomBigint(N);
-      const alpha = modulo(2n * c - 1n, N);
+      const c = randomBigint(curve.N);
+      const alpha = modulo(2n * c + 1n, curve.N);
       const sig = piSignature(alpha, c, signerPrivateKey, curve);
 
       return new RingSignature(
@@ -245,7 +231,7 @@ export class RingSignature {
     ring: Point[], // ring.length = n
     message: string,
     signerPubKey: Point,
-    curve = Curve.SECP256K1,
+    curve: Curve,
   ) {
     if (ring.length === 0)
       throw new Error(
@@ -308,29 +294,13 @@ export class RingSignature {
     // then, for each ci (1 < i < n), compute ci' = Hash(Ring, message, [riG + ciKi])
     // (G = generator, K = ring public key)
     // finally, if we substitute lastC for lastC' and c0' == c0, the signature is valid
+    if (this.ring.length === 0)
+      throw new Error("Ring length must be greater than 0");
 
     if (this.ring.length !== this.responses.length) {
       throw new Error("ring and responses length mismatch");
     }
-
-    let G: Point; // generator point
-    let N: bigint; // order of the curve
-
-    switch (this.curve) {
-      case Curve.SECP256K1: {
-        G = new Point(this.curve, SECP256K1.G);
-        N = SECP256K1.N;
-        break;
-      }
-      case Curve.ED25519: {
-        G = new Point(this.curve, ED25519.G);
-        N = ED25519.N;
-        break;
-      }
-      default: {
-        throw new Error("unknown curve");
-      }
-    }
+    const G: Point = this.curve.GtoPoint(); // generator point
 
     if (this.ring.length > 1) {
       // hash the message
@@ -342,7 +312,7 @@ export class RingSignature {
         this.ring,
         messageDigest,
         G,
-        N,
+        this.curve.N,
         this.responses[0],
         this.c,
         this.ring[0],
@@ -354,7 +324,7 @@ export class RingSignature {
           this.ring,
           messageDigest,
           G,
-          N,
+          this.curve.N,
           this.responses[i - 1],
           lastComputedCp,
           this.ring[i - 1],
@@ -368,7 +338,7 @@ export class RingSignature {
           this.ring,
           messageDigest,
           G,
-          N,
+          this.curve.N,
           this.responses[this.responses.length - 1],
           lastComputedCp,
           this.ring[this.ring.length - 1],
@@ -376,13 +346,11 @@ export class RingSignature {
       );
     }
 
-    if (this.ring.length === 0)
-      throw new Error("Ring length must be greater than 0");
-
+    // if ring length = 1 :
     return verifyPiSignature(
       this.ring[0],
       this.responses[0],
-      modulo(2n * this.c - 1n, N),
+      modulo(2n * this.c + 1n, this.curve.N),
       this.c,
       this.curve,
     );
@@ -415,26 +383,13 @@ export class RingSignature {
     signerKey: Point | bigint,
     message: string,
   ) {
-    let N: bigint; // order of the curve
-    let G: Point; // generator point
-    switch (curve) {
-      case Curve.SECP256K1:
-        N = SECP256K1.N;
-        G = new Point(curve, SECP256K1.G);
-        break;
-      case Curve.ED25519:
-        N = ED25519.N;
-        G = new Point(Curve.ED25519, ED25519.G);
-        break;
-      default:
-        throw new Error("unknown curve");
-    }
+    const G: Point = curve.GtoPoint(); // generator point
 
     // hash the message
     const messageDigest = keccak256(message);
 
     // generate random number alpha
-    const alpha = randomBigint(N);
+    const alpha = randomBigint(curve.N);
 
     let signerPubKey: Point;
     if (typeof signerKey === "bigint") {
@@ -461,7 +416,7 @@ export class RingSignature {
     // generate random responses for every public key in the ring
     const responses: bigint[] = [];
     for (let i = 0; i < ring.length; i++) {
-      responses.push(randomBigint(N));
+      responses.push(randomBigint(curve.N));
     }
 
     // contains all the cees from pi+1 to n (pi+1, pi+2, ..., n)(n = ring.length)
@@ -473,7 +428,7 @@ export class RingSignature {
         BigInt(
           "0x" + keccak256(ring + messageDigest + G.mult(alpha).toString()),
         ),
-        N,
+        curve.N,
       ),
     );
 
@@ -484,7 +439,7 @@ export class RingSignature {
           ring,
           messageDigest,
           G,
-          N,
+          curve.N,
           responses[i - 1],
           cValuesPI1N[i - pi - 2],
           ring[i - 1],
@@ -501,7 +456,7 @@ export class RingSignature {
         ring,
         messageDigest,
         G,
-        N,
+        curve.N,
         responses[responses.length - 1],
         cValuesPI1N[cValuesPI1N.length - 1],
         ring[ring.length - 1],
@@ -514,7 +469,7 @@ export class RingSignature {
         ring,
         messageDigest,
         G,
-        N,
+        curve.N,
         responses[i - 1],
         cValues0PI[i - 1],
         ring[i - 1],

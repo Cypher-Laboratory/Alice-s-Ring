@@ -1,11 +1,11 @@
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.verifyPiSignature = exports.piSignature = void 0;
 /*
   This TypeScript library is the exclusive property of Cypher Lab (https://www.cypherlab.fr/)
   and is exclusively reserved for the use of gemWallet. Any form of commercial use, including but
   not limited to selling, licensing, or generating revenue from this code, is strictly prohibited.
 */
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifyPiSignature = exports.piSignature = void 0;
 const utils_1 = require("../utils");
 /**
  * Compute the signature from the actual signer
@@ -22,18 +22,7 @@ const utils_1 = require("../utils");
  * @returns the signer response as a point on the curve
  */
 function piSignature(nonce, message, signerPrivKey, curve) {
-    let N; // curve order
-    switch (curve) {
-        case utils_1.Curve.SECP256K1:
-            N = utils_1.SECP256K1.N;
-            break;
-        case utils_1.Curve.ED25519:
-            N = utils_1.ED25519.N;
-            break;
-        default:
-            throw new Error("unknown curve");
-    }
-    return (0, utils_1.modulo)(nonce - message * signerPrivKey, N);
+    return (0, utils_1.modulo)(nonce - message * signerPrivKey, curve.N);
 }
 exports.piSignature = piSignature;
 /**
@@ -47,19 +36,23 @@ exports.piSignature = piSignature;
  * @returns true if the signature is valid, false otherwise
  */
 function verifyPiSignature(signerPubKey, piSignature, nonce, message, curve) {
-    let G; // curve generator
-    // get the curve generator
-    switch (curve) {
-        case utils_1.Curve.SECP256K1:
-            G = new utils_1.Point(utils_1.Curve.SECP256K1, utils_1.SECP256K1.G);
-            break;
-        case utils_1.Curve.ED25519:
-            G = new utils_1.Point(utils_1.Curve.ED25519, utils_1.ED25519.G);
-            break;
-        default:
-            throw new Error("unknown curve");
-    }
-    // G * piSignature === (alpha * G) - c * (k * G) ?
+    const G = curve.GtoPoint(); // curve generator
+    // G * piSignature === (alpha * G) - c * (k * G) 
     return G.mult(piSignature).equals(G.mult(nonce).add(signerPubKey.mult(message).negate()));
 }
 exports.verifyPiSignature = verifyPiSignature;
+// const G = new Point(new Curve(CurveName.SECP256K1), [ExtendedPoint.BASE.toAffine().x, ExtendedPoint.BASE.toAffine().y] as [
+//   bigint,
+//   bigint,
+// ]);
+// const privKey = 56465485646545848564865486545864546546545n;
+// const pubKey = new Curve(CurveName.SECP256K1).GtoPoint().mult(privKey);
+// const nonce = 648658648648654856354n;
+// const msg = 1234456677788n;
+// const sig = piSignature(
+//   nonce,
+//   msg,
+//   privKey,
+//   new Curve(CurveName.SECP256K1),
+// )
+// console.log(verifyPiSignature(pubKey, sig, nonce, msg, new Curve(CurveName.SECP256K1)))

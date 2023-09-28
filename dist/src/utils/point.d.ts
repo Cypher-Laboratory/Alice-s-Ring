@@ -6,8 +6,6 @@ export declare class Point {
     curve: Curve;
     x: bigint;
     y: bigint;
-    P: bigint;
-    G: [bigint, bigint];
     /**
      *
      *
@@ -15,7 +13,7 @@ export declare class Point {
      * @param coordinates - The point coordinates ([x,y])
      * @param generator - if true, the point is a generator point
      */
-    constructor(curve: Curve, coordinates: [bigint, bigint], P?: bigint, G?: [bigint, bigint]);
+    constructor(curve: Curve, coordinates: [bigint, bigint]);
     /**
      * Multiplies a scalar by a point on the elliptic curve.
      *

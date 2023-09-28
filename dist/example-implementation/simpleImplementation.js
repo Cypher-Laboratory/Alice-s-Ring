@@ -3,8 +3,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const js_sha3_1 = require("js-sha3");
 const utils_1 = require("../src/utils");
 const src_1 = require("../src");
-const P = utils_1.SECP256K1.P;
-const G = new utils_1.Point(utils_1.Curve.SECP256K1, utils_1.SECP256K1.G);
+const curves_1 = require("../src/utils/curves");
+const secp256k1 = new utils_1.Curve(curves_1.CurveName.SECP256K1);
+const P = secp256k1.P;
+const G = new utils_1.Point(secp256k1, secp256k1.G);
 // ring pubkeys
 const K1 = G.mult((0, utils_1.randomBigint)(P));
 const K3 = G.mult((0, utils_1.randomBigint)(P));
@@ -29,7 +31,7 @@ console.log("c3: \n", G.mult(alpha), "\n");
 const c1 = BigInt("0x" + (0, js_sha3_1.keccak256)(ring + message + G.mult(r3).add(K3.mult(c3)).toString()));
 const c2 = BigInt("0x" + (0, js_sha3_1.keccak256)(ring + message + G.mult(r1).add(K1.mult(c1)).toString()));
 // signer response
-const r2 = (0, src_1.piSignature)(alpha, c2, k2, utils_1.Curve.SECP256K1);
+const r2 = (0, src_1.piSignature)(alpha, c2, k2, secp256k1);
 // this shouldn't change the value of c3
 // c3 = BigInt('0x' + keccak256(
 //   ring

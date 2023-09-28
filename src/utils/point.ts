@@ -1,4 +1,4 @@
-import { Curve, ED25519, SECP256K1 } from "./curves";
+import { Curve, CurveName } from "./curves";
 import { ProjectivePoint as SECP256K1Point } from "./noble-libraries/noble-SECP256k1";
 import { ExtendedPoint as ED25519Point } from "./noble-libraries/noble-ED25519";
 import { modulo } from ".";
@@ -10,8 +10,6 @@ export class Point {
   public curve: Curve;
   public x: bigint;
   public y: bigint;
-  public P: bigint;
-  public G: [bigint, bigint];
 
   /**
    *
@@ -20,34 +18,10 @@ export class Point {
    * @param coordinates - The point coordinates ([x,y])
    * @param generator - if true, the point is a generator point
    */
-  constructor(
-    curve: Curve,
-    coordinates: [bigint, bigint],
-    P?: bigint,
-    G?: [bigint, bigint],
-  ) {
+  constructor(curve: Curve, coordinates: [bigint, bigint]) {
     this.curve = curve;
     this.x = coordinates[0];
     this.y = coordinates[1];
-    switch (curve) {
-      case Curve.SECP256K1: {
-        this.P = SECP256K1.P;
-        this.G = SECP256K1.G;
-        break;
-      }
-      case Curve.ED25519: {
-        this.P = ED25519.P;
-        this.G = ED25519.G;
-        break;
-      }
-      default: {
-        if (!P || !G) {
-          throw new Error("Unknown curve");
-        }
-        this.P = P;
-        this.G = G;
-      }
-    }
   }
 
   /**
@@ -58,20 +32,20 @@ export class Point {
    * @returns the result of the multiplication
    */
   mult(scalar: bigint): Point {
-    switch (this.curve) {
-      case Curve.SECP256K1: {
+    switch (this.curve.name) {
+      case CurveName.SECP256K1: {
         const result = SECP256K1Point.fromAffine({
           x: this.x,
           y: this.y,
-        }).mul(modulo(scalar, SECP256K1.N));
+        }).mul(modulo(scalar, this.curve.N));
 
         return new Point(this.curve, [result.x, result.y]);
       }
-      case Curve.ED25519: {
+      case CurveName.ED25519: {
         const result = ED25519Point.fromAffine({
           x: this.x,
           y: this.y,
-        }).mul(modulo(scalar, ED25519.N));
+        }).mul(modulo(scalar, this.curve.N));
 
         return new Point(this.curve, [result.x, result.y]);
       }
@@ -82,8 +56,8 @@ export class Point {
   }
 
   add(point: Point): Point {
-    switch (this.curve) {
-      case Curve.SECP256K1: {
+    switch (this.curve.name) {
+      case CurveName.SECP256K1: {
         const result = SECP256K1Point.fromAffine({
           x: this.x,
           y: this.y,
@@ -96,7 +70,7 @@ export class Point {
 
         return new Point(this.curve, [result.x, result.y]);
       }
-      case Curve.ED25519: {
+      case CurveName.ED25519: {
         // does not work
         const result = ED25519Point.fromAffine({
           x: this.x,
@@ -119,8 +93,8 @@ export class Point {
   equals(point: Point): boolean {
     if (this.curve !== point.curve) return false;
 
-    switch (this.curve) {
-      case Curve.SECP256K1: {
+    switch (this.curve.name) {
+      case CurveName.SECP256K1: {
         return SECP256K1Point.fromAffine({
           x: this.x,
           y: this.y,
@@ -132,7 +106,7 @@ export class Point {
         );
       }
 
-      case Curve.ED25519: {
+      case CurveName.ED25519: {
         return ED25519Point.fromAffine({
           x: this.x,
           y: this.y,
@@ -158,8 +132,8 @@ export class Point {
    * @returns the negated point
    */
   negate(): Point {
-    switch (this.curve) {
-      case Curve.SECP256K1: {
+    switch (this.curve.name) {
+      case CurveName.SECP256K1: {
         const result = SECP256K1Point.fromAffine({
           x: this.x,
           y: this.y,
@@ -167,7 +141,7 @@ export class Point {
 
         return new Point(this.curve, [result.x, result.y]);
       }
-      case Curve.ED25519: {
+      case CurveName.ED25519: {
         const result = ED25519Point.fromAffine({
           x: this.x,
           y: this.y,
@@ -194,7 +168,7 @@ export class Point {
     const json = JSON.stringify({
       x: this.x.toString(),
       y: this.y.toString(),
-      curve: this.curve,
+      curve: this.curve.toString(),
     });
     return Buffer.from(json).toString("base64");
   }
@@ -203,6 +177,7 @@ export class Point {
     // decode base64
     const json = Buffer.from(base64, "base64").toString("ascii");
     const { x, y, curve } = JSON.parse(json);
-    return new Point(curve, [BigInt(x), BigInt(y)]);
+    const retrievedCurve = Curve.fromString(curve);
+    return new Point(retrievedCurve, [BigInt(x), BigInt(y)]);
   }
 }

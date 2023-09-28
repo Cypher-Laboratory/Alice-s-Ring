@@ -3,8 +3,9 @@
   and is exclusively reserved for the use of gemWallet. Any form of commercial use, including but 
   not limited to selling, licensing, or generating revenue from this code, is strictly prohibited.
 */
-
-import { Curve, ED25519, Point, SECP256K1, modulo } from "../utils";
+import { Curve, Point, modulo } from "../utils";
+import { CurveName } from "../utils/curves";
+import { ExtendedPoint } from "../utils/noble-libraries/noble-ED25519";
 
 /**
  * Compute the signature from the actual signer
@@ -26,20 +27,7 @@ export function piSignature(
   signerPrivKey: bigint,
   curve: Curve,
 ): bigint {
-  let N: bigint; // curve order
-
-  switch (curve) {
-    case Curve.SECP256K1:
-      N = SECP256K1.N;
-      break;
-    case Curve.ED25519:
-      N = ED25519.N;
-      break;
-    default:
-      throw new Error("unknown curve");
-  }
-
-  return modulo(nonce - message * signerPrivKey, N);
+  return modulo(nonce - message * signerPrivKey, curve.N);
 }
 
 /**
@@ -59,21 +47,28 @@ export function verifyPiSignature(
   message: bigint,
   curve: Curve,
 ): boolean {
-  let G: Point; // curve generator
-
-  // get the curve generator
-  switch (curve) {
-    case Curve.SECP256K1:
-      G = new Point(Curve.SECP256K1, SECP256K1.G);
-      break;
-    case Curve.ED25519:
-      G = new Point(Curve.ED25519, ED25519.G);
-      break;
-    default:
-      throw new Error("unknown curve");
-  }
-  // G * piSignature === (alpha * G) - c * (k * G) ?
+  const G: Point = curve.GtoPoint(); // curve generator
+  // G * piSignature === (alpha * G) - c * (k * G)
   return G.mult(piSignature).equals(
     G.mult(nonce).add(signerPubKey.mult(message).negate()),
   );
 }
+// const G = new Point(new Curve(CurveName.SECP256K1), [ExtendedPoint.BASE.toAffine().x, ExtendedPoint.BASE.toAffine().y] as [
+//   bigint,
+//   bigint,
+// ]);
+
+// const privKey = 56465485646545848564865486545864546546545n;
+// const pubKey = new Curve(CurveName.SECP256K1).GtoPoint().mult(privKey);
+
+// const nonce = 648658648648654856354n;
+// const msg = 1234456677788n;
+
+// const sig = piSignature(
+//   nonce,
+//   msg,
+//   privKey,
+//   new Curve(CurveName.SECP256K1),
+// )
+
+// console.log(verifyPiSignature(pubKey, sig, nonce, msg, new Curve(CurveName.SECP256K1)))

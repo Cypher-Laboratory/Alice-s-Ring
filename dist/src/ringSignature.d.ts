@@ -94,7 +94,7 @@ export declare class RingSignature {
      * @returns A RingSignature
      */
     static sign(ring: Point[], // ring.length = n
-    signerPrivateKey: bigint, message: string, curve?: Curve): RingSignature;
+    signerPrivateKey: bigint, message: string, curve: Curve): RingSignature;
     /**
      * Sign a message using ring signatures
      *
@@ -105,7 +105,7 @@ export declare class RingSignature {
      * @returns A PartialSignature
      */
     static partialSign(ring: Point[], // ring.length = n
-    message: string, signerPubKey: Point, curve?: Curve): PartialSignature;
+    message: string, signerPubKey: Point, curve: Curve): PartialSignature;
     /**
      * Combine partial signatures into a RingSignature
      *

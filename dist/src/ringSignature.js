@@ -63,7 +63,8 @@ class RingSignature {
         const decoded = Buffer.from(base64, "base64").toString("ascii");
         const json = JSON.parse(decoded);
         const ring = json.ring.map((point) => utils_1.Point.fromBase64(point));
-        return new RingSignature(json.message, ring, BigInt(json.c), json.responses.map((response) => BigInt(response)), json.curve);
+        console.log("retrieved curve: ", utils_1.Curve.fromString(json.curve));
+        return new RingSignature(json.message, ring, BigInt(json.c), json.responses.map((response) => BigInt(response)), utils_1.Curve.fromString(json.curve));
     }
     /**
      * Encode a ring signature to base64 string
@@ -74,7 +75,7 @@ class RingSignature {
             ring: this.ring.map((point) => point.toBase64()),
             c: this.c.toString(),
             responses: this.responses.map((response) => response.toString()),
-            curve: this.curve,
+            curve: this.curve.toString(),
         });
         return Buffer.from(json).toString("base64");
     }
@@ -89,29 +90,16 @@ class RingSignature {
      * @returns A RingSignature
      */
     static sign(ring, // ring.length = n
-    signerPrivateKey, message, curve = utils_1.Curve.SECP256K1) {
-        let G; // generator point
-        let N; // order of the curve
-        switch (curve) {
-            case utils_1.Curve.SECP256K1:
-                G = new utils_1.Point(curve, utils_1.SECP256K1.G);
-                N = utils_1.SECP256K1.N;
-                break;
-            case utils_1.Curve.ED25519:
-                G = new utils_1.Point(utils_1.Curve.ED25519, utils_1.ED25519.G);
-                N = utils_1.ED25519.N;
-                break;
-            default:
-                throw new Error("unknown curve");
-        }
+    signerPrivateKey, message, curve) {
+        const G = curve.GtoPoint(); // generator point
         if (ring.length === 0) {
             /*
              * If the ring is empty, we just sign the message using our schnorr-like signature scheme
              * and return a ring signature with only one response.
              * Note that alpha is computed from c to allow verification.
              */
-            const c = (0, utils_1.randomBigint)(N);
-            const alpha = (0, utils_1.modulo)(2n * c - 1n, N);
+            const c = (0, utils_1.randomBigint)(curve.N);
+            const alpha = (0, utils_1.modulo)(2n * c + 1n, curve.N);
             const sig = (0, piSignature_1.piSignature)(alpha, c, signerPrivateKey, curve);
             return new RingSignature(message, [G.mult(signerPrivateKey)], c, [sig], curve);
         }
@@ -134,7 +122,7 @@ class RingSignature {
      * @returns A PartialSignature
      */
     static partialSign(ring, // ring.length = n
-    message, signerPubKey, curve = utils_1.Curve.SECP256K1) {
+    message, signerPubKey, curve) {
         if (ring.length === 0)
             throw new Error("To proceed partial signing, ring length must be greater than 0");
         const rawSignature = RingSignature.signature(curve, ring, signerPubKey, message);
@@ -174,42 +162,29 @@ class RingSignature {
         // then, for each ci (1 < i < n), compute ci' = Hash(Ring, message, [riG + ciKi])
         // (G = generator, K = ring public key)
         // finally, if we substitute lastC for lastC' and c0' == c0, the signature is valid
+        if (this.ring.length === 0)
+            throw new Error("Ring length must be greater than 0");
         if (this.ring.length !== this.responses.length) {
             throw new Error("ring and responses length mismatch");
         }
-        let G; // generator point
-        let N; // order of the curve
-        switch (this.curve) {
-            case utils_1.Curve.SECP256K1: {
-                G = new utils_1.Point(this.curve, utils_1.SECP256K1.G);
-                N = utils_1.SECP256K1.N;
-                break;
-            }
-            case utils_1.Curve.ED25519: {
-                G = new utils_1.Point(this.curve, utils_1.ED25519.G);
-                N = utils_1.ED25519.N;
-                break;
-            }
-            default: {
-                throw new Error("unknown curve");
-            }
-        }
+        const G = this.curve.GtoPoint(); // generator point
         if (this.ring.length > 1) {
             // hash the message
             const messageDigest = (0, js_sha3_1.keccak256)(this.message);
             // computes the cees
-            let lastComputedCp = RingSignature.computeC(// c1'
-            this.ring, messageDigest, G, N, this.responses[0], this.c, this.ring[0]);
-            for (let i = 2; i < this.ring.length; i++) { // c2' -> cn'
-                lastComputedCp = RingSignature.computeC(this.ring, messageDigest, G, N, this.responses[i - 1], lastComputedCp, this.ring[i - 1]);
+            let lastComputedCp = RingSignature.computeC(
+            // c1'
+            this.ring, messageDigest, G, this.curve.N, this.responses[0], this.c, this.ring[0]);
+            for (let i = 2; i < this.ring.length; i++) {
+                // c2' -> cn'
+                lastComputedCp = RingSignature.computeC(this.ring, messageDigest, G, this.curve.N, this.responses[i - 1], lastComputedCp, this.ring[i - 1]);
             }
             // return true if c0 === c0'
             return (this.c ===
-                RingSignature.computeC(this.ring, messageDigest, G, N, this.responses[this.responses.length - 1], lastComputedCp, this.ring[this.ring.length - 1]));
+                RingSignature.computeC(this.ring, messageDigest, G, this.curve.N, this.responses[this.responses.length - 1], lastComputedCp, this.ring[this.ring.length - 1]));
         }
-        if (this.ring.length === 0)
-            throw new Error("Ring length must be greater than 0");
-        return (0, piSignature_1.verifyPiSignature)(this.ring[0], this.responses[0], (0, utils_1.modulo)(2n * this.c - 1n, N), this.c, this.curve);
+        // if ring length = 1 :
+        return (0, piSignature_1.verifyPiSignature)(this.ring[0], this.responses[0], (0, utils_1.modulo)(2n * this.c + 1n, this.curve.N), this.c, this.curve);
     }
     /**
      * Verify a RingSignature stored as a RingSig
@@ -232,24 +207,11 @@ class RingSignature {
      * @returns An incomplete ring signature
      */
     static signature(curve, ring, signerKey, message) {
-        let N; // order of the curve
-        let G; // generator point
-        switch (curve) {
-            case utils_1.Curve.SECP256K1:
-                N = utils_1.SECP256K1.N;
-                G = new utils_1.Point(curve, utils_1.SECP256K1.G);
-                break;
-            case utils_1.Curve.ED25519:
-                N = utils_1.ED25519.N;
-                G = new utils_1.Point(utils_1.Curve.ED25519, utils_1.ED25519.G);
-                break;
-            default:
-                throw new Error("unknown curve");
-        }
+        const G = curve.GtoPoint(); // generator point
         // hash the message
         const messageDigest = (0, js_sha3_1.keccak256)(message);
         // generate random number alpha
-        const alpha = (0, utils_1.randomBigint)(N);
+        const alpha = (0, utils_1.randomBigint)(curve.N);
         let signerPubKey;
         if (typeof signerKey === "bigint") {
             signerPubKey = G.mult(signerKey);
@@ -273,23 +235,23 @@ class RingSignature {
         // generate random responses for every public key in the ring
         const responses = [];
         for (let i = 0; i < ring.length; i++) {
-            responses.push((0, utils_1.randomBigint)(N));
+            responses.push((0, utils_1.randomBigint)(curve.N));
         }
         // contains all the cees from pi+1 to n (pi+1, pi+2, ..., n)(n = ring.length)
         const cValuesPI1N = [];
         // compute C pi+1
-        cValuesPI1N.push((0, utils_1.modulo)(BigInt("0x" + (0, js_sha3_1.keccak256)(ring + messageDigest + G.mult(alpha).toString())), N));
+        cValuesPI1N.push((0, utils_1.modulo)(BigInt("0x" + (0, js_sha3_1.keccak256)(ring + messageDigest + G.mult(alpha).toString())), curve.N));
         // compute Cpi+2 to Cn
         for (let i = pi + 2; i < ring.length; i++) {
-            cValuesPI1N.push(RingSignature.computeC(ring, messageDigest, G, N, responses[i - 1], cValuesPI1N[i - pi - 2], ring[i - 1]));
+            cValuesPI1N.push(RingSignature.computeC(ring, messageDigest, G, curve.N, responses[i - 1], cValuesPI1N[i - pi - 2], ring[i - 1]));
         }
         // contains all the c from 0 to pi
         const cValues0PI = [];
         // compute C0
-        cValues0PI.push(RingSignature.computeC(ring, messageDigest, G, N, responses[responses.length - 1], cValuesPI1N[cValuesPI1N.length - 1], ring[ring.length - 1]));
+        cValues0PI.push(RingSignature.computeC(ring, messageDigest, G, curve.N, responses[responses.length - 1], cValuesPI1N[cValuesPI1N.length - 1], ring[ring.length - 1]));
         // compute C0 to C pi -1
         for (let i = 1; i < pi + 1; i++) {
-            cValues0PI[i] = RingSignature.computeC(ring, messageDigest, G, N, responses[i - 1], cValues0PI[i - 1], ring[i - 1]);
+            cValues0PI[i] = RingSignature.computeC(ring, messageDigest, G, curve.N, responses[i - 1], cValues0PI[i - 1], ring[i - 1]);
         }
         // concatenate CValues0PI, cpi and CValuesPI1N to get all the c values
         const cees = cValues0PI.concat(cValuesPI1N);

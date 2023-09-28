@@ -1,9 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Point = exports.modulo = exports.getRandomSecuredNumber = exports.randomBigint = exports.Curve = exports.ED25519 = exports.SECP256K1 = void 0;
+exports.Point = exports.modulo = exports.getRandomSecuredNumber = exports.randomBigint = exports.Curve = void 0;
 var curves_1 = require("./curves");
-Object.defineProperty(exports, "SECP256K1", { enumerable: true, get: function () { return curves_1.SECP256K1; } });
-Object.defineProperty(exports, "ED25519", { enumerable: true, get: function () { return curves_1.ED25519; } });
 Object.defineProperty(exports, "Curve", { enumerable: true, get: function () { return curves_1.Curve; } });
 var randomNumbers_1 = require("./randomNumbers");
 Object.defineProperty(exports, "randomBigint", { enumerable: true, get: function () { return randomNumbers_1.randomBigint; } });

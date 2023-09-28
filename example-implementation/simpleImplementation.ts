@@ -1,9 +1,11 @@
 import { keccak256 } from "js-sha3";
-import { SECP256K1, Point, randomBigint, Curve } from "../src/utils";
+import { Point, randomBigint, Curve } from "../src/utils";
 import { piSignature } from "../src";
+import { CurveName } from "../src/utils/curves";
 
-const P = SECP256K1.P;
-const G = new Point(Curve.SECP256K1, SECP256K1.G);
+const secp256k1 = new Curve(CurveName.SECP256K1);
+const P = secp256k1.P;
+const G = new Point(secp256k1, secp256k1.G);
 
 // ring pubkeys
 const K1 = G.mult(randomBigint(P));
@@ -43,7 +45,7 @@ const c2 = BigInt(
 );
 
 // signer response
-const r2 = piSignature(alpha, c2, k2, Curve.SECP256K1);
+const r2 = piSignature(alpha, c2, k2, secp256k1);
 
 // this shouldn't change the value of c3
 // c3 = BigInt('0x' + keccak256(
