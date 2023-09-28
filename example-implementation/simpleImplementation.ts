@@ -1,7 +1,6 @@
 import { keccak256 } from "js-sha3";
-import { Point, randomBigint, Curve } from "../src/utils";
+import { Point, randomBigint, Curve, CurveName } from "../src/utils";
 import { piSignature } from "../src";
-import { CurveName } from "../src/utils/curves";
 
 const secp256k1 = new Curve(CurveName.SECP256K1);
 const P = secp256k1.P;

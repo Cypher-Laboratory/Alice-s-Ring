@@ -1,5 +1,4 @@
 import { ExtendedPoint } from "./noble-libraries/noble-ED25519";
-import { ProjectivePoint } from "./noble-libraries/noble-SECP256k1";
 import { Point } from "./point";
 
 /**

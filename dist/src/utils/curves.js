@@ -36,7 +36,6 @@ class Curve {
                 throw new Error("Invalid params");
         }
     }
-    ;
     GtoPoint() {
         return new point_1.Point(this, this.G);
     }

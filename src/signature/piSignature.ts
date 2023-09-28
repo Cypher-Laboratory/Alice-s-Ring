@@ -4,8 +4,6 @@
   not limited to selling, licensing, or generating revenue from this code, is strictly prohibited.
 */
 import { Curve, Point, modulo } from "../utils";
-import { CurveName } from "../utils/curves";
-import { ExtendedPoint } from "../utils/noble-libraries/noble-ED25519";
 
 /**
  * Compute the signature from the actual signer

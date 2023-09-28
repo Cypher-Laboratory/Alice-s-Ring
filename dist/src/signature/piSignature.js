@@ -37,7 +37,7 @@ exports.piSignature = piSignature;
  */
 function verifyPiSignature(signerPubKey, piSignature, nonce, message, curve) {
     const G = curve.GtoPoint(); // curve generator
-    // G * piSignature === (alpha * G) - c * (k * G) 
+    // G * piSignature === (alpha * G) - c * (k * G)
     return G.mult(piSignature).equals(G.mult(nonce).add(signerPubKey.mult(message).negate()));
 }
 exports.verifyPiSignature = verifyPiSignature;

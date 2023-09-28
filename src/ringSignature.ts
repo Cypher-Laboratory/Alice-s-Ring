@@ -7,7 +7,6 @@ import {
   modulo,
 } from "./utils";
 import { piSignature, verifyPiSignature } from "./signature/piSignature";
-import { CurveName } from "./utils/curves";
 
 /**
  * Ring signature interface

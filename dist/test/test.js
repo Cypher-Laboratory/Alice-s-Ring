@@ -4,7 +4,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const src_1 = require("../src");
 const ringSignature_1 = require("../src/ringSignature");
 const utils_1 = require("../src/utils");
-const curves_1 = require("../src/utils/curves");
 const tmp = [
     "42",
     "0c",
@@ -42,8 +41,8 @@ const tmp = [
 const signerPrivKeyBytes = new Uint8Array(tmp.map((x) => parseInt(x, 16)));
 const signerPrivKey = BigInt("0x" + Buffer.from(signerPrivKeyBytes).toString("hex"));
 const ringSize = 2;
-const secp256k1 = new utils_1.Curve(curves_1.CurveName.SECP256K1);
-const ed25519 = new utils_1.Curve(curves_1.CurveName.ED25519);
+const secp256k1 = new utils_1.Curve(utils_1.CurveName.SECP256K1);
+const ed25519 = new utils_1.Curve(utils_1.CurveName.ED25519);
 const G_SECP = secp256k1.GtoPoint();
 const signerPrivKey_secp = 4663621002712304654134267866148565564648521986326001983848741804705428459856n;
 const signerPubKey_secp = G_SECP.mult(signerPrivKey_secp);
