@@ -40,8 +40,9 @@ export declare class RingSignature {
      * @param cees - c values
      * @param responses - Responses for each public key in the ring
      * @param curve - Curve used for the signature
+     * @param safeMode - If true, check if all the points are on the same curve
      */
-    constructor(message: string, ring: Point[], c: bigint, responses: bigint[], curve: Curve);
+    constructor(message: string, ring: Point[], c: bigint, responses: bigint[], curve: Curve, safeMode?: boolean);
     /**
      * Create a RingSignature from a json object
      *

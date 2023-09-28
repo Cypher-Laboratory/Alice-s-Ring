@@ -13,6 +13,12 @@ var CurveName;
     CurveName["CUSTOM"] = "CUSTOM";
 })(CurveName || (exports.CurveName = CurveName = {}));
 class Curve {
+    /**
+     * Creates a curve instance.
+     *
+     * @param curve - The curve name
+     * @param params - The curve parameters (optional if curve is SECP256K1 or ED25519)
+     */
     constructor(curve, params) {
         this.name = curve;
         switch (this.name) {
@@ -36,9 +42,17 @@ class Curve {
                 throw new Error("Invalid params");
         }
     }
+    /**
+     * Returns the generator point as a Point instance.
+     *
+     * @returns the generator point
+     */
     GtoPoint() {
         return new point_1.Point(this, this.G);
     }
+    /**
+     * Returns the curve as a json string.
+     */
     toString() {
         return JSON.stringify({
             curve: this.name,
@@ -48,6 +62,12 @@ class Curve {
             P: this.P.toString(),
         });
     }
+    /**
+     * Returns a curve instance from a json string.
+     *
+     * @param curveData - the curve as a json string
+     * @returns the curve instance
+     */
     static fromString(curveData) {
         const data = JSON.parse(curveData);
         const G = [BigInt(data.Gx), BigInt(data.Gy)];

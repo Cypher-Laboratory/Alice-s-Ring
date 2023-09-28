@@ -18,10 +18,18 @@ class RingSignature {
      * @param cees - c values
      * @param responses - Responses for each public key in the ring
      * @param curve - Curve used for the signature
+     * @param safeMode - If true, check if all the points are on the same curve
      */
-    constructor(message, ring, c, responses, curve) {
+    constructor(message, ring, c, responses, curve, safeMode = false) {
         if (ring.length != responses.length)
             throw new Error("Ring and responses length mismatch");
+        if (safeMode) {
+            for (const i of ring) {
+                if (i.curve.name != curve.name) {
+                    throw new Error("Point not on curve");
+                }
+            }
+        }
         this.ring = ring;
         this.message = message;
         this.c = c;
@@ -221,21 +229,17 @@ class RingSignature {
         const pi = (0, utils_1.getRandomSecuredNumber)(0, ring.length - 1); // signer index
         // add the signer public key to the ring
         ring = ring.slice(0, pi).concat([signerPubKey], ring.slice(pi));
-        // check for duplicates
-        for (let i = 0; i < ring.length; i++) {
-            // complexity.. :(
-            for (let j = i + 1; j < ring.length; j++) {
-                if (ring[i].x === ring[j].x && ring[i].y === ring[j].y) {
-                    throw new Error("Ring contains duplicate public keys");
-                }
-            }
+        // check for duplicates using a set
+        const ringSet = new Set(ring);
+        if (ringSet.size !== ring.length) {
+            throw new Error("Ring contains duplicates");
         }
         // generate random responses for every public key in the ring
         const responses = [];
         for (let i = 0; i < ring.length; i++) {
             responses.push((0, utils_1.randomBigint)(curve.N));
         }
-        // contains all the cees from pi+1 to n (pi+1, pi+2, ..., n)(n = ring.length)
+        // contains all the cees from pi+1 to n (pi+1, pi+2, ..., n)(n = ring.length - 1)
         const cValuesPI1N = [];
         // compute C pi+1
         cValuesPI1N.push((0, utils_1.modulo)(BigInt("0x" + (0, js_sha3_1.keccak256)(ring + messageDigest + G.mult(alpha).toString())), curve.N));
@@ -245,7 +249,7 @@ class RingSignature {
         }
         // contains all the c from 0 to pi
         const cValues0PI = [];
-        // compute C0
+        // compute c0 using cn
         cValues0PI.push(RingSignature.computeC(ring, messageDigest, G, curve.N, responses[responses.length - 1], cValuesPI1N[cValuesPI1N.length - 1], ring[ring.length - 1]));
         // compute C0 to C pi -1
         for (let i = 1; i < pi + 1; i++) {
