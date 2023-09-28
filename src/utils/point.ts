@@ -23,10 +23,37 @@ export class Point {
    *
    * @returns the point
    */
-  constructor(curve: Curve, coordinates: [bigint, bigint]) {
+  constructor(curve: Curve, coordinates: [bigint, bigint], safeMode = true) {
     this.curve = curve;
     this.x = coordinates[0];
     this.y = coordinates[1];
+
+    if (safeMode) {
+      switch (this.curve.name) {
+        case CurveName.SECP256K1: {
+          if (
+            modulo(this.x ** 3n + 7n, curve.P) !== modulo(this.y ** 2n, curve.P)
+          ) {
+            throw new Error("Point is not on SECP256K1 curve");
+          }
+          break;
+        }
+
+        case CurveName.ED25519: {
+          if (
+            this.y ** 2n - this.x ** 2n ===
+            1n - (121665n / 12666n) * this.x ** 2n * this.y ** 2n
+          ) {
+            throw new Error("Point is not on ED25519 curve");
+          }
+          break;
+        }
+
+        default: {
+          console.warn("Unknown curve, cannot check if point is on curve");
+        }
+      }
+    }
   }
 
   /**
