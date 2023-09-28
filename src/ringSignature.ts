@@ -9,22 +9,6 @@ import {
 import { piSignature, verifyPiSignature } from "./signature/piSignature";
 
 /**
- * Ring signature interface
- *
- * @see message - Clear message
- * @see ring - Ring of public keys
- * @see cees - The first c value
- * @see responses - Responses for each public key in the ring
- */
-export interface RingSig {
-  message: string; // clear message
-  ring: Point[];
-  c: bigint;
-  responses: bigint[];
-  curve: Curve;
-}
-
-/**
  * Partial ring signature interface
  *
  * @see message - Clear message
@@ -85,35 +69,40 @@ export class RingSignature {
   }
 
   /**
-   * Create a RingSignature from a RingSig
+   * Create a RingSignature from a json object
    *
-   * @param sig - The RingSig to convert
+   * @param json - The json to convert
    *
    * @returns A RingSignature
    */
-  static fromRingSig(sig: RingSig): RingSignature {
-    return new RingSignature(
-      sig.message,
-      sig.ring,
-      sig.c,
-      sig.responses,
-      sig.curve,
-    );
+  static fromJson(json: string): RingSignature {
+    try {
+      const sig = JSON.parse(json);
+      return new RingSignature(
+        sig.message,
+        sig.ring,
+        sig.c,
+        sig.responses,
+        sig.curve,
+      );
+    } catch (e) {
+      throw new Error("Invalid json: " + e);
+    }
   }
 
   /**
-   * Transform a RingSignature into a RingSig
+   * Create a Json string from a RingSignature
    *
-   * @returns A RingSig
+   * @returns A json string
    */
-  toRingSig(): RingSig {
-    return {
+  toJsonString(): string {
+    return JSON.stringify({
       message: this.message,
-      ring: this.ring,
-      c: this.c,
-      responses: this.responses,
-      curve: this.curve,
-    };
+      ring: this.ring.map((point: Point) => point.toBase64()),
+      c: this.c.toString(),
+      responses: this.responses.map((response) => response.toString()),
+      curve: this.curve.toString(),
+    });
   }
 
   /**
@@ -141,14 +130,7 @@ export class RingSignature {
    * Encode a ring signature to base64 string
    */
   toBase64(): string {
-    const json = JSON.stringify({
-      message: this.message,
-      ring: this.ring.map((point: Point) => point.toBase64()),
-      c: this.c.toString(),
-      responses: this.responses.map((response) => response.toString()),
-      curve: this.curve.toString(),
-    });
-    return Buffer.from(json).toString("base64");
+    return Buffer.from(this.toJsonString()).toString("base64");
   }
   /**
    * Sign a message using ring signatures
@@ -356,13 +338,13 @@ export class RingSignature {
   }
 
   /**
-   * Verify a RingSignature stored as a RingSig
+   * Verify a RingSignature stored as a json string
    *
-   * @param signature - The RingSig to verify
+   * @param signature - The json signature to verify
    * @returns True if the signature is valid, false otherwise
    */
-  static verify(signature: RingSig): boolean {
-    const ringSignature: RingSignature = RingSignature.fromRingSig(signature);
+  static verify(signature: string): boolean {
+    const ringSignature: RingSignature = RingSignature.fromJson(signature);
     return ringSignature.verify();
   }
 

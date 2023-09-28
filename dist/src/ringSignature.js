@@ -29,28 +29,34 @@ class RingSignature {
         this.curve = curve;
     }
     /**
-     * Create a RingSignature from a RingSig
+     * Create a RingSignature from a json object
      *
-     * @param sig - The RingSig to convert
+     * @param json - The json to convert
      *
      * @returns A RingSignature
      */
-    static fromRingSig(sig) {
-        return new RingSignature(sig.message, sig.ring, sig.c, sig.responses, sig.curve);
+    static fromJson(json) {
+        try {
+            const sig = JSON.parse(json);
+            return new RingSignature(sig.message, sig.ring, sig.c, sig.responses, sig.curve);
+        }
+        catch (e) {
+            throw new Error("Invalid json: " + e);
+        }
     }
     /**
-     * Transform a RingSignature into a RingSig
+     * Create a Json string from a RingSignature
      *
-     * @returns A RingSig
+     * @returns A json string
      */
-    toRingSig() {
-        return {
+    toJsonString() {
+        return JSON.stringify({
             message: this.message,
-            ring: this.ring,
-            c: this.c,
-            responses: this.responses,
-            curve: this.curve,
-        };
+            ring: this.ring.map((point) => point.toBase64()),
+            c: this.c.toString(),
+            responses: this.responses.map((response) => response.toString()),
+            curve: this.curve.toString(),
+        });
     }
     /**
      * Transforms a Base64 string to a ring signature
@@ -70,14 +76,7 @@ class RingSignature {
      * Encode a ring signature to base64 string
      */
     toBase64() {
-        const json = JSON.stringify({
-            message: this.message,
-            ring: this.ring.map((point) => point.toBase64()),
-            c: this.c.toString(),
-            responses: this.responses.map((response) => response.toString()),
-            curve: this.curve.toString(),
-        });
-        return Buffer.from(json).toString("base64");
+        return Buffer.from(this.toJsonString()).toString("base64");
     }
     /**
      * Sign a message using ring signatures
@@ -187,13 +186,13 @@ class RingSignature {
         return (0, piSignature_1.verifyPiSignature)(this.ring[0], this.responses[0], (0, utils_1.modulo)(2n * this.c + 1n, this.curve.N), this.c, this.curve);
     }
     /**
-     * Verify a RingSignature stored as a RingSig
+     * Verify a RingSignature stored as a json string
      *
-     * @param signature - The RingSig to verify
+     * @param signature - The json signature to verify
      * @returns True if the signature is valid, false otherwise
      */
     static verify(signature) {
-        const ringSignature = RingSignature.fromRingSig(signature);
+        const ringSignature = RingSignature.fromJson(signature);
         return ringSignature.verify();
     }
     /**

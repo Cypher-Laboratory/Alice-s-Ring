@@ -1,20 +1,5 @@
 import { Curve, Point } from "./utils";
 /**
- * Ring signature interface
- *
- * @see message - Clear message
- * @see ring - Ring of public keys
- * @see cees - The first c value
- * @see responses - Responses for each public key in the ring
- */
-export interface RingSig {
-    message: string;
-    ring: Point[];
-    c: bigint;
-    responses: bigint[];
-    curve: Curve;
-}
-/**
  * Partial ring signature interface
  *
  * @see message - Clear message
@@ -58,19 +43,19 @@ export declare class RingSignature {
      */
     constructor(message: string, ring: Point[], c: bigint, responses: bigint[], curve: Curve);
     /**
-     * Create a RingSignature from a RingSig
+     * Create a RingSignature from a json object
      *
-     * @param sig - The RingSig to convert
+     * @param json - The json to convert
      *
      * @returns A RingSignature
      */
-    static fromRingSig(sig: RingSig): RingSignature;
+    static fromJson(json: string): RingSignature;
     /**
-     * Transform a RingSignature into a RingSig
+     * Create a Json string from a RingSignature
      *
-     * @returns A RingSig
+     * @returns A json string
      */
-    toRingSig(): RingSig;
+    toJsonString(): string;
     /**
      * Transforms a Base64 string to a ring signature
      *
@@ -122,12 +107,12 @@ export declare class RingSignature {
      */
     verify(): boolean;
     /**
-     * Verify a RingSignature stored as a RingSig
+     * Verify a RingSignature stored as a json string
      *
-     * @param signature - The RingSig to verify
+     * @param signature - The json signature to verify
      * @returns True if the signature is valid, false otherwise
      */
-    static verify(signature: RingSig): boolean;
+    static verify(signature: string): boolean;
     /**
      * Generate an incomplete ring signature.
      * Allow the user to use its private key from an external software (external software/hardware wallet)
