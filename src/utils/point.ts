@@ -12,11 +12,16 @@ export class Point {
   public y: bigint;
 
   /**
-   *
+   * Creates a point instance.
    *
    * @param curve - The curve
    * @param coordinates - The point coordinates ([x,y])
    * @param generator - if true, the point is a generator point
+   * @param safeMode - if true, the point is checked to be on the curve
+   *
+   * @throws if the point is not on the curve
+   *
+   * @returns the point
    */
   constructor(curve: Curve, coordinates: [bigint, bigint]) {
     this.curve = curve;
@@ -62,7 +67,7 @@ export class Point {
    * @returns the result of the addition as a new Point
    */
   add(point: Point): Point {
-    if (this.curve !== point.curve)
+    if (this.curve.name !== point.curve.name)
       throw new Error("Cannot add points: different curves");
 
     switch (this.curve.name) {
