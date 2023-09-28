@@ -401,15 +401,12 @@ export class RingSignature {
     // add the signer public key to the ring
     ring = ring.slice(0, pi).concat([signerPubKey], ring.slice(pi)) as Point[];
 
-    // check for duplicates
-    for (let i = 0; i < ring.length; i++) {
-      // complexity.. :(
-      for (let j = i + 1; j < ring.length; j++) {
-        if (ring[i].x === ring[j].x && ring[i].y === ring[j].y) {
-          throw new Error("Ring contains duplicate public keys");
-        }
-      }
+    // check for duplicates using a set
+    const ringSet = new Set(ring);
+    if (ringSet.size !== ring.length) {
+      throw new Error("Ring contains duplicates");
     }
+
 
     // generate random responses for every public key in the ring
     const responses: bigint[] = [];
