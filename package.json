@@ -6,7 +6,7 @@
   "module": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
   "scripts": {
-    "build": "tsc",
+    "build": "rm -r ./dist && tsc",
     "test": "ts-node test/test.ts",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
