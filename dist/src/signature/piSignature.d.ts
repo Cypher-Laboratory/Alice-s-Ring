@@ -13,7 +13,9 @@ import { Curve, Point } from "../utils";
  *
  * @returns the signer response as a point on the curve
  */
-export declare function piSignature(nonce: bigint, message: bigint, signerPrivKey: bigint, curve: Curve): bigint;
+export declare function piSignature(nonce: bigint, // = alpha in our ring signature scheme
+message: bigint, // = c in our ring signature scheme
+signerPrivKey: bigint, curve: Curve): bigint;
 /**
  * Verify a signature generated with the `piSignature` function
  *

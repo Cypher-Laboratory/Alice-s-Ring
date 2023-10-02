@@ -21,7 +21,9 @@ const utils_1 = require("../utils");
  *
  * @returns the signer response as a point on the curve
  */
-function piSignature(nonce, message, signerPrivKey, curve) {
+function piSignature(nonce, // = alpha in our ring signature scheme
+message, // = c in our ring signature scheme
+signerPrivKey, curve) {
     return (0, utils_1.modulo)(nonce - message * signerPrivKey, curve.N);
 }
 exports.piSignature = piSignature;
@@ -41,18 +43,3 @@ function verifyPiSignature(signerPubKey, piSignature, nonce, message, curve) {
     return G.mult(piSignature).equals(G.mult(nonce).add(signerPubKey.mult(message).negate()));
 }
 exports.verifyPiSignature = verifyPiSignature;
-// const G = new Point(new Curve(CurveName.SECP256K1), [ExtendedPoint.BASE.toAffine().x, ExtendedPoint.BASE.toAffine().y] as [
-//   bigint,
-//   bigint,
-// ]);
-// const privKey = 56465485646545848564865486545864546546545n;
-// const pubKey = new Curve(CurveName.SECP256K1).GtoPoint().mult(privKey);
-// const nonce = 648658648648654856354n;
-// const msg = 1234456677788n;
-// const sig = piSignature(
-//   nonce,
-//   msg,
-//   privKey,
-//   new Curve(CurveName.SECP256K1),
-// )
-// console.log(verifyPiSignature(pubKey, sig, nonce, msg, new Curve(CurveName.SECP256K1)))
