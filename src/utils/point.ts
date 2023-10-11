@@ -41,7 +41,7 @@ export class Point {
 
         case CurveName.ED25519: {
           if (
-            this.y ** 2n - this.x ** 2n ===
+            this.y ** 2n - this.x ** 2n !==
             1n - (121665n / 12666n) * this.x ** 2n * this.y ** 2n
           ) {
             throw new Error("Point is not on ED25519 curve");
