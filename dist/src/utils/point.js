@@ -34,8 +34,8 @@ class Point {
                     break;
                 }
                 case curves_1.CurveName.ED25519: {
-                    if (this.y ** 2n - this.x ** 2n !==
-                        1n - (121665n / 12666n) * this.x ** 2n * this.y ** 2n) {
+                    if ((0, _1.modulo)(this.y ** 2n - this.x ** 2n, this.curve.N) !==
+                        (0, _1.modulo)(1n - (121665n / 12666n) * this.x ** 2n * this.y ** 2n, this.curve.N)) {
                         throw new Error("Point is not on ED25519 curve");
                     }
                     break;

@@ -1,3 +1,5 @@
+export declare const Gx = 15112221349535400772501151409588531511454012693041857206046113283949847762202n;
+export declare const Gy = 46316835694926478169428394003475163141307993866256225615783033603165251855960n;
 declare const CURVE: {
     a: bigint;
     d: bigint;
@@ -9,6 +11,7 @@ declare const CURVE: {
 };
 type Bytes = Uint8Array;
 type Hex = Bytes | string;
+export declare const mod: (a: bigint, b?: bigint) => bigint;
 interface AffinePoint {
     x: bigint;
     y: bigint;
