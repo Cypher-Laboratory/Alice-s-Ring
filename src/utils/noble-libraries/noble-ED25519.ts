@@ -2,8 +2,10 @@
 /*! noble-ed25519 - MIT License (c) 2019 Paul Miller (paulmillr.com) */
 const P = 2n ** 255n - 19n; // ed25519 is twisted edwards curve
 const N = 2n ** 252n + 27742317777372353535851937790883648493n; // curve's (group) order
-const Gx = 0x216936d3cd6e53fec0a4e231fdd6dc5c692cc7609525a7b2c9562d608f25d51an; // base point x
-const Gy = 0x6666666666666666666666666666666666666666666666666666666666666658n; // base point y
+export const Gx =
+  0x216936d3cd6e53fec0a4e231fdd6dc5c692cc7609525a7b2c9562d608f25d51an; // base point x
+export const Gy =
+  0x6666666666666666666666666666666666666666666666666666666666666658n; // base point y
 const CURVE = {
   // Curve's formula is −x² + y² = -a + dx²y²
   a: -1n, // where a=-1, d = -(121665/121666) == -(121665 * inv(121666)) mod P
@@ -30,7 +32,7 @@ const au8 = (
     : a;
 const u8n = (data?: any) => new Uint8Array(data); // creates Uint8Array
 const toU8 = (a: Hex, len?: number) => au8(str(a) ? h2b(a) : u8n(a), len); // norm(hex/u8a) to u8a
-const mod = (a: bigint, b = P) => {
+export const mod = (a: bigint, b = P) => {
   let r = a % b;
   return r >= 0n ? r : b + r;
 }; // mod division

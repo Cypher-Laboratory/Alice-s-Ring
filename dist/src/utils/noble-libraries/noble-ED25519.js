@@ -1,12 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ExtendedPoint = exports.utils = exports.etc = exports.CURVE = exports.verifyAsync = exports.signAsync = exports.verify = exports.sign = exports.getPublicKeyAsync = exports.getPublicKey = void 0;
+exports.ExtendedPoint = exports.utils = exports.etc = exports.CURVE = exports.verifyAsync = exports.signAsync = exports.verify = exports.sign = exports.getPublicKeyAsync = exports.getPublicKey = exports.mod = exports.Gy = exports.Gx = void 0;
 // taken from https://github.com/paulmillr/noble-ed25519/blob/main/index.ts
 /*! noble-ed25519 - MIT License (c) 2019 Paul Miller (paulmillr.com) */
 const P = 2n ** 255n - 19n; // ed25519 is twisted edwards curve
 const N = 2n ** 252n + 27742317777372353535851937790883648493n; // curve's (group) order
-const Gx = 0x216936d3cd6e53fec0a4e231fdd6dc5c692cc7609525a7b2c9562d608f25d51an; // base point x
-const Gy = 0x6666666666666666666666666666666666666666666666666666666666666658n; // base point y
+exports.Gx = 0x216936d3cd6e53fec0a4e231fdd6dc5c692cc7609525a7b2c9562d608f25d51an; // base point x
+exports.Gy = 0x6666666666666666666666666666666666666666666666666666666666666658n; // base point y
 const CURVE = {
     // Curve's formula is −x² + y² = -a + dx²y²
     a: -1n,
@@ -14,8 +14,8 @@ const CURVE = {
     p: P,
     n: N,
     h: 8,
-    Gx,
-    Gy, // field prime, curve (group) order, cofactor
+    Gx: exports.Gx,
+    Gy: exports.Gy, // field prime, curve (group) order, cofactor
 };
 exports.CURVE = CURVE;
 const err = (m = "") => {
@@ -33,6 +33,7 @@ const mod = (a, b = P) => {
     let r = a % b;
     return r >= 0n ? r : b + r;
 }; // mod division
+exports.mod = mod;
 const isPoint = (p) => (p instanceof Point ? p : err("Point expected")); // is xyzt point
 let Gpows = undefined; // precomputes for base point G
 class Point {
@@ -44,7 +45,7 @@ class Point {
         this.et = et;
     }
     static fromAffine(p) {
-        return new Point(p.x, p.y, 1n, mod(p.x * p.y));
+        return new Point(p.x, p.y, 1n, (0, exports.mod)(p.x * p.y));
     }
     static fromHex(hex, zip215 = false) {
         // RFC8032 5.1.3: hex / Uint8Array to Point.
@@ -58,9 +59,9 @@ class Point {
             err("bad y coord 1"); // zip215=true  [1..2^256-1]
         if (!zip215 && !(0n <= y && y < P))
             err("bad y coord 2"); // zip215=false [1..P-1]
-        const y2 = mod(y * y); // y²
-        const u = mod(y2 - 1n); // u=y²-1
-        const v = mod(d * y2 + 1n); // v=dy²+1
+        const y2 = (0, exports.mod)(y * y); // y²
+        const u = (0, exports.mod)(y2 - 1n); // u=y²-1
+        const v = (0, exports.mod)(d * y2 + 1n); // v=dy²+1
         let { isValid, value: x } = uvRatio(u, v); // (uv³)(uv⁷)^(p-5)/8; square root
         if (!isValid)
             err("bad y coordinate 3"); // not square root: bad point
@@ -69,8 +70,8 @@ class Point {
         if (!zip215 && x === 0n && isLastByteOdd)
             err("bad y coord 3"); // x=0 and x_0 = 1
         if (isLastByteOdd !== isXOdd)
-            x = mod(-x);
-        return new Point(x, y, 1n, mod(x * y)); // Z=1, T=xy
+            x = (0, exports.mod)(-x);
+        return new Point(x, y, 1n, (0, exports.mod)(x * y)); // Z=1, T=xy
     }
     get x() {
         return this.toAffine().x;
@@ -82,8 +83,8 @@ class Point {
         // equality check: compare points
         const { ex: X1, ey: Y1, ez: Z1 } = this;
         const { ex: X2, ey: Y2, ez: Z2 } = isPoint(other); // isPoint() checks class equality
-        const X1Z2 = mod(X1 * Z2), X2Z1 = mod(X2 * Z1);
-        const Y1Z2 = mod(Y1 * Z2), Y2Z1 = mod(Y2 * Z1);
+        const X1Z2 = (0, exports.mod)(X1 * Z2), X2Z1 = (0, exports.mod)(X2 * Z1);
+        const Y1Z2 = (0, exports.mod)(Y1 * Z2), Y2Z1 = (0, exports.mod)(Y2 * Z1);
         return X1Z2 === X2Z1 && Y1Z2 === Y2Z1;
     }
     is0() {
@@ -91,25 +92,25 @@ class Point {
     }
     negate() {
         // negate: flip over the affine x coordinate
-        return new Point(mod(-this.ex), this.ey, this.ez, mod(-this.et));
+        return new Point((0, exports.mod)(-this.ex), this.ey, this.ez, (0, exports.mod)(-this.et));
     }
     double() {
         // Point doubling. Complete formula.
         const { ex: X1, ey: Y1, ez: Z1 } = this; // Cost: 4M + 4S + 1*a + 6add + 1*2
         const { a } = CURVE; // https://hyperelliptic.org/EFD/g1p/auto-twisted-extended.html#doubling-dbl-2008-hwcd
-        const A = mod(X1 * X1);
-        const B = mod(Y1 * Y1);
-        const C = mod(2n * mod(Z1 * Z1));
-        const D = mod(a * A);
+        const A = (0, exports.mod)(X1 * X1);
+        const B = (0, exports.mod)(Y1 * Y1);
+        const C = (0, exports.mod)(2n * (0, exports.mod)(Z1 * Z1));
+        const D = (0, exports.mod)(a * A);
         const x1y1 = X1 + Y1;
-        const E = mod(mod(x1y1 * x1y1) - A - B);
+        const E = (0, exports.mod)((0, exports.mod)(x1y1 * x1y1) - A - B);
         const G = D + B;
         const F = G - C;
         const H = D - B;
-        const X3 = mod(E * F);
-        const Y3 = mod(G * H);
-        const T3 = mod(E * H);
-        const Z3 = mod(F * G);
+        const X3 = (0, exports.mod)(E * F);
+        const Y3 = (0, exports.mod)(G * H);
+        const T3 = (0, exports.mod)(E * H);
+        const Z3 = (0, exports.mod)(F * G);
         return new Point(X3, Y3, Z3, T3);
     }
     add(other) {
@@ -117,18 +118,18 @@ class Point {
         const { ex: X1, ey: Y1, ez: Z1, et: T1 } = this; // Cost: 8M + 1*k + 8add + 1*2.
         const { ex: X2, ey: Y2, ez: Z2, et: T2 } = isPoint(other); // doesn't check if other on-curve
         const { a, d } = CURVE; // http://hyperelliptic.org/EFD/g1p/auto-twisted-extended-1.html#addition-add-2008-hwcd-3
-        const A = mod(X1 * X2);
-        const B = mod(Y1 * Y2);
-        const C = mod(T1 * d * T2);
-        const D = mod(Z1 * Z2);
-        const E = mod((X1 + Y1) * (X2 + Y2) - A - B);
-        const F = mod(D - C);
-        const G = mod(D + C);
-        const H = mod(B - a * A);
-        const X3 = mod(E * F);
-        const Y3 = mod(G * H);
-        const T3 = mod(E * H);
-        const Z3 = mod(F * G);
+        const A = (0, exports.mod)(X1 * X2);
+        const B = (0, exports.mod)(Y1 * Y2);
+        const C = (0, exports.mod)(T1 * d * T2);
+        const D = (0, exports.mod)(Z1 * Z2);
+        const E = (0, exports.mod)((X1 + Y1) * (X2 + Y2) - A - B);
+        const F = (0, exports.mod)(D - C);
+        const G = (0, exports.mod)(D + C);
+        const H = (0, exports.mod)(B - a * A);
+        const X3 = (0, exports.mod)(E * F);
+        const Y3 = (0, exports.mod)(G * H);
+        const T3 = (0, exports.mod)(E * H);
+        const Z3 = (0, exports.mod)(F * G);
         return new Point(X3, Y3, Z3, T3);
     }
     mul(n, safe = true) {
@@ -173,9 +174,9 @@ class Point {
         if (this.is0())
             return { x: 0n, y: 0n }; // fast-path for zero point
         const iz = invert(z); // z^-1: invert z
-        if (mod(z * iz) !== 1n)
+        if ((0, exports.mod)(z * iz) !== 1n)
             err("invalid inverse"); // (z * z^-1) must be 1, otherwise bad math
-        return { x: mod(x * iz), y: mod(y * iz) }; // x = x*z^-1; y = y*z^-1
+        return { x: (0, exports.mod)(x * iz), y: (0, exports.mod)(y * iz) }; // x = x*z^-1; y = y*z^-1
     }
     toRawBytes() {
         // Encode to Uint8Array
@@ -189,7 +190,7 @@ class Point {
     } // encode to hex string
 }
 exports.ExtendedPoint = Point;
-Point.BASE = new Point(Gx, Gy, 1n, mod(Gx * Gy)); // Generator / Base point
+Point.BASE = new Point(exports.Gx, exports.Gy, 1n, (0, exports.mod)(exports.Gx * exports.Gy)); // Generator / Base point
 Point.ZERO = new Point(0n, 1n, 1n, 0n); // Identity / Zero point
 const { BASE: G, ZERO: I } = Point; // Generator, identity points
 const padh = (num, pad) => num.toString(16).padStart(pad, "0");
@@ -228,14 +229,14 @@ const invert = (num, md = P) => {
     // modular inversion
     if (num === 0n || md <= 0n)
         err("no inverse n=" + num + " mod=" + md); // no neg exponent for now
-    let a = mod(num, md), b = md, x = 0n, y = 1n, u = 1n, v = 0n;
+    let a = (0, exports.mod)(num, md), b = md, x = 0n, y = 1n, u = 1n, v = 0n;
     while (a !== 0n) {
         // uses euclidean gcd algorithm
         const q = b / a, r = b % a; // not constant-time
         const m = x - u * q, n = y - v * q;
         (b = a), (a = r), (x = u), (y = v), (u = m), (v = n);
     }
-    return b === 1n ? mod(x, md) : err("no inverse"); // b is gcd at this point
+    return b === 1n ? (0, exports.mod)(x, md) : err("no inverse"); // b is gcd at this point
 };
 const pow2 = (x, power) => {
     // pow2(x, 4) == x^(2^4)
@@ -265,25 +266,25 @@ const pow_2_252_3 = (x) => {
 const RM1 = 19681161376707505956807079304988542015446066515923890162744021073123829784752n; // √-1
 const uvRatio = (u, v) => {
     // for sqrt comp
-    const v3 = mod(v * v * v); // v³
-    const v7 = mod(v3 * v3 * v); // v⁷
+    const v3 = (0, exports.mod)(v * v * v); // v³
+    const v7 = (0, exports.mod)(v3 * v3 * v); // v⁷
     const pow = pow_2_252_3(u * v7).pow_p_5_8; // (uv⁷)^(p-5)/8
-    let x = mod(u * v3 * pow); // (uv³)(uv⁷)^(p-5)/8
-    const vx2 = mod(v * x * x); // vx²
+    let x = (0, exports.mod)(u * v3 * pow); // (uv³)(uv⁷)^(p-5)/8
+    const vx2 = (0, exports.mod)(v * x * x); // vx²
     const root1 = x; // First root candidate
-    const root2 = mod(x * RM1); // Second root candidate; RM1 is √-1
+    const root2 = (0, exports.mod)(x * RM1); // Second root candidate; RM1 is √-1
     const useRoot1 = vx2 === u; // If vx² = u (mod p), x is a square root
-    const useRoot2 = vx2 === mod(-u); // If vx² = -u, set x <-- x * 2^((p-1)/4)
-    const noRoot = vx2 === mod(-u * RM1); // There is no valid root, vx² = -u√-1
+    const useRoot2 = vx2 === (0, exports.mod)(-u); // If vx² = -u, set x <-- x * 2^((p-1)/4)
+    const noRoot = vx2 === (0, exports.mod)(-u * RM1); // There is no valid root, vx² = -u√-1
     if (useRoot1)
         x = root1;
     if (useRoot2 || noRoot)
         x = root2; // We return root2 anyway, for const-time
-    if ((mod(x) & 1n) === 1n)
-        x = mod(-x); // edIsNegative
+    if (((0, exports.mod)(x) & 1n) === 1n)
+        x = (0, exports.mod)(-x); // edIsNegative
     return { isValid: useRoot1 || useRoot2, value: x };
 };
-const modL_LE = (hash) => mod(b2n_LE(hash), N); // modulo L; but little-endian
+const modL_LE = (hash) => (0, exports.mod)(b2n_LE(hash), N); // modulo L; but little-endian
 let _shaS;
 const sha512a = (...m) => etc.sha512Async(...m); // Async SHA512
 const sha512s = (...m // Sync SHA512, not set by default
@@ -320,7 +321,7 @@ const _sign = (e, rBytes, msg) => {
     const hashable = concatB(R, P, msg); // dom2(F, C) || R || A || PH(M)
     const finish = (hashed) => {
         // k = SHA512(dom2(F, C) || R || A || PH(M))
-        const S = mod(r + modL_LE(hashed) * s, N); // S = (r + k * s) mod L; 0 <= s < l
+        const S = (0, exports.mod)(r + modL_LE(hashed) * s, N); // S = (r + k * s) mod L; 0 <= s < l
         return au8(concatB(R, n2b_32LE(S)), 64); // 64-byte sig: 32b R.x + 32b LE(S)
     };
     return { hashable, finish };
@@ -379,7 +380,7 @@ const etc = {
     bytesToHex: b2h,
     hexToBytes: h2b,
     concatBytes: concatB,
-    mod,
+    mod: exports.mod,
     invert,
     randomBytes: (len = 32) => {
         // CSPRNG (random number generator)

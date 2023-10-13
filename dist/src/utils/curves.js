@@ -87,8 +87,9 @@ const SECP256K1 = {
     ],
 };
 // ED25519 curve constants
+const G = new noble_ED25519_1.ExtendedPoint(noble_ED25519_1.Gx, noble_ED25519_1.Gy, 1n, (0, noble_ED25519_1.mod)(noble_ED25519_1.Gx * noble_ED25519_1.Gy));
 const ED25519 = {
     P: 2n ** 255n - 19n,
     N: 2n ** 252n + 27742317777372353535851937790883648493n,
-    G: [noble_ED25519_1.ExtendedPoint.BASE.toAffine().x, noble_ED25519_1.ExtendedPoint.BASE.toAffine().y],
+    G: [G.toAffine().x, G.toAffine().y],
 };

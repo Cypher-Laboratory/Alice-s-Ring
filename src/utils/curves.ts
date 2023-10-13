@@ -1,4 +1,4 @@
-import { ExtendedPoint } from "./noble-libraries/noble-ED25519";
+import { ExtendedPoint, Gx, Gy, mod } from "./noble-libraries/noble-ED25519";
 import { Point } from "./point";
 
 /**
@@ -104,11 +104,9 @@ const SECP256K1 = {
 };
 
 // ED25519 curve constants
+const G = new ExtendedPoint(Gx, Gy, 1n, mod(Gx * Gy));
 const ED25519 = {
   P: 2n ** 255n - 19n,
   N: 2n ** 252n + 27742317777372353535851937790883648493n, // curve's (group) order
-  G: [ExtendedPoint.BASE.toAffine().x, ExtendedPoint.BASE.toAffine().y] as [
-    bigint,
-    bigint,
-  ],
+  G: [G.toAffine().x, G.toAffine().y] as [bigint, bigint],
 };
