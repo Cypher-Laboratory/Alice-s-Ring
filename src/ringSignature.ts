@@ -172,7 +172,6 @@ export class RingSignature {
     const ExtendedPublicKey = ed.utils.getExtendedPublicKey(
       signerPrivateKey.toString(16),
     );
-    console.log("ExtendedPublicKey : ", ExtendedPublicKey);
 
     if (ring.length === 0) {
       /*
@@ -407,7 +406,6 @@ export class RingSignature {
     } else {
       signerPubKey = signerKey;
     }
-    console.log("signerPubKey : ", signerPubKey);
     // set the signer position in the ring
     const pi = getRandomSecuredNumber(0, ring.length - 1); // signer index
     // add the signer public key to the ring
