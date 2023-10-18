@@ -79,4 +79,11 @@ export declare class Point {
      * @returns the point
      */
     static fromBase64(base64: string): Point;
+    /**
+     *
+     * @param hex the hex string representation of the poin
+     * @returns the point
+     *
+     */
+    static fromHexXRPL(hex: string): Point;
 }

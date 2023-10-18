@@ -7,7 +7,23 @@ import {
   modulo,
 } from "./utils";
 import { piSignature, verifyPiSignature } from "./signature/piSignature";
+import * as ed from "./utils/noble-libraries/noble-ED25519";
+import { sha512 } from "@noble/hashes/sha512";
+ed.etc.sha512Sync = (...m) => sha512(ed.etc.concatBytes(...m));
 
+/**
+ * Utils fonction to cast uint8 array to hex string
+ * @param array - The array to cast
+ * @returns The hex string
+ */
+
+function uint8ArrayToHex(array: Uint8Array): string {
+  let hex = "";
+  for (let i = 0; i < array.length; i++) {
+    hex += ("00" + array[i].toString(16)).slice(-2);
+  }
+  return hex;
+}
 /**
  * Partial ring signature interface
  *
@@ -164,7 +180,10 @@ export class RingSignature {
     message: string,
     curve: Curve,
   ): RingSignature {
-    const G: Point = curve.GtoPoint(); // generator point
+    //compute the extended public key (contains all the data needed to sign)
+    const ExetendedPublicKey = ed.utils.getExtendedPublicKey(
+      signerPrivateKey.toString(16),
+    );
 
     if (ring.length === 0) {
       /*
@@ -174,11 +193,15 @@ export class RingSignature {
        */
       const c = randomBigint(curve.N);
       const alpha = modulo(2n * c + 1n, curve.N);
-      const sig = piSignature(alpha, c, signerPrivateKey, curve);
+      const sig = piSignature(alpha, c, ExetendedPublicKey.scalar, curve);
 
       return new RingSignature(
         message,
-        [G.mult(signerPrivateKey)],
+        [
+          Point.fromHexXRPL(
+            "ED" + uint8ArrayToHex(ExetendedPublicKey.pointBytes),
+          ),
+        ],
         c,
         [sig],
         curve,
@@ -188,7 +211,7 @@ export class RingSignature {
     const rawSignature = RingSignature.signature(
       curve,
       ring,
-      signerPrivateKey,
+      ExetendedPublicKey.scalar,
       message,
     );
 
@@ -196,7 +219,7 @@ export class RingSignature {
     const signerResponse = piSignature(
       rawSignature.alpha,
       rawSignature.cees[rawSignature.pi],
-      signerPrivateKey,
+      ExetendedPublicKey.scalar,
       curve,
     );
 
@@ -395,7 +418,7 @@ export class RingSignature {
     } else {
       signerPubKey = signerKey;
     }
-
+    console.log("signerPubKey : ", signerPubKey);
     // set the signer position in the ring
     const pi = getRandomSecuredNumber(0, ring.length - 1); // signer index
     // add the signer public key to the ring

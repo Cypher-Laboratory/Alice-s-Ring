@@ -11,7 +11,7 @@ var CurveName;
     CurveName["SECP256K1"] = "SECP256K1";
     CurveName["ED25519"] = "ED25519";
     CurveName["CUSTOM"] = "CUSTOM";
-})(CurveName || (exports.CurveName = CurveName = {}));
+})(CurveName = exports.CurveName || (exports.CurveName = {}));
 class Curve {
     /**
      * Creates a curve instance.
