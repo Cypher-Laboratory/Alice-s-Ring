@@ -80,8 +80,9 @@ export declare class Point {
      */
     static fromBase64(base64: string): Point;
     /**
+     * Converts a hex public key (XRPL standart) to a point.
      *
-     * @param hex the hex string representation of the poin
+     * @param hex the hex string representation of the public key XRPL Format
      * @returns the point
      *
      */

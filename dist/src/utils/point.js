@@ -25,8 +25,8 @@ const noble_SECP256k1_1 = require("./noble-libraries/noble-SECP256k1");
 const noble_ED25519_1 = require("./noble-libraries/noble-ED25519");
 const _1 = require(".");
 const elliptic = __importStar(require("elliptic"));
-const Ed25519 = new elliptic.eddsa('ed25519');
-const secp256k1 = new elliptic.ec('secp256k1');
+const Ed25519 = new elliptic.eddsa("ed25519");
+const secp256k1 = new elliptic.ec("secp256k1");
 /**
  * A point on the elliptic curve.
  */
@@ -252,8 +252,9 @@ class Point {
         return new Point(retrievedCurve, [BigInt(x), BigInt(y)]);
     }
     /**
+     * Converts a hex public key (XRPL standart) to a point.
      *
-     * @param hex the hex string representation of the poin
+     * @param hex the hex string representation of the public key XRPL Format
      * @returns the point
      *
      */
@@ -267,15 +268,16 @@ class Point {
                 // Get ride of the ED prefix indicating that the curve is on ed25519
                 const keypair = Ed25519.keyFromPublic(hex.slice(2));
                 // get the X and Y value by decoding the point
-                const xValue = Ed25519
-                    .decodePoint(keypair.getPublic())
+                const xValue = Ed25519.decodePoint(keypair.getPublic())
                     .getX()
                     .toString(16);
-                const yValue = Ed25519
-                    .decodePoint(keypair.getPublic())
+                const yValue = Ed25519.decodePoint(keypair.getPublic())
                     .getY()
                     .toString(16);
-                return new Point(new curves_1.Curve(curves_1.CurveName.ED25519), [BigInt("0x" + xValue), BigInt("0x" + yValue)]);
+                return new Point(new curves_1.Curve(curves_1.CurveName.ED25519), [
+                    BigInt("0x" + xValue),
+                    BigInt("0x" + yValue),
+                ]);
             }
             catch (error) {
                 throw new Error("Error while computing coordinates on ed25519: " + error);
@@ -291,13 +293,15 @@ class Point {
                 // Access the y-coordinate from the retrieved point
                 const xValue = point.getX().toString(16);
                 const yValue = point.getY().toString(16);
-                return new Point(new curves_1.Curve(curves_1.CurveName.ED25519), [BigInt("0x" + xValue), BigInt("0x" + yValue)]);
+                return new Point(new curves_1.Curve(curves_1.CurveName.ED25519), [
+                    BigInt("0x" + xValue),
+                    BigInt("0x" + yValue),
+                ]);
             }
             catch (error) {
                 throw new Error("Error while computing coordinates on secp256k1: " + error);
             }
         }
     }
-    ;
 }
 exports.Point = Point;

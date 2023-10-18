@@ -5,7 +5,7 @@ import {
   Curve,
   Point,
   modulo,
-  uint8ArrayToHex
+  uint8ArrayToHex,
 } from "./utils";
 import { piSignature, verifyPiSignature } from "./signature/piSignature";
 import * as ed from "./utils/noble-libraries/noble-ED25519";

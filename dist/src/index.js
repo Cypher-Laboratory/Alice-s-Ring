@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.RingSignature = exports.getRandomSecuredNumber = exports.randomBigint = exports.Point = exports.CurveName = exports.Curve = exports.piSignature = void 0;
+exports.RingSignature = exports.uint8ArrayToHex = exports.getRandomSecuredNumber = exports.randomBigint = exports.Point = exports.CurveName = exports.Curve = exports.piSignature = void 0;
 var piSignature_1 = require("./signature/piSignature");
 Object.defineProperty(exports, "piSignature", { enumerable: true, get: function () { return piSignature_1.piSignature; } });
 var utils_1 = require("./utils");
@@ -9,5 +9,6 @@ Object.defineProperty(exports, "CurveName", { enumerable: true, get: function ()
 Object.defineProperty(exports, "Point", { enumerable: true, get: function () { return utils_1.Point; } });
 Object.defineProperty(exports, "randomBigint", { enumerable: true, get: function () { return utils_1.randomBigint; } });
 Object.defineProperty(exports, "getRandomSecuredNumber", { enumerable: true, get: function () { return utils_1.getRandomSecuredNumber; } });
+Object.defineProperty(exports, "uint8ArrayToHex", { enumerable: true, get: function () { return utils_1.uint8ArrayToHex; } });
 var ringSignature_1 = require("./ringSignature");
 Object.defineProperty(exports, "RingSignature", { enumerable: true, get: function () { return ringSignature_1.RingSignature; } });

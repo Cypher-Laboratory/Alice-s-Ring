@@ -274,7 +274,7 @@ export class Point {
 
   /**
    * Converts a hex public key (XRPL standart) to a point.
-   * 
+   *
    * @param hex the hex string representation of the public key XRPL Format
    * @returns the point
    *

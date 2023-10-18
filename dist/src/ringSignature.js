@@ -27,16 +27,6 @@ const ed = __importStar(require("./utils/noble-libraries/noble-ED25519"));
 const sha512_1 = require("@noble/hashes/sha512");
 ed.etc.sha512Sync = (...m) => (0, sha512_1.sha512)(ed.etc.concatBytes(...m));
 /**
- * Util fonction to cast uint8 array to hex string
- */
-function uint8ArrayToHex(array) {
-    let hex = '';
-    for (let i = 0; i < array.length; i++) {
-        hex += ('00' + array[i].toString(16)).slice(-2);
-    }
-    return hex;
-}
-/**
  * Ring signature class.
  * This class is used to sign messages using ring signatures.
  * It can also be used to verify ring signatures.
@@ -129,7 +119,9 @@ class RingSignature {
      */
     static sign(ring, // ring.length = n
     signerPrivateKey, message, curve) {
-        const ExetendedPublicKey = ed.utils.getExtendedPublicKey(signerPrivateKey.toString(16));
+        //compute the extended public key (contains all the data needed to sign)
+        const ExtendedPublicKey = ed.utils.getExtendedPublicKey(signerPrivateKey.toString(16));
+        console.log("ExtendedPublicKey : ", ExtendedPublicKey);
         if (ring.length === 0) {
             /*
              * If the ring is empty, we just sign the message using our schnorr-like signature scheme
@@ -138,12 +130,14 @@ class RingSignature {
              */
             const c = (0, utils_1.randomBigint)(curve.N);
             const alpha = (0, utils_1.modulo)(2n * c + 1n, curve.N);
-            const sig = (0, piSignature_1.piSignature)(alpha, c, ExetendedPublicKey.scalar, curve);
-            return new RingSignature(message, [utils_1.Point.fromHexXRPL("ED" + uint8ArrayToHex(ExetendedPublicKey.pointBytes))], c, [sig], curve);
+            const sig = (0, piSignature_1.piSignature)(alpha, c, ExtendedPublicKey.scalar, curve);
+            return new RingSignature(message, [
+                utils_1.Point.fromHexXRPL("ED" + (0, utils_1.uint8ArrayToHex)(ExtendedPublicKey.pointBytes)),
+            ], c, [sig], curve);
         }
-        const rawSignature = RingSignature.signature(curve, ring, ExetendedPublicKey.scalar, message);
+        const rawSignature = RingSignature.signature(curve, ring, ExtendedPublicKey.scalar, message);
         // compute the signer response
-        const signerResponse = (0, piSignature_1.piSignature)(rawSignature.alpha, rawSignature.cees[rawSignature.pi], ExetendedPublicKey.scalar, curve);
+        const signerResponse = (0, piSignature_1.piSignature)(rawSignature.alpha, rawSignature.cees[rawSignature.pi], ExtendedPublicKey.scalar, curve);
         return new RingSignature(message, rawSignature.ring, rawSignature.cees[0], 
         // insert the signer response
         rawSignature.responses
