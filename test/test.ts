@@ -1,4 +1,3 @@
-//import { RingSignature, RingSig } from "../src/ringSignature";
 import { piSignature } from "../src";
 import { RingSignature } from "../src/ringSignature";
 import { Curve, Point, randomBigint, modulo, CurveName } from "../src/utils";

@@ -6,6 +6,7 @@ export {
   Point,
   randomBigint,
   getRandomSecuredNumber,
+  uint8ArrayToHex,
 } from "./utils";
 
 export { RingSignature, PartialSignature } from "./ringSignature";
