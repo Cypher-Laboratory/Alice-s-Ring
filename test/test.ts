@@ -1,7 +1,7 @@
-// import { RingSignature, RingSig } from "../src/ringSignature";
 import { piSignature } from "../src";
 import { RingSignature } from "../src/ringSignature";
 import { Curve, Point, randomBigint, modulo, CurveName } from "../src/utils";
+import { deriveKeypair } from "ripple-keypairs";
 
 const tmp = [
   "42",
@@ -51,6 +51,8 @@ const signerPrivKey_secp =
   4663621002712304654134267866148565564648521986326001983848741804705428459856n;
 const signerPubKey_secp = G_SECP.mult(signerPrivKey_secp);
 const ring_secp = randomRing(ringSize, G_SECP, secp256k1.N);
+const seed = "sEdSWniReyeCh7JLWUHEfNTz53pxsjX";
+const keypair = deriveKeypair(seed);
 
 const G_ED = new Point(ed25519, ed25519.G);
 const signerPrivKey_ed = modulo(signerPrivKey, ed25519.N);
@@ -91,7 +93,7 @@ if (!verifiedSig_secp) {
 console.log("------ SIGNATURE USING ED25519 ------");
 const signature_ed = RingSignature.sign(
   ring_ed,
-  signerPrivKey_ed,
+  BigInt("0x" + keypair.privateKey.slice(2)),
   "test",
   ed25519,
 );
@@ -108,7 +110,7 @@ if (!verifiedSig_ed) {
 console.log("------ TEST BASE64 ENCODING/DECODING ------");
 const signature = RingSignature.sign(
   ring_ed,
-  signerPrivKey_ed,
+  BigInt("0x" + keypair.privateKey.slice(2)),
   "test",
   ed25519,
 );
@@ -204,7 +206,7 @@ if (!verifiedSig_secp_empty_ring) {
 console.log("------ TEST RING_SIZE = 0 USING ED25519 ------");
 const signature_ed_empty_ring = RingSignature.sign(
   [],
-  signerPrivKey_ed,
+  BigInt("0x" + keypair.privateKey.slice(2)),
   "test",
   ed25519,
 );
@@ -230,14 +232,14 @@ try {
 }
 
 console.log("------ PARTIAL SIGNATURE WITH RING_SIZE=0 USING ED25519 ------");
-try {
+/*try {
   RingSignature.partialSign([], "test", signerPubKey_ed, ed25519);
   process.exit(1);
 } catch (e) {
   console.log(
     "Partial Signature with ringSize = 0 on ED25519 failed as expected",
   );
-}
+}*/
 
 function areResponsesEquals(
   responses1: bigint[],

@@ -6,9 +6,9 @@ declare const CURVE: {
     Gx: bigint;
     Gy: bigint;
 };
-type Bytes = Uint8Array;
-type Hex = Bytes | string;
-type PrivKey = Hex | bigint;
+declare type Bytes = Uint8Array;
+declare type Hex = Bytes | string;
+declare type PrivKey = Hex | bigint;
 interface AffinePoint {
     x: bigint;
     y: bigint;
@@ -40,7 +40,7 @@ declare class Point {
     toRawBytes(isCompressed?: boolean): Uint8Array;
 }
 declare function getPublicKey(privKey: PrivKey, isCompressed?: boolean): Uint8Array;
-type SignatureWithRecovery = Signature & {
+declare type SignatureWithRecovery = Signature & {
     recovery: number;
 };
 declare class Signature {
@@ -56,7 +56,7 @@ declare class Signature {
     toCompactRawBytes(): Uint8Array;
     toCompactHex(): string;
 }
-type HmacFnSync = undefined | ((key: Bytes, ...msgs: Bytes[]) => Bytes);
+declare type HmacFnSync = undefined | ((key: Bytes, ...msgs: Bytes[]) => Bytes);
 declare function signAsync(msgh: Hex, priv: PrivKey, opts?: {
     lowS?: boolean | undefined;
     extraEntropy?: boolean | Hex | undefined;
@@ -65,7 +65,7 @@ declare function sign(msgh: Hex, priv: PrivKey, opts?: {
     lowS?: boolean | undefined;
     extraEntropy?: boolean | Hex | undefined;
 }): SignatureWithRecovery;
-type SigLike = {
+declare type SigLike = {
     r: bigint;
     s: bigint;
 };

@@ -79,4 +79,12 @@ export declare class Point {
      * @returns the point
      */
     static fromBase64(base64: string): Point;
+    /**
+     * Converts a hex public key (XRPL standard) to a Point object.
+     *
+     * @param hex the hex string representation of the public key XRPL Format
+     * @returns the point
+     *
+     */
+    static fromHexXRPL(hex: string): Point;
 }
