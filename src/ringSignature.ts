@@ -171,7 +171,12 @@ export class RingSignature {
   ): RingSignature {
     // add a case if curve is ed25519
     if (curve.name === CurveName.ED25519) {
-      return RingSignature.signEd25519XRPL(ring, signerPrivateKey, message, curve);
+      return RingSignature.signEd25519XRPL(
+        ring,
+        signerPrivateKey,
+        message,
+        curve,
+      );
     }
     // else run the original code, waiting to add a specif case for secp256k1
     const G: Point = curve.GtoPoint(); // generator point
@@ -225,7 +230,7 @@ export class RingSignature {
     );
   }
 
- /**
+  /**
    * Sign a message using ring signatures, for ed25519 curve and XRPL chain
    *
    * @param ring - Ring of public keys (does not contain the signer public key)
@@ -236,10 +241,11 @@ export class RingSignature {
    * @returns A RingSignature
    */
   private static signEd25519XRPL(
-    ring: Point[], 
+    ring: Point[],
     signerPrivateKey: bigint,
     message: string,
-    curve: Curve): RingSignature {
+    curve: Curve,
+  ): RingSignature {
     //compute the extended public key (contains all the data needed to sign)
     const ExtendedPublicKey = ed.utils.getExtendedPublicKey(
       signerPrivateKey.toString(16),
@@ -297,7 +303,6 @@ export class RingSignature {
       curve,
     );
   }
-
 
   /**
    * Sign a message using ring signatures
@@ -578,11 +583,11 @@ export class RingSignature {
     return modulo(
       BigInt(
         "0x" +
-        keccak256(
-          ring +
-          message +
-          G.mult(r).add(previousPubKey.mult(previousC)).toString(),
-        ),
+          keccak256(
+            ring +
+              message +
+              G.mult(r).add(previousPubKey.mult(previousC)).toString(),
+          ),
       ),
       N,
     );

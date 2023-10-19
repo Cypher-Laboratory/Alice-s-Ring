@@ -78,7 +78,6 @@ if (!verifiedSig_secp) {
 console.log("------ SIGNATURE USING ED25519 ------");
 const signature_ed = ringSignature_1.RingSignature.sign(ring_ed, BigInt("0x" + keypair.privateKey.slice(2)), "test", ed25519);
 const verifiedSig_ed = signature_ed.verify();
-console.log("signature: ", signature_ed);
 console.log("Is sig valid ? ", verifiedSig_ed);
 if (!verifiedSig_ed) {
     console.log("Error: Ring signature verification failed on ED25519");
@@ -139,7 +138,7 @@ if (!verifiedSig_secp_empty_ring) {
     process.exit(1);
 }
 console.log("------ TEST RING_SIZE = 0 USING ED25519 ------");
-const signature_ed_empty_ring = ringSignature_1.RingSignature.sign([], signerPrivKey_ed, "test", ed25519);
+const signature_ed_empty_ring = ringSignature_1.RingSignature.sign([], BigInt("0x" + keypair.privateKey.slice(2)), "test", ed25519);
 const verifiedSig_ed_empty_ring = signature_ed_empty_ring.verify();
 console.log("Is sig valid ? ", verifiedSig_ed_empty_ring);
 if (!verifiedSig_ed_empty_ring) {

@@ -119,9 +119,45 @@ class RingSignature {
      */
     static sign(ring, // ring.length = n
     signerPrivateKey, message, curve) {
+        // add a case if curve is ed25519
+        if (curve.name === utils_1.CurveName.ED25519) {
+            return RingSignature.signEd25519XRPL(ring, signerPrivateKey, message, curve);
+        }
+        // else run the original code, waiting to add a specif case for secp256k1
+        const G = curve.GtoPoint(); // generator point
+        if (ring.length === 0) {
+            /*
+             * If the ring is empty, we just sign the message using our schnorr-like signature scheme
+             * and return a ring signature with only one response.
+             * Note that alpha is computed from c to allow verification.
+             */
+            const c = (0, utils_1.randomBigint)(curve.N);
+            const alpha = (0, utils_1.modulo)(2n * c + 1n, curve.N);
+            const sig = (0, piSignature_1.piSignature)(alpha, c, signerPrivateKey, curve);
+            return new RingSignature(message, [G.mult(signerPrivateKey)], c, [sig], curve);
+        }
+        const rawSignature = RingSignature.signature(curve, ring, signerPrivateKey, message);
+        // compute the signer response
+        const signerResponse = (0, piSignature_1.piSignature)(rawSignature.alpha, rawSignature.cees[rawSignature.pi], signerPrivateKey, curve);
+        return new RingSignature(message, rawSignature.ring, rawSignature.cees[0], 
+        // insert the signer response
+        rawSignature.responses
+            .slice(0, rawSignature.pi)
+            .concat([signerResponse], rawSignature.responses.slice(rawSignature.pi + 1)), curve);
+    }
+    /**
+     * Sign a message using ring signatures, for ed25519 curve and XRPL chain
+     *
+     * @param ring - Ring of public keys (does not contain the signer public key)
+     * @param signerPrivKey - Private key of the signer
+     * @param message - Clear message to sign
+     * @param curve - The elliptic curve to use
+     *
+     * @returns A RingSignature
+     */
+    static signEd25519XRPL(ring, signerPrivateKey, message, curve) {
         //compute the extended public key (contains all the data needed to sign)
         const ExtendedPublicKey = ed.utils.getExtendedPublicKey(signerPrivateKey.toString(16));
-        console.log("ExtendedPublicKey : ", ExtendedPublicKey);
         if (ring.length === 0) {
             /*
              * If the ring is empty, we just sign the message using our schnorr-like signature scheme
@@ -251,7 +287,6 @@ class RingSignature {
         else {
             signerPubKey = signerKey;
         }
-        console.log("signerPubKey : ", signerPubKey);
         // set the signer position in the ring
         const pi = (0, utils_1.getRandomSecuredNumber)(0, ring.length - 1); // signer index
         // add the signer public key to the ring

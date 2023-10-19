@@ -252,7 +252,7 @@ class Point {
         return new Point(retrievedCurve, [BigInt(x), BigInt(y)]);
     }
     /**
-     * Converts a hex public key (XRPL standart) to a point.
+     * Converts a hex public key (XRPL standard) to a Point object.
      *
      * @param hex the hex string representation of the public key XRPL Format
      * @returns the point

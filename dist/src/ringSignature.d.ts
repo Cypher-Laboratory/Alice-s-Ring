@@ -82,6 +82,17 @@ export declare class RingSignature {
     static sign(ring: Point[], // ring.length = n
     signerPrivateKey: bigint, message: string, curve: Curve): RingSignature;
     /**
+     * Sign a message using ring signatures, for ed25519 curve and XRPL chain
+     *
+     * @param ring - Ring of public keys (does not contain the signer public key)
+     * @param signerPrivKey - Private key of the signer
+     * @param message - Clear message to sign
+     * @param curve - The elliptic curve to use
+     *
+     * @returns A RingSignature
+     */
+    private static signEd25519XRPL;
+    /**
      * Sign a message using ring signatures
      *
      * @param ring - Ring of public keys (does not contain the signer public key)
