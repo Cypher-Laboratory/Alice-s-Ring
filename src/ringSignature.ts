@@ -6,6 +6,7 @@ import {
   Point,
   modulo,
   uint8ArrayToHex,
+  CurveName,
 } from "./utils";
 import { piSignature, verifyPiSignature } from "./signature/piSignature";
 import * as ed from "./utils/noble-libraries/noble-ED25519";
@@ -168,6 +169,77 @@ export class RingSignature {
     message: string,
     curve: Curve,
   ): RingSignature {
+    // add a case if curve is ed25519
+    if (curve.name === CurveName.ED25519) {
+      return RingSignature.signEd25519XRPL(ring, signerPrivateKey, message, curve);
+    }
+    // else run the original code, waiting to add a specif case for secp256k1
+    const G: Point = curve.GtoPoint(); // generator point
+
+    if (ring.length === 0) {
+      /*
+       * If the ring is empty, we just sign the message using our schnorr-like signature scheme
+       * and return a ring signature with only one response.
+       * Note that alpha is computed from c to allow verification.
+       */
+      const c = randomBigint(curve.N);
+      const alpha = modulo(2n * c + 1n, curve.N);
+      const sig = piSignature(alpha, c, signerPrivateKey, curve);
+
+      return new RingSignature(
+        message,
+        [G.mult(signerPrivateKey)],
+        c,
+        [sig],
+        curve,
+      );
+    }
+
+    const rawSignature = RingSignature.signature(
+      curve,
+      ring,
+      signerPrivateKey,
+      message,
+    );
+
+    // compute the signer response
+    const signerResponse = piSignature(
+      rawSignature.alpha,
+      rawSignature.cees[rawSignature.pi],
+      signerPrivateKey,
+      curve,
+    );
+
+    return new RingSignature(
+      message,
+      rawSignature.ring,
+      rawSignature.cees[0],
+      // insert the signer response
+      rawSignature.responses
+        .slice(0, rawSignature.pi)
+        .concat(
+          [signerResponse],
+          rawSignature.responses.slice(rawSignature.pi + 1),
+        ),
+      curve,
+    );
+  }
+
+ /**
+   * Sign a message using ring signatures, for ed25519 curve and XRPL chain
+   *
+   * @param ring - Ring of public keys (does not contain the signer public key)
+   * @param signerPrivKey - Private key of the signer
+   * @param message - Clear message to sign
+   * @param curve - The elliptic curve to use
+   *
+   * @returns A RingSignature
+   */
+  private static signEd25519XRPL(
+    ring: Point[], 
+    signerPrivateKey: bigint,
+    message: string,
+    curve: Curve): RingSignature {
     //compute the extended public key (contains all the data needed to sign)
     const ExtendedPublicKey = ed.utils.getExtendedPublicKey(
       signerPrivateKey.toString(16),
@@ -225,6 +297,7 @@ export class RingSignature {
       curve,
     );
   }
+
 
   /**
    * Sign a message using ring signatures
@@ -505,11 +578,11 @@ export class RingSignature {
     return modulo(
       BigInt(
         "0x" +
-          keccak256(
-            ring +
-              message +
-              G.mult(r).add(previousPubKey.mult(previousC)).toString(),
-          ),
+        keccak256(
+          ring +
+          message +
+          G.mult(r).add(previousPubKey.mult(previousC)).toString(),
+        ),
       ),
       N,
     );

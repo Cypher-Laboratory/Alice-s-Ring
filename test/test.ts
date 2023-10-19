@@ -99,7 +99,6 @@ const signature_ed = RingSignature.sign(
 );
 const verifiedSig_ed = signature_ed.verify();
 
-console.log("signature: ", signature_ed);
 console.log("Is sig valid ? ", verifiedSig_ed);
 
 if (!verifiedSig_ed) {
@@ -207,7 +206,7 @@ if (!verifiedSig_secp_empty_ring) {
 console.log("------ TEST RING_SIZE = 0 USING ED25519 ------");
 const signature_ed_empty_ring = RingSignature.sign(
   [],
-  signerPrivKey_ed,
+  BigInt("0x" + keypair.privateKey.slice(2)),
   "test",
   ed25519,
 );
