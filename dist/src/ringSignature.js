@@ -338,6 +338,12 @@ class RingSignature {
                 message +
                 G.mult(r).add(previousPubKey.mult(previousC)).toString())), N);
     }
+    /**
+     * Convert a partial signature to a base64 string
+     *
+     * @param partialSig - The partial signature to convert
+     * @returns A base64 string
+     */
     static partialSigToBase64(partialSig) {
         const strPartialSig = {
             message: partialSig.message,
@@ -351,19 +357,30 @@ class RingSignature {
         };
         return Buffer.from(JSON.stringify(strPartialSig)).toString("base64");
     }
+    /**
+     * Convert a base64 string to a partial signature
+     *
+     * @param base64 - The base64 string to convert
+     * @returns A partial signature
+     */
     static base64ToPartialSig(base64) {
-        const decoded = Buffer.from(base64, "base64").toString("ascii");
-        const json = JSON.parse(decoded);
-        return {
-            message: json.message,
-            ring: json.ring.map((point) => utils_1.Point.fromString(point)),
-            c: BigInt(json.c),
-            cpi: BigInt(json.cpi),
-            responses: json.responses.map((response) => BigInt(response)),
-            pi: Number(json.pi),
-            alpha: BigInt(json.alpha),
-            curve: utils_1.Curve.fromString(json.curve),
-        };
+        try {
+            const decoded = Buffer.from(base64, "base64").toString("ascii");
+            const json = JSON.parse(decoded);
+            return {
+                message: json.message,
+                ring: json.ring.map((point) => utils_1.Point.fromString(point)),
+                c: BigInt(json.c),
+                cpi: BigInt(json.cpi),
+                responses: json.responses.map((response) => BigInt(response)),
+                pi: Number(json.pi),
+                alpha: BigInt(json.alpha),
+                curve: utils_1.Curve.fromString(json.curve),
+            };
+        }
+        catch (e) {
+            throw new Error("Invalid base64 string: " + e);
+        }
     }
 }
 exports.RingSignature = RingSignature;
