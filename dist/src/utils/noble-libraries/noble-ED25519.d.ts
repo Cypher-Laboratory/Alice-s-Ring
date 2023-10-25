@@ -9,8 +9,8 @@ declare const CURVE: {
     Gx: bigint;
     Gy: bigint;
 };
-declare type Bytes = Uint8Array;
-declare type Hex = Bytes | string;
+type Bytes = Uint8Array;
+type Hex = Bytes | string;
 export declare const mod: (a: bigint, b?: bigint) => bigint;
 interface AffinePoint {
     x: bigint;
@@ -42,8 +42,8 @@ declare class Point {
     toRawBytes(): Bytes;
     toHex(): string;
 }
-declare type Sha512FnSync = undefined | ((...messages: Bytes[]) => Bytes);
-declare type ExtK = {
+type Sha512FnSync = undefined | ((...messages: Bytes[]) => Bytes);
+type ExtK = {
     head: Bytes;
     prefix: Bytes;
     scalar: bigint;

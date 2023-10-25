@@ -137,4 +137,6 @@ export declare class RingSignature {
      */
     private static signature;
     private static computeC;
+    static partialSigToBase64(partialSig: PartialSignature): string;
+    static base64ToPartialSig(base64: string): PartialSignature;
 }

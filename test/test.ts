@@ -1,5 +1,5 @@
 import { piSignature } from "../src";
-import { RingSignature } from "../src/ringSignature";
+import { PartialSignature, RingSignature } from "../src/ringSignature";
 import { Curve, Point, randomBigint, modulo, CurveName } from "../src/utils";
 import { deriveKeypair } from "ripple-keypairs";
 
@@ -277,5 +277,33 @@ const verifiedRetrievedSigFromJson = retrievedSigFromJson.verify();
 console.log("Is sig from JSON valid? ", verifiedRetrievedSigFromJson);
 if (!verifiedRetrievedSigFromJson) {
   console.log("Error: Signature conversion to JSON failed");
+  process.exit(1);
+}
+
+function arePartialSigsEquals(
+  partial1: PartialSignature,
+  partial2: PartialSignature,
+): boolean {
+  return (
+    partial1.alpha === partial2.alpha &&
+    partial1.cpi === partial2.cpi &&
+    partial1.curve.name === partial2.curve.name &&
+    partial1.message === partial2.message &&
+    areRingsEquals(partial1.ring, partial2.ring) &&
+    areResponsesEquals(partial1.responses, partial2.responses) &&
+    partial1.pi === partial2.pi &&
+    partial1.c === partial2.c
+  );
+}
+/*--------------------- test partial ring signature <--> Base64 conversion ---------------------*/
+console.log(
+  "------ CONVERT PARTIAL RING SIGNATURE TO Base64 AND RETRIEVE IT ------",
+);
+const base64RingSig = RingSignature.partialSigToBase64(partialSig_ed);
+const retrievedPartialSig = RingSignature.base64ToPartialSig(base64RingSig);
+const areIdenticals = arePartialSigsEquals(retrievedPartialSig, partialSig_ed);
+console.log("Are the two partial signatures identical? ", areIdenticals);
+if (!areIdenticals) {
+  console.log("Error: Partial signature conversion to base64 failed");
   process.exit(1);
 }

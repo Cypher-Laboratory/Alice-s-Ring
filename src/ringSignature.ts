@@ -592,4 +592,33 @@ export class RingSignature {
       N,
     );
   }
+
+  static partialSigToBase64(partialSig: PartialSignature): string {
+    const strPartialSig = {
+      message: partialSig.message,
+      ring: partialSig.ring.map((point: Point) => point.toString()),
+      c: partialSig.c.toString(),
+      cpi: partialSig.cpi.toString(),
+      responses: partialSig.responses.map((response) => response.toString()),
+      pi: partialSig.pi.toString(),
+      alpha: partialSig.alpha.toString(),
+      curve: partialSig.curve.toString(),
+    };
+    return Buffer.from(JSON.stringify(strPartialSig)).toString("base64");
+  }
+
+  static base64ToPartialSig(base64: string): PartialSignature {
+    const decoded = Buffer.from(base64, "base64").toString("ascii");
+    const json = JSON.parse(decoded);
+    return {
+      message: json.message,
+      ring: json.ring.map((point: string) => Point.fromString(point)),
+      c: BigInt(json.c),
+      cpi: BigInt(json.cpi),
+      responses: json.responses.map((response: string) => BigInt(response)),
+      pi: Number(json.pi),
+      alpha: BigInt(json.alpha),
+      curve: Curve.fromString(json.curve),
+    };
+  }
 }
