@@ -592,4 +592,49 @@ export class RingSignature {
       N,
     );
   }
+
+  /**
+   * Convert a partial signature to a base64 string
+   *
+   * @param partialSig - The partial signature to convert
+   * @returns A base64 string
+   */
+  static partialSigToBase64(partialSig: PartialSignature): string {
+    const strPartialSig = {
+      message: partialSig.message,
+      ring: partialSig.ring.map((point: Point) => point.toString()),
+      c: partialSig.c.toString(),
+      cpi: partialSig.cpi.toString(),
+      responses: partialSig.responses.map((response) => response.toString()),
+      pi: partialSig.pi.toString(),
+      alpha: partialSig.alpha.toString(),
+      curve: partialSig.curve.toString(),
+    };
+    return Buffer.from(JSON.stringify(strPartialSig)).toString("base64");
+  }
+
+  /**
+   * Convert a base64 string to a partial signature
+   *
+   * @param base64 - The base64 string to convert
+   * @returns A partial signature
+   */
+  static base64ToPartialSig(base64: string): PartialSignature {
+    try {
+      const decoded = Buffer.from(base64, "base64").toString("ascii");
+      const json = JSON.parse(decoded);
+      return {
+        message: json.message,
+        ring: json.ring.map((point: string) => Point.fromString(point)),
+        c: BigInt(json.c),
+        cpi: BigInt(json.cpi),
+        responses: json.responses.map((response: string) => BigInt(response)),
+        pi: Number(json.pi),
+        alpha: BigInt(json.alpha),
+        curve: Curve.fromString(json.curve),
+      };
+    } catch (e) {
+      throw new Error("Invalid base64 string: " + e);
+    }
+  }
 }

@@ -196,3 +196,23 @@ if (!verifiedRetrievedSigFromJson) {
     console.log("Error: Signature conversion to JSON failed");
     process.exit(1);
 }
+function arePartialSigsEquals(partial1, partial2) {
+    return (partial1.alpha === partial2.alpha &&
+        partial1.cpi === partial2.cpi &&
+        partial1.curve.name === partial2.curve.name &&
+        partial1.message === partial2.message &&
+        areRingsEquals(partial1.ring, partial2.ring) &&
+        areResponsesEquals(partial1.responses, partial2.responses) &&
+        partial1.pi === partial2.pi &&
+        partial1.c === partial2.c);
+}
+/*--------------------- test partial ring signature <--> Base64 conversion ---------------------*/
+console.log("------ CONVERT PARTIAL RING SIGNATURE TO Base64 AND RETRIEVE IT ------");
+const base64RingSig = ringSignature_1.RingSignature.partialSigToBase64(partialSig_ed);
+const retrievedPartialSig = ringSignature_1.RingSignature.base64ToPartialSig(base64RingSig);
+const areIdenticals = arePartialSigsEquals(retrievedPartialSig, partialSig_ed);
+console.log("Are the two partial signatures identical? ", areIdenticals);
+if (!areIdenticals) {
+    console.log("Error: Partial signature conversion to base64 failed");
+    process.exit(1);
+}
