@@ -5,8 +5,6 @@ import {
   Curve,
   Point,
   modulo,
-  uint8ArrayToHex,
-  CurveName,
 } from "./utils";
 import { piSignature, verifyPiSignature } from "./signature/piSignature";
 import * as ed from "./utils/noble-libraries/noble-ED25519";
@@ -172,17 +170,6 @@ export class RingSignature {
     curve: Curve,
     config: { derivationConfig: Config },
   ): RingSignature {
-    // add a case if curve is ed25519
-    if (curve.name === CurveName.ED25519) {
-      return RingSignature.signEd25519XRPL(
-        ring,
-        signerPrivateKey,
-        message,
-        curve,
-        config,
-      );
-    }
-
     if (ring.length === 0) {
       /* If the ring is empty, we just sign the message using our schnorr-like signature scheme
        * and return a ring signature with only one response.
@@ -209,10 +196,16 @@ export class RingSignature {
       config,
     );
 
+    // if (curve.name === CurveName.ED25519) {
+    //   //compute the extended public key (contains all the data needed to sign)
+    //   signerPrivateKey = ed.utils.getExtendedPublicKey(
+    //     signerPrivateKey.toString(16),
+    //   ).scalar;
+    // }
     // compute the signer response
     const signerResponse = piSignature(
       rawSignature.alpha,
-      rawSignature.cees[rawSignature.pi],
+      rawSignature.cees[rawSignature.signerIndex],
       signerPrivateKey,
       curve,
     );
@@ -223,87 +216,10 @@ export class RingSignature {
       rawSignature.cees[0],
       // insert the signer response
       rawSignature.responses
-        .slice(0, rawSignature.pi)
+        .slice(0, rawSignature.signerIndex)
         .concat(
           [signerResponse],
-          rawSignature.responses.slice(rawSignature.pi + 1),
-        ),
-      curve,
-    );
-  }
-
-  /**
-   * Sign a message using ring signatures, for ed25519 curve and XRPL chain
-   *
-   * @param ring - Ring of public keys (does not contain the signer public key)
-   * @param signerPrivKey - Private key of the signer
-   * @param message - Clear message to sign
-   * @param curve - The elliptic curve to use
-   * @param config - The config params to use
-   *
-   * @returns A RingSignature
-   */
-  private static signEd25519XRPL(
-    ring: Point[],
-    signerPrivateKey: bigint,
-    message: string,
-    curve: Curve,
-    config: { derivationConfig: Config },
-  ): RingSignature {
-    //compute the extended public key (contains all the data needed to sign)
-    const ExtendedPublicKey = ed.utils.getExtendedPublicKey(
-      signerPrivateKey.toString(16),
-    );
-
-    if (ring.length === 0) {
-      /*
-       * If the ring is empty, we just sign the message using our schnorr-like signature scheme
-       * and return a ring signature with only one response.
-       * Note that alpha is computed from c to allow verification.
-       */
-      const c = randomBigint(curve.N);
-      const alpha = modulo(2n * c + 1n, curve.N);
-      const sig = piSignature(alpha, c, ExtendedPublicKey.scalar, curve);
-
-      return new RingSignature(
-        message,
-        [
-          Point.fromHexXRPL(
-            "ED" + uint8ArrayToHex(ExtendedPublicKey.pointBytes),
-          ),
-        ],
-        c,
-        [sig],
-        curve,
-      );
-    }
-
-    const rawSignature = RingSignature.signature(
-      curve,
-      ring,
-      ExtendedPublicKey.scalar,
-      message,
-      config,
-    );
-
-    // compute the signer response
-    const signerResponse = piSignature(
-      rawSignature.alpha,
-      rawSignature.cees[rawSignature.pi],
-      ExtendedPublicKey.scalar,
-      curve,
-    );
-
-    return new RingSignature(
-      message,
-      rawSignature.ring,
-      rawSignature.cees[0],
-      // insert the signer response
-      rawSignature.responses
-        .slice(0, rawSignature.pi)
-        .concat(
-          [signerResponse],
-          rawSignature.responses.slice(rawSignature.pi + 1),
+          rawSignature.responses.slice(rawSignature.signerIndex + 1),
         ),
       curve,
     );
@@ -343,9 +259,9 @@ export class RingSignature {
       message,
       ring: rawSignature.ring,
       c: rawSignature.cees[0],
-      cpi: rawSignature.cees[rawSignature.pi],
+      cpi: rawSignature.cees[rawSignature.signerIndex],
       responses: rawSignature.responses,
-      pi: rawSignature.pi,
+      pi: rawSignature.signerIndex,
       alpha: rawSignature.alpha,
       curve: curve,
     } as PartialSignature;
@@ -412,6 +328,8 @@ export class RingSignature {
         this.ring[0],
       );
 
+      console.log("c1': ", lastComputedCp);
+
       for (let i = 2; i < this.ring.length; i++) {
         // c2' -> cn'
         lastComputedCp = RingSignature.computeC(
@@ -423,8 +341,20 @@ export class RingSignature {
           lastComputedCp,
           this.ring[i - 1],
         );
+        console.log("c" + i + "': ", lastComputedCp);
       }
-
+      console.log(
+        "c0': ",
+        RingSignature.computeC(
+          this.ring,
+          messageDigest,
+          G,
+          this.curve.N,
+          this.responses[this.responses.length - 1],
+          lastComputedCp,
+          this.ring[this.ring.length - 1],
+        ),
+      );
       // return true if c0 === c0'
       return (
         this.c ===
@@ -471,7 +401,7 @@ export class RingSignature {
    * @param signerKey - The signer private or public key
    * @param message - The message to sign
    * @param config - The config params to use
-   * 
+   *
    * @returns An incomplete ring signature
    */
   private static signature(
@@ -480,7 +410,13 @@ export class RingSignature {
     signerKey: Point | bigint,
     message: string,
     config: { derivationConfig: Config },
-  ) {
+  ): {
+    ring: Point[];
+    cees: bigint[];
+    alpha: bigint;
+    signerIndex: number;
+    responses: bigint[];
+  } {
     // add a case if curve is ed25519
     // if (curve.name === CurveName.ED25519) {
     //   return RingSignature.signEd25519XRPL(
@@ -581,10 +517,10 @@ export class RingSignature {
 
     // concatenate CValues0PI, cpi and CValuesPI1N to get all the c values
     const cees: bigint[] = cValues0PI.concat(cValuesPI1N);
-
+    console.log(pi);
+    console.log(cees);
     return {
       ring: ring,
-      pi: pi,
       cees: cees,
       alpha: alpha,
       signerIndex: pi,

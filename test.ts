@@ -39,7 +39,7 @@ const partialSig_ed = RingSignature.partialSign(
   "test",
   signerPubKey_ed,
   ed25519,
-  { derivationConfig: Config.XRPL},
+  { derivationConfig: Config.XRPL },
 );
 // end signing
 const signerResponse_ed = piSignature(

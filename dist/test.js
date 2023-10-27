@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const ripple_keypairs_1 = require("ripple-keypairs");
 const src_1 = require("./src");
+const curves_1 = require("./src/utils/curves");
 const ringSize = 3;
 function randomRing(ringLength = 1000, G, N) {
     let k = (0, src_1.randomBigint)(N * N);
@@ -22,7 +23,7 @@ const signerPubKey_ed = src_1.Point.fromHexXRPL("ED06E7491D7E57F09D7E31E2FDD7F0D
 const seedED25519 = "sEdSWniReyeCh7JLWUHEfNTz53pxsjX";
 const keypairED25519 = (0, ripple_keypairs_1.deriveKeypair)(seedED25519);
 const signerPrivKey_ed = BigInt("0x" + keypairED25519.privateKey.slice(2));
-const partialSig_ed = src_1.RingSignature.partialSign(ring_ed, "test", signerPubKey_ed, ed25519);
+const partialSig_ed = src_1.RingSignature.partialSign(ring_ed, "test", signerPubKey_ed, ed25519, { derivationConfig: curves_1.Config.XRPL });
 // end signing
 const signerResponse_ed = (0, src_1.piSignature)(partialSig_ed.alpha, partialSig_ed.cpi, signerPrivKey_ed, ed25519);
 const sig_ed = src_1.RingSignature.combine(partialSig_ed, signerResponse_ed);

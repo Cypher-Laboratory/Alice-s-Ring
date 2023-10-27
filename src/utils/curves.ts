@@ -1,6 +1,5 @@
 import { ExtendedPoint, Gx, Gy, mod } from "./noble-libraries/noble-ED25519";
 import { Point } from "./point";
-import * as ed from "./noble-libraries/noble-ED25519";
 
 /**
  * List of supported curves
@@ -127,7 +126,8 @@ export enum Config {
  * @param privateKey - the private key
  * @param curve - the curve to use
  * @param config - the config to use (optional)
- * @returns
+ *
+ * @returns the public key
  */
 export function derivePubKey(
   privateKey: bigint,
@@ -138,17 +138,6 @@ export function derivePubKey(
   switch (config) {
     case Config.DEFAULT: {
       return curve.GtoPoint().mult(privateKey);
-    }
-    case Config.XRPL: {
-      if (curve.name !== CurveName.ED25519)
-        throw new Error(
-          "XRPL config can only be used with ED25519 curve for now",
-        );
-      console.log("privateKey: ", privateKey.toString(16));
-      const extendedPublicKey = ed.utils.getExtendedPublicKey(
-        privateKey.toString(16),
-      );
-      return curve.GtoPoint().mult(extendedPublicKey.scalar);
     }
     default: {
       console.warn(

@@ -55,6 +55,7 @@ export declare enum Config {
  * @param privateKey - the private key
  * @param curve - the curve to use
  * @param config - the config to use (optional)
- * @returns
+ *
+ * @returns the public key
  */
 export declare function derivePubKey(privateKey: bigint, curve: Curve, config?: Config): Point;
