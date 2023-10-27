@@ -232,14 +232,14 @@ try {
 }
 
 console.log("------ PARTIAL SIGNATURE WITH RING_SIZE=0 USING ED25519 ------");
-/*try {
+try {
   RingSignature.partialSign([], "test", signerPubKey_ed, ed25519);
   process.exit(1);
 } catch (e) {
   console.log(
     "Partial Signature with ringSize = 0 on ED25519 failed as expected",
   );
-}*/
+}
 
 function areResponsesEquals(
   responses1: bigint[],

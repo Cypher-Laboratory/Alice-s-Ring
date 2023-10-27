@@ -155,14 +155,13 @@ catch (e) {
     console.log("Partial Signature with ringSize = 0 on SECP256K1 failed as expected");
 }
 console.log("------ PARTIAL SIGNATURE WITH RING_SIZE=0 USING ED25519 ------");
-/*try {
-  RingSignature.partialSign([], "test", signerPubKey_ed, ed25519);
-  process.exit(1);
-} catch (e) {
-  console.log(
-    "Partial Signature with ringSize = 0 on ED25519 failed as expected",
-  );
-}*/
+try {
+    ringSignature_1.RingSignature.partialSign([], "test", signerPubKey_ed, ed25519);
+    process.exit(1);
+}
+catch (e) {
+    console.log("Partial Signature with ringSize = 0 on ED25519 failed as expected");
+}
 function areResponsesEquals(responses1, responses2) {
     if (responses1.length !== responses2.length) {
         return false;
