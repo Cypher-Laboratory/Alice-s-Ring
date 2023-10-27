@@ -11,6 +11,7 @@ import {
 import { piSignature, verifyPiSignature } from "./signature/piSignature";
 import * as ed from "./utils/noble-libraries/noble-ED25519";
 import { sha512 } from "@noble/hashes/sha512";
+import { Config, derivePubKey } from "./utils/curves";
 ed.etc.sha512Sync = (...m) => sha512(ed.etc.concatBytes(...m));
 
 /**
@@ -160,6 +161,7 @@ export class RingSignature {
    * @param signerPrivKey - Private key of the signer
    * @param message - Clear message to sign
    * @param curve - The elliptic curve to use
+   * @param config - The config params to use
    *
    * @returns A RingSignature
    */
@@ -168,6 +170,7 @@ export class RingSignature {
     signerPrivateKey: bigint,
     message: string,
     curve: Curve,
+    config: { derivationConfig: Config },
   ): RingSignature {
     // add a case if curve is ed25519
     if (curve.name === CurveName.ED25519) {
@@ -176,10 +179,9 @@ export class RingSignature {
         signerPrivateKey,
         message,
         curve,
+        config,
       );
     }
-    // else run the original code, waiting to add a specif case for secp256k1
-    const G: Point = curve.GtoPoint(); // generator point
 
     if (ring.length === 0) {
       /* If the ring is empty, we just sign the message using our schnorr-like signature scheme
@@ -192,7 +194,7 @@ export class RingSignature {
 
       return new RingSignature(
         message,
-        [G.mult(signerPrivateKey)],
+        [curve.GtoPoint().mult(signerPrivateKey)], // curve's generator point * private key
         c,
         [sig],
         curve,
@@ -204,6 +206,7 @@ export class RingSignature {
       ring,
       signerPrivateKey,
       message,
+      config,
     );
 
     // compute the signer response
@@ -236,6 +239,7 @@ export class RingSignature {
    * @param signerPrivKey - Private key of the signer
    * @param message - Clear message to sign
    * @param curve - The elliptic curve to use
+   * @param config - The config params to use
    *
    * @returns A RingSignature
    */
@@ -244,6 +248,7 @@ export class RingSignature {
     signerPrivateKey: bigint,
     message: string,
     curve: Curve,
+    config: { derivationConfig: Config },
   ): RingSignature {
     //compute the extended public key (contains all the data needed to sign)
     const ExtendedPublicKey = ed.utils.getExtendedPublicKey(
@@ -278,6 +283,7 @@ export class RingSignature {
       ring,
       ExtendedPublicKey.scalar,
       message,
+      config,
     );
 
     // compute the signer response
@@ -309,6 +315,7 @@ export class RingSignature {
    * @param ring - Ring of public keys (does not contain the signer public key)
    * @param message - Clear message to sign
    * @param signerPubKey - Public key of the signer
+   * @param config - The config params to use
    *
    * @returns A PartialSignature
    */
@@ -317,6 +324,7 @@ export class RingSignature {
     message: string,
     signerPubKey: Point,
     curve: Curve,
+    config: { derivationConfig: Config },
   ) {
     if (ring.length === 0)
       throw new Error(
@@ -328,6 +336,7 @@ export class RingSignature {
       ring,
       signerPubKey,
       message,
+      config,
     );
 
     return {
@@ -461,6 +470,8 @@ export class RingSignature {
    * @param ring - The ring of public keys
    * @param signerKey - The signer private or public key
    * @param message - The message to sign
+   * @param config - The config params to use
+   * 
    * @returns An incomplete ring signature
    */
   private static signature(
@@ -468,8 +479,19 @@ export class RingSignature {
     ring: Point[],
     signerKey: Point | bigint,
     message: string,
+    config: { derivationConfig: Config },
   ) {
-    const G: Point = curve.GtoPoint(); // generator point
+    // add a case if curve is ed25519
+    // if (curve.name === CurveName.ED25519) {
+    //   return RingSignature.signEd25519XRPL(
+    //     ring,
+    //     signerPrivateKey,
+    //     message,
+    //     curve,
+    //   );
+    // }
+
+    const G: Point = curve.GtoPoint(); // Curve generator point
 
     // hash the message
     const messageDigest = keccak256(message);
@@ -479,7 +501,7 @@ export class RingSignature {
 
     let signerPubKey: Point;
     if (typeof signerKey === "bigint") {
-      signerPubKey = G.mult(signerKey);
+      signerPubKey = derivePubKey(signerKey, curve, config.derivationConfig);
     } else {
       signerPubKey = signerKey;
     }

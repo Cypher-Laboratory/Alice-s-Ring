@@ -29,6 +29,7 @@ const utils_1 = require("./utils");
 const piSignature_1 = require("./signature/piSignature");
 const ed = __importStar(require("./utils/noble-libraries/noble-ED25519"));
 const sha512_1 = require("@noble/hashes/sha512");
+const curves_1 = require("./utils/curves");
 ed.etc.sha512Sync = (...m) => (0, sha512_1.sha512)(ed.etc.concatBytes(...m));
 /**
  * Ring signature class.
@@ -127,8 +128,6 @@ class RingSignature {
         if (curve.name === utils_1.CurveName.ED25519) {
             return RingSignature.signEd25519XRPL(ring, signerPrivateKey, message, curve);
         }
-        // else run the original code, waiting to add a specif case for secp256k1
-        const G = curve.GtoPoint(); // generator point
         if (ring.length === 0) {
             /* If the ring is empty, we just sign the message using our schnorr-like signature scheme
              * and return a ring signature with only one response.
@@ -137,7 +136,8 @@ class RingSignature {
             const c = (0, utils_1.randomBigint)(curve.N);
             const alpha = (0, utils_1.modulo)(2n * c + 1n, curve.N);
             const sig = (0, piSignature_1.piSignature)(alpha, c, signerPrivateKey, curve);
-            return new RingSignature(message, [G.mult(signerPrivateKey)], c, [sig], curve);
+            return new RingSignature(message, [curve.GtoPoint().mult(signerPrivateKey)], // curve's generator point * private key
+            c, [sig], curve);
         }
         const rawSignature = RingSignature.signature(curve, ring, signerPrivateKey, message);
         // compute the signer response
@@ -278,14 +278,23 @@ class RingSignature {
      * @returns An incomplete ring signature
      */
     static signature(curve, ring, signerKey, message) {
-        const G = curve.GtoPoint(); // generator point
+        // add a case if curve is ed25519
+        // if (curve.name === CurveName.ED25519) {
+        //   return RingSignature.signEd25519XRPL(
+        //     ring,
+        //     signerPrivateKey,
+        //     message,
+        //     curve,
+        //   );
+        // }
+        const G = curve.GtoPoint(); // Curve generator point
         // hash the message
         const messageDigest = (0, js_sha3_1.keccak256)(message);
         // generate random number alpha
         const alpha = (0, utils_1.randomBigint)(curve.N);
         let signerPubKey;
         if (typeof signerKey === "bigint") {
-            signerPubKey = G.mult(signerKey);
+            signerPubKey = (0, curves_1.derivePubKey)(signerKey, curve);
         }
         else {
             signerPubKey = signerKey;

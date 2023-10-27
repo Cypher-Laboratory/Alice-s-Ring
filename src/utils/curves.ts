@@ -1,5 +1,6 @@
 import { ExtendedPoint, Gx, Gy, mod } from "./noble-libraries/noble-ED25519";
 import { Point } from "./point";
+import * as ed from "./noble-libraries/noble-ED25519";
 
 /**
  * List of supported curves
@@ -110,3 +111,50 @@ const ED25519 = {
   N: 2n ** 252n + 27742317777372353535851937790883648493n, // curve's (group) order
   G: [G.toAffine().x, G.toAffine().y] as [bigint, bigint],
 };
+
+/**
+ * List of supported configs for the `derivePubKey` function
+ * This configs are used to specify if a specific way to derive the public key is used. (such as for xrpl keys)
+ */
+export enum Config {
+  DEFAULT = "DEFAULT", // derive the public key from the private key: pubKey = G * privKey
+  XRPL = "XRPL",
+}
+
+/**
+ * Derive the public key from the private key.
+ *
+ * @param privateKey - the private key
+ * @param curve - the curve to use
+ * @param config - the config to use (optional)
+ * @returns
+ */
+export function derivePubKey(
+  privateKey: bigint,
+  curve: Curve,
+  config?: Config,
+): Point {
+  if (!config) config = Config.DEFAULT;
+  switch (config) {
+    case Config.DEFAULT: {
+      return curve.GtoPoint().mult(privateKey);
+    }
+    case Config.XRPL: {
+      if (curve.name !== CurveName.ED25519)
+        throw new Error(
+          "XRPL config can only be used with ED25519 curve for now",
+        );
+      console.log("privateKey: ", privateKey.toString(16));
+      const extendedPublicKey = ed.utils.getExtendedPublicKey(
+        privateKey.toString(16),
+      );
+      return curve.GtoPoint().mult(extendedPublicKey.scalar);
+    }
+    default: {
+      console.warn(
+        "Unknown derivation Config. Using PublicKey = G * privateKey",
+      );
+      return curve.GtoPoint().mult(privateKey);
+    }
+  }
+}

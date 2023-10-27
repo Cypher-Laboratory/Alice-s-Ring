@@ -1,8 +1,32 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Curve = exports.CurveName = void 0;
+exports.derivePubKey = exports.Config = exports.Curve = exports.CurveName = void 0;
 const noble_ED25519_1 = require("./noble-libraries/noble-ED25519");
 const point_1 = require("./point");
+const ed = __importStar(require("./noble-libraries/noble-ED25519"));
 /**
  * List of supported curves
  */
@@ -93,3 +117,40 @@ const ED25519 = {
     N: 2n ** 252n + 27742317777372353535851937790883648493n,
     G: [G.toAffine().x, G.toAffine().y],
 };
+/**
+ * List of supported configs for the `derivePubKey` function
+ * This configs are used to specify if a specific way to derive the public key is used. (such as for xrpl keys)
+ */
+var Config;
+(function (Config) {
+    Config["DEFAULT"] = "DEFAULT";
+    Config["XRPL"] = "XRPL";
+})(Config || (exports.Config = Config = {}));
+/**
+ * Derive the public key from the private key.
+ *
+ * @param privateKey - the private key
+ * @param curve - the curve to use
+ * @param config - the config to use (optional)
+ * @returns
+ */
+function derivePubKey(privateKey, curve, config) {
+    if (!config)
+        config = Config.DEFAULT;
+    switch (config) {
+        case Config.DEFAULT: {
+            return curve.GtoPoint().mult(privateKey);
+        }
+        case Config.XRPL: {
+            if (curve.name !== CurveName.ED25519)
+                throw new Error("XRPL config can only be used with ED25519 curve for now");
+            const extendedPublicKey = ed.utils.getExtendedPublicKey(privateKey.toString(16));
+            return curve.GtoPoint().mult(extendedPublicKey.scalar);
+        }
+        default: {
+            console.warn("Unknown derivation Config. Using PublicKey = G * privateKey");
+            return curve.GtoPoint().mult(privateKey);
+        }
+    }
+}
+exports.derivePubKey = derivePubKey;

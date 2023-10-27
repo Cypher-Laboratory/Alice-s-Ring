@@ -7,6 +7,7 @@ import {
   piSignature,
   randomBigint,
 } from "./src";
+import { Config } from "./src/utils/curves";
 const ringSize = 3;
 
 function randomRing(ringLength = 1000, G: Point, N: bigint): Point[] {
@@ -38,6 +39,7 @@ const partialSig_ed = RingSignature.partialSign(
   "test",
   signerPubKey_ed,
   ed25519,
+  { derivationConfig: Config.XRPL},
 );
 // end signing
 const signerResponse_ed = piSignature(
