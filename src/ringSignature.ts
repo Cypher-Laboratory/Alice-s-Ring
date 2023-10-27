@@ -182,8 +182,7 @@ export class RingSignature {
     const G: Point = curve.GtoPoint(); // generator point
 
     if (ring.length === 0) {
-      /*
-       * If the ring is empty, we just sign the message using our schnorr-like signature scheme
+      /* If the ring is empty, we just sign the message using our schnorr-like signature scheme
        * and return a ring signature with only one response.
        * Note that alpha is computed from c to allow verification.
        */
