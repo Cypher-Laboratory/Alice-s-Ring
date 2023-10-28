@@ -58,21 +58,15 @@ function randomRing(ringLength = 100, G, N) {
     return ring;
 }
 console.log("ring size: ", ring_ed.length + 1);
-// /* TEST SIGNATURE GENERATION AND VERIFICATION - SECP256K1 */
-// console.log("------ SIGNATURE USING SECP256K1 ------");
-// const signature_secp = RingSignature.sign(
-//   ring_secp,
-//   signerPrivKey_secp,
-//   "test",
-//   secp256k1,
-//   config,
-// );
-// const verifiedSig_secp = signature_secp.verify();
-// console.log("Is sig valid ? ", verifiedSig_secp);
-// if (!verifiedSig_secp) {
-//   console.log("Error: Ring signature verification failed on SECP256K1");
-//   process.exit(1);
-// }
+/* TEST SIGNATURE GENERATION AND VERIFICATION - SECP256K1 */
+console.log("------ SIGNATURE USING SECP256K1 ------");
+const signature_secp = ringSignature_1.RingSignature.sign(ring_secp, signerPrivKey_secp, "test", secp256k1, config);
+const verifiedSig_secp = signature_secp.verify();
+console.log("Is sig valid ? ", verifiedSig_secp);
+if (!verifiedSig_secp) {
+    console.log("Error: Ring signature verification failed on SECP256K1");
+    process.exit(1);
+}
 console.log("------ SIGNATURE USING ED25519 ------");
 const signature_ed = ringSignature_1.RingSignature.sign(ring_ed, signerPrivKey_ed, "test", ed25519, config);
 console.log("ring_ed.length: ", ring_ed.length);

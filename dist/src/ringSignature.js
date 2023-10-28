@@ -215,13 +215,10 @@ class RingSignature {
             let lastComputedCp = RingSignature.computeC(
             // c1'
             this.ring, messageDigest, G, this.curve.N, this.responses[0], this.c, this.ring[0]);
-            console.log("c1': ", lastComputedCp);
             for (let i = 2; i < this.ring.length; i++) {
                 // c2' -> cn'
                 lastComputedCp = RingSignature.computeC(this.ring, messageDigest, G, this.curve.N, this.responses[i - 1], lastComputedCp, this.ring[i - 1]);
-                console.log("c" + i + "': ", lastComputedCp);
             }
-            console.log("c0': ", RingSignature.computeC(this.ring, messageDigest, G, this.curve.N, this.responses[this.responses.length - 1], lastComputedCp, this.ring[this.ring.length - 1]));
             // return true if c0 === c0'
             return (this.c ===
                 RingSignature.computeC(this.ring, messageDigest, G, this.curve.N, this.responses[this.responses.length - 1], lastComputedCp, this.ring[this.ring.length - 1]));
@@ -305,8 +302,6 @@ class RingSignature {
         }
         // concatenate CValues0PI, cpi and CValuesPI1N to get all the c values
         const cees = cValues0PI.concat(cValuesPI1N);
-        console.log(pi);
-        console.log(cees);
         return {
             ring: ring,
             cees: cees,
