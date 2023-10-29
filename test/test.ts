@@ -1,46 +1,14 @@
 import { piSignature } from "../src";
 import { PartialSignature, RingSignature } from "../src/ringSignature";
-import { Curve, Point, randomBigint, modulo, CurveName } from "../src/utils";
+import { Curve, Point, randomBigint, CurveName } from "../src/utils";
 import { deriveKeypair } from "ripple-keypairs";
+import { Config } from "../src/utils/curves";
+import * as ed from "../src/utils/noble-libraries/noble-ED25519";
 
-const tmp = [
-  "42",
-  "0c",
-  "6f",
-  "0c",
-  "99",
-  "5f",
-  "3f",
-  "78",
-  "15",
-  "0b",
-  "a7",
-  "f5",
-  "d7",
-  "e3",
-  "09",
-  "85",
-  "ae",
-  "be",
-  "14",
-  "61",
-  "15",
-  "4d",
-  "42",
-  "bc",
-  "d4",
-  "0f",
-  "92",
-  "11",
-  "af",
-  "e2",
-  "a5",
-  "05",
-];
-const signerPrivKeyBytes = new Uint8Array(tmp.map((x) => parseInt(x, 16)));
-const signerPrivKey = BigInt(
-  "0x" + Buffer.from(signerPrivKeyBytes).toString("hex"),
-);
+const CONFIG = Config.DEFAULT;
+
+console.log("------ TESTING FOR XRPL CONFIG ------");
+const config = { derivationConfig: CONFIG };
 
 const ringSize = 10;
 const secp256k1 = new Curve(CurveName.SECP256K1);
@@ -53,13 +21,15 @@ const signerPubKey_secp = G_SECP.mult(signerPrivKey_secp);
 const ring_secp = randomRing(ringSize, G_SECP, secp256k1.N);
 const seed = "sEdSWniReyeCh7JLWUHEfNTz53pxsjX";
 const keypair = deriveKeypair(seed);
+const signerPrivKey_ed = ed.utils.getExtendedPublicKey(
+  BigInt("0x" + keypair.privateKey.slice(2)).toString(16),
+).scalar;
 
 const G_ED = new Point(ed25519, ed25519.G);
-const signerPrivKey_ed = modulo(signerPrivKey, ed25519.N);
 const signerPubKey_ed = G_ED.mult(signerPrivKey_ed);
 const ring_ed = randomRing(ringSize, G_ED, ed25519.N);
 
-function randomRing(ringLength = 1000, G: Point, N: bigint): Point[] {
+function randomRing(ringLength = 100, G: Point, N: bigint): Point[] {
   let k = randomBigint(N * N);
   if (ringLength == 0) return [];
   const ring: Point[] = [G.mult(k)];
@@ -81,6 +51,7 @@ const signature_secp = RingSignature.sign(
   signerPrivKey_secp,
   "test",
   secp256k1,
+  config,
 );
 const verifiedSig_secp = signature_secp.verify();
 console.log("Is sig valid ? ", verifiedSig_secp);
@@ -93,10 +64,14 @@ if (!verifiedSig_secp) {
 console.log("------ SIGNATURE USING ED25519 ------");
 const signature_ed = RingSignature.sign(
   ring_ed,
-  BigInt("0x" + keypair.privateKey.slice(2)),
+  signerPrivKey_ed,
   "test",
   ed25519,
+  config,
 );
+console.log("ring_ed.length: ", ring_ed.length);
+console.log("signature_ed ring: ", signature_ed.ring.length);
+console.log("signature_ed responses: ", signature_ed.responses.length);
 const verifiedSig_ed = signature_ed.verify();
 
 console.log("Is sig valid ? ", verifiedSig_ed);
@@ -110,9 +85,10 @@ if (!verifiedSig_ed) {
 console.log("------ TEST BASE64 ENCODING/DECODING ------");
 const signature = RingSignature.sign(
   ring_ed,
-  BigInt("0x" + keypair.privateKey.slice(2)),
+  signerPrivKey_ed,
   "test",
   ed25519,
+  config,
 );
 const base64Sig = signature.toBase64();
 const retrievedSig = RingSignature.fromBase64(base64Sig);
@@ -146,6 +122,7 @@ const partialSig_secp = RingSignature.partialSign(
   "test",
   signerPubKey_secp,
   secp256k1,
+  config,
 );
 // end signing
 const signerResponse_secp = piSignature(
@@ -169,6 +146,7 @@ const partialSig_ed = RingSignature.partialSign(
   "test",
   signerPubKey_ed,
   ed25519,
+  config,
 );
 // end signing
 const signerResponse_ed = piSignature(
@@ -192,6 +170,7 @@ const signature_secp_empty_ring = RingSignature.sign(
   signerPrivKey_secp,
   "test",
   secp256k1,
+  config,
 );
 const verifiedSig_secp_empty_ring = signature_secp_empty_ring.verify();
 console.log("Is sig valid ? ", verifiedSig_secp_empty_ring);
@@ -206,9 +185,10 @@ if (!verifiedSig_secp_empty_ring) {
 console.log("------ TEST RING_SIZE = 0 USING ED25519 ------");
 const signature_ed_empty_ring = RingSignature.sign(
   [],
-  BigInt("0x" + keypair.privateKey.slice(2)),
+  signerPrivKey_ed,
   "test",
   ed25519,
+  config,
 );
 const verifiedSig_ed_empty_ring = signature_ed_empty_ring.verify();
 console.log("Is sig valid ? ", verifiedSig_ed_empty_ring);
@@ -223,7 +203,7 @@ if (!verifiedSig_ed_empty_ring) {
 /*--------------------- test partial signature with ringSize = 0 ---------------------*/
 console.log("------ PARTIAL SIGNATURE WITH RING_SIZE=0 USING SECP256K1 ------");
 try {
-  RingSignature.partialSign([], "test", signerPubKey_secp, secp256k1);
+  RingSignature.partialSign([], "test", signerPubKey_secp, secp256k1, config);
   process.exit(1);
 } catch (e) {
   console.log(
@@ -232,14 +212,14 @@ try {
 }
 
 console.log("------ PARTIAL SIGNATURE WITH RING_SIZE=0 USING ED25519 ------");
-/*try {
-  RingSignature.partialSign([], "test", signerPubKey_ed, ed25519);
+try {
+  RingSignature.partialSign([], "test", signerPubKey_ed, ed25519, config);
   process.exit(1);
 } catch (e) {
   console.log(
     "Partial Signature with ringSize = 0 on ED25519 failed as expected",
   );
-}*/
+}
 
 function areResponsesEquals(
   responses1: bigint[],

@@ -110,3 +110,40 @@ const ED25519 = {
   N: 2n ** 252n + 27742317777372353535851937790883648493n, // curve's (group) order
   G: [G.toAffine().x, G.toAffine().y] as [bigint, bigint],
 };
+
+/**
+ * List of supported configs for the `derivePubKey` function
+ * This configs are used to specify if a specific way to derive the public key is used. (such as for xrpl keys)
+ */
+export enum Config {
+  DEFAULT = "DEFAULT", // derive the public key from the private key: pubKey = G * privKey
+  XRPL = "XRPL",
+}
+
+/**
+ * Derive the public key from the private key.
+ *
+ * @param privateKey - the private key
+ * @param curve - the curve to use
+ * @param config - the config to use (optional)
+ *
+ * @returns the public key
+ */
+export function derivePubKey(
+  privateKey: bigint,
+  curve: Curve,
+  config?: Config,
+): Point {
+  if (!config) config = Config.DEFAULT;
+  switch (config) {
+    case Config.DEFAULT: {
+      return curve.GtoPoint().mult(privateKey);
+    }
+    default: {
+      console.warn(
+        "Unknown derivation Config. Using PublicKey = G * privateKey",
+      );
+      return curve.GtoPoint().mult(privateKey);
+    }
+  }
+}

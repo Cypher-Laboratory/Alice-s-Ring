@@ -1,4 +1,5 @@
 import { Curve, Point } from "./utils";
+import { Config } from "./utils/curves";
 /**
  * Partial ring signature interface
  *
@@ -76,33 +77,28 @@ export declare class RingSignature {
      * @param signerPrivKey - Private key of the signer
      * @param message - Clear message to sign
      * @param curve - The elliptic curve to use
+     * @param config - The config params to use
      *
      * @returns A RingSignature
      */
     static sign(ring: Point[], // ring.length = n
-    signerPrivateKey: bigint, message: string, curve: Curve): RingSignature;
-    /**
-     * Sign a message using ring signatures, for ed25519 curve and XRPL chain
-     *
-     * @param ring - Ring of public keys (does not contain the signer public key)
-     * @param signerPrivKey - Private key of the signer
-     * @param message - Clear message to sign
-     * @param curve - The elliptic curve to use
-     *
-     * @returns A RingSignature
-     */
-    private static signEd25519XRPL;
+    signerPrivateKey: bigint, message: string, curve: Curve, config: {
+        derivationConfig: Config;
+    }): RingSignature;
     /**
      * Sign a message using ring signatures
      *
      * @param ring - Ring of public keys (does not contain the signer public key)
      * @param message - Clear message to sign
      * @param signerPubKey - Public key of the signer
+     * @param config - The config params to use
      *
      * @returns A PartialSignature
      */
     static partialSign(ring: Point[], // ring.length = n
-    message: string, signerPubKey: Point, curve: Curve): PartialSignature;
+    message: string, signerPubKey: Point, curve: Curve, config: {
+        derivationConfig: Config;
+    }): PartialSignature;
     /**
      * Combine partial signatures into a RingSignature
      *
@@ -133,6 +129,8 @@ export declare class RingSignature {
      * @param ring - The ring of public keys
      * @param signerKey - The signer private or public key
      * @param message - The message to sign
+     * @param config - The config params to use
+     *
      * @returns An incomplete ring signature
      */
     private static signature;
