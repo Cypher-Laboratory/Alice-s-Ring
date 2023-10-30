@@ -137,12 +137,6 @@ class RingSignature {
             c, [sig], curve);
         }
         const rawSignature = RingSignature.signature(curve, ring, signerPrivateKey, message, config);
-        // if (curve.name === CurveName.ED25519) {
-        //   //compute the extended public key (contains all the data needed to sign)
-        //   signerPrivateKey = ed.utils.getExtendedPublicKey(
-        //     signerPrivateKey.toString(16),
-        //   ).scalar;
-        // }
         // compute the signer response
         const signerResponse = (0, piSignature_1.piSignature)(rawSignature.alpha, rawSignature.cees[rawSignature.signerIndex], signerPrivateKey, curve);
         return new RingSignature(message, rawSignature.ring, rawSignature.cees[0], 
@@ -249,15 +243,6 @@ class RingSignature {
      * @returns An incomplete ring signature
      */
     static signature(curve, ring, signerKey, message, config) {
-        // add a case if curve is ed25519
-        // if (curve.name === CurveName.ED25519) {
-        //   return RingSignature.signEd25519XRPL(
-        //     ring,
-        //     signerPrivateKey,
-        //     message,
-        //     curve,
-        //   );
-        // }
         const G = curve.GtoPoint(); // Curve generator point
         // hash the message
         const messageDigest = (0, js_sha3_1.keccak256)(message);
@@ -310,6 +295,19 @@ class RingSignature {
             responses: responses,
         };
     }
+    /**
+     * Compute a c value
+     *
+     * @param ring - Ring of public keys
+     * @param message - Message digest
+     * @param G - Curve generator point
+     * @param N - Curve order
+     * @param r - The response which will be used to compute the c value
+     * @param previousC - The previous c value
+     * @param previousPubKey - The previous public key
+     *
+     * @returns A c value
+     */
     static computeC(ring, message, G, N, r, previousC, previousPubKey) {
         return (0, utils_1.modulo)(BigInt("0x" +
             (0, js_sha3_1.keccak256)(ring +

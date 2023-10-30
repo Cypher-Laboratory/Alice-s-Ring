@@ -134,6 +134,19 @@ export declare class RingSignature {
      * @returns An incomplete ring signature
      */
     private static signature;
+    /**
+     * Compute a c value
+     *
+     * @param ring - Ring of public keys
+     * @param message - Message digest
+     * @param G - Curve generator point
+     * @param N - Curve order
+     * @param r - The response which will be used to compute the c value
+     * @param previousC - The previous c value
+     * @param previousPubKey - The previous public key
+     *
+     * @returns A c value
+     */
     private static computeC;
     /**
      * Convert a partial signature to a base64 string
