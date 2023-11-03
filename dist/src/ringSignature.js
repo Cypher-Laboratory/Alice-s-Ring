@@ -74,7 +74,7 @@ class RingSignature {
     static fromJsonString(json) {
         try {
             const sig = JSON.parse(json);
-            return new RingSignature(sig.message, sig.ring.map((point) => utils_1.Point.fromString(point)), BigInt(sig.c), sig.responses.map((response) => BigInt(response)), utils_1.Curve.fromString(sig.curve));
+            return new RingSignature(sig.message, sig.ring.map((point) => utils_1.Point.fromString(point)), BigInt(sig.c), sig.responses.map((response) => BigInt(response)), utils_1.Curve.fromString(sig.curve), sig.config);
         }
         catch (e) {
             throw new Error("Invalid json: " + e);
@@ -86,13 +86,15 @@ class RingSignature {
      * @returns A json string
      */
     toJsonString() {
-        return JSON.stringify({
+        const out = JSON.stringify({
             message: this.message,
             ring: this.ring.map((point) => point.toString()),
             c: this.c.toString(),
             responses: this.responses.map((response) => response.toString()),
             curve: this.curve.toString(),
+            config: this.config,
         });
+        return out;
     }
     /**
      * Transforms a Base64 string to a ring signature
@@ -105,11 +107,7 @@ class RingSignature {
         const decoded = Buffer.from(base64, "base64").toString("ascii");
         const json = JSON.parse(decoded);
         const ring = json.ring.map((point) => utils_1.Point.fromString(point));
-        let config = undefined;
-        if (json.config && json.config != "undefined") {
-            config = JSON.parse(json.config);
-        }
-        return new RingSignature(json.message, ring, BigInt(json.c), json.responses.map((response) => BigInt(response)), utils_1.Curve.fromString(json.curve), config);
+        return new RingSignature(json.message, ring, BigInt(json.c), json.responses.map((response) => BigInt(response)), utils_1.Curve.fromString(json.curve), json.config);
     }
     /**
      * Encode a ring signature to base64 string
@@ -331,6 +329,10 @@ class RingSignature {
      * @returns A base64 string
      */
     static partialSigToBase64(partialSig) {
+        let configStr = undefined;
+        if (partialSig.config) {
+            configStr = JSON.stringify(partialSig.config);
+        }
         const strPartialSig = {
             message: partialSig.message,
             ring: partialSig.ring.map((point) => point.toString()),
@@ -340,6 +342,7 @@ class RingSignature {
             pi: partialSig.pi.toString(),
             alpha: partialSig.alpha.toString(),
             curve: partialSig.curve.toString(),
+            config: configStr,
         };
         return Buffer.from(JSON.stringify(strPartialSig)).toString("base64");
     }

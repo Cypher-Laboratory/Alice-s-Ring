@@ -96,7 +96,7 @@ export declare class RingSignature {
      * @returns A RingSignature
      */
     static sign(ring: Point[], // ring.length = n
-    signerPrivateKey: bigint, message: string, curve: Curve, config: SignatureConfig): RingSignature;
+    signerPrivateKey: bigint, message: string, curve: Curve, config?: SignatureConfig): RingSignature;
     /**
      * Sign a message using ring signatures
      *

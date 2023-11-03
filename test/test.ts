@@ -9,11 +9,8 @@ import { deriveKeypair } from "ripple-keypairs";
 import { Config } from "../src/utils/curves";
 import * as ed from "../src/utils/noble-libraries/noble-ED25519";
 
-const CONFIG = Config.DEFAULT;
-
-console.log("------ TESTING FOR XRPL CONFIG ------");
 const config: SignatureConfig = {
-  derivationConfig: CONFIG,
+  derivationConfig: Config.DEFAULT,
   evmCompatibility: false,
 };
 
@@ -58,7 +55,7 @@ const signature_secp = RingSignature.sign(
   signerPrivKey_secp,
   "test",
   secp256k1,
-  config,
+  // config,
 );
 const verifiedSig_secp = signature_secp.verify();
 console.log("Is sig valid ? ", verifiedSig_secp);
@@ -257,7 +254,7 @@ function areRingsEquals(ring1: Point[], ring2: Point[]): boolean {
 
 /*--------------------- test ring signature <--> JSON conversion ---------------------*/
 console.log("------ CONVERT RING SIGNATURE TO JSON AND RETRIEVE IT ------");
-const json = signature_ed_empty_ring.toJsonString();
+const json = signature_ed.toJsonString();
 const retrievedSigFromJson = RingSignature.fromJsonString(json);
 const verifiedRetrievedSigFromJson = retrievedSigFromJson.verify();
 
@@ -279,9 +276,28 @@ function arePartialSigsEquals(
     areRingsEquals(partial1.ring, partial2.ring) &&
     areResponsesEquals(partial1.responses, partial2.responses) &&
     partial1.pi === partial2.pi &&
-    partial1.c === partial2.c
+    partial1.c === partial2.c &&
+    areConfigEquals(partial1.config, partial2.config)
   );
 }
+
+function areConfigEquals(
+  config1: SignatureConfig | undefined,
+  config2: SignatureConfig | undefined,
+): boolean {
+  if (config1 === undefined && config2 === undefined) {
+    return true;
+  }
+  if (config1 === undefined || config2 === undefined) {
+    return false;
+  }
+  return (
+    config1.evmCompatibility === config2.evmCompatibility &&
+    config1.derivationConfig === config2.derivationConfig &&
+    config1.safeMode === config2.safeMode
+  );
+}
+
 /*--------------------- test partial ring signature <--> Base64 conversion ---------------------*/
 console.log(
   "------ CONVERT PARTIAL RING SIGNATURE TO Base64 AND RETRIEVE IT ------",

@@ -29,10 +29,8 @@ const utils_1 = require("../src/utils");
 const ripple_keypairs_1 = require("ripple-keypairs");
 const curves_1 = require("../src/utils/curves");
 const ed = __importStar(require("../src/utils/noble-libraries/noble-ED25519"));
-const CONFIG = curves_1.Config.DEFAULT;
-console.log("------ TESTING FOR XRPL CONFIG ------");
 const config = {
-    derivationConfig: CONFIG,
+    derivationConfig: curves_1.Config.DEFAULT,
     evmCompatibility: false,
 };
 const ringSize = 10;
@@ -63,7 +61,7 @@ function randomRing(ringLength = 100, G, N) {
 console.log("ring size: ", ring_ed.length + 1);
 /* TEST SIGNATURE GENERATION AND VERIFICATION - SECP256K1 */
 console.log("------ SIGNATURE USING SECP256K1 ------");
-const signature_secp = ringSignature_1.RingSignature.sign(ring_secp, signerPrivKey_secp, "test", secp256k1, config);
+const signature_secp = ringSignature_1.RingSignature.sign(ring_secp, signerPrivKey_secp, "test", secp256k1);
 const verifiedSig_secp = signature_secp.verify();
 console.log("Is sig valid ? ", verifiedSig_secp);
 if (!verifiedSig_secp) {
@@ -185,7 +183,7 @@ function areRingsEquals(ring1, ring2) {
 }
 /*--------------------- test ring signature <--> JSON conversion ---------------------*/
 console.log("------ CONVERT RING SIGNATURE TO JSON AND RETRIEVE IT ------");
-const json = signature_ed_empty_ring.toJsonString();
+const json = signature_ed.toJsonString();
 const retrievedSigFromJson = ringSignature_1.RingSignature.fromJsonString(json);
 const verifiedRetrievedSigFromJson = retrievedSigFromJson.verify();
 console.log("Is sig from JSON valid? ", verifiedRetrievedSigFromJson);
@@ -201,7 +199,19 @@ function arePartialSigsEquals(partial1, partial2) {
         areRingsEquals(partial1.ring, partial2.ring) &&
         areResponsesEquals(partial1.responses, partial2.responses) &&
         partial1.pi === partial2.pi &&
-        partial1.c === partial2.c);
+        partial1.c === partial2.c &&
+        areConfigEquals(partial1.config, partial2.config));
+}
+function areConfigEquals(config1, config2) {
+    if (config1 === undefined && config2 === undefined) {
+        return true;
+    }
+    if (config1 === undefined || config2 === undefined) {
+        return false;
+    }
+    return (config1.evmCompatibility === config2.evmCompatibility &&
+        config1.derivationConfig === config2.derivationConfig &&
+        config1.safeMode === config2.safeMode);
 }
 /*--------------------- test partial ring signature <--> Base64 conversion ---------------------*/
 console.log("------ CONVERT PARTIAL RING SIGNATURE TO Base64 AND RETRIEVE IT ------");
