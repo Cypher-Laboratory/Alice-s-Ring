@@ -155,6 +155,7 @@ export declare class RingSignature {
      * @param previousC - The previous c value
      * @param previousPubKey - The previous public key
      * @param config - The config params to use
+     * @param piPlus1 - If set, the c value will be computed as if it was the pi+1 signer
      *
      * @returns A c value
      */

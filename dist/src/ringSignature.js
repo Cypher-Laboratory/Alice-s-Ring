@@ -276,10 +276,7 @@ class RingSignature {
         // contains all the cees from pi+1 to n (pi+1, pi+2, ..., n)(n = ring.length - 1)
         const cValuesPI1N = [];
         // compute C pi+1
-        cValuesPI1N.push((0, utils_1.modulo)(BigInt("0x" +
-            (0, js_sha3_1.keccak256)((0, utils_1.formatRing)(ring, config) +
-                messageDigest +
-                G.mult(alpha).toString())), curve.N));
+        cValuesPI1N.push(RingSignature.computeC(ring, messageDigest, G, curve.N, responses[pi], alpha, signerPubKey, config, { alpha: alpha, curve: curve }));
         // compute Cpi+2 to Cn
         for (let i = pi + 2; i < ring.length; i++) {
             cValuesPI1N.push(RingSignature.computeC(ring, messageDigest, G, curve.N, responses[i - 1], cValuesPI1N[i - pi - 2], ring[i - 1], config));
@@ -313,10 +310,17 @@ class RingSignature {
      * @param previousC - The previous c value
      * @param previousPubKey - The previous public key
      * @param config - The config params to use
+     * @param piPlus1 - If set, the c value will be computed as if it was the pi+1 signer
      *
      * @returns A c value
      */
-    static computeC(ring, message, G, N, r, previousC, previousPubKey, config) {
+    static computeC(ring, message, G, N, r, previousC, previousPubKey, config, piPlus1) {
+        if (piPlus1) {
+            return (0, utils_1.modulo)(BigInt("0x" +
+                (0, js_sha3_1.keccak256)((0, utils_1.formatRing)(ring, config) +
+                    message +
+                    G.mult(piPlus1.alpha).toString())), piPlus1.curve.N);
+        }
         return (0, utils_1.modulo)(BigInt("0x" +
             (0, js_sha3_1.keccak256)((0, utils_1.formatRing)(ring, config) +
                 message +

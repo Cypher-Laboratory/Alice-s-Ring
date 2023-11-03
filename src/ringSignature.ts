@@ -463,16 +463,16 @@ export class RingSignature {
 
     // compute C pi+1
     cValuesPI1N.push(
-      modulo(
-        BigInt(
-          "0x" +
-            keccak256(
-              formatRing(ring, config) +
-                messageDigest +
-                G.mult(alpha).toString(),
-            ),
-        ),
+      RingSignature.computeC(
+        ring,
+        messageDigest,
+        G,
         curve.N,
+        responses[pi],
+        alpha,
+        signerPubKey,
+        config,
+        { alpha: alpha, curve: curve },
       ),
     );
 
@@ -546,6 +546,7 @@ export class RingSignature {
    * @param previousC - The previous c value
    * @param previousPubKey - The previous public key
    * @param config - The config params to use
+   * @param piPlus1 - If set, the c value will be computed as if it was the pi+1 signer
    *
    * @returns A c value
    */
@@ -558,7 +559,21 @@ export class RingSignature {
     previousC: bigint,
     previousPubKey: Point,
     config?: SignatureConfig,
+    piPlus1?: { alpha: bigint; curve: Curve },
   ): bigint {
+    if (piPlus1) {
+      return modulo(
+        BigInt(
+          "0x" +
+            keccak256(
+              formatRing(ring, config) +
+                message +
+                G.mult(piPlus1.alpha).toString(),
+            ),
+        ),
+        piPlus1.curve.N,
+      );
+    }
     return modulo(
       BigInt(
         "0x" +
