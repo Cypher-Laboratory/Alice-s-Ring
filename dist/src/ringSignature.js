@@ -323,7 +323,7 @@ class RingSignature {
             responses: responses,
         };
     }
-    /**
+    /** // TODO: update doc according to function signature
      * Compute a c value
      *
      * @remarks

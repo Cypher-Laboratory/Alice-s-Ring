@@ -144,7 +144,7 @@ export declare class RingSignature {
      * @returns An incomplete ring signature
      */
     private static signature;
-    /**
+    /** // TODO: update doc according to function signature
      * Compute a c value
      *
      * @remarks

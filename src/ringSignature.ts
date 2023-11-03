@@ -544,7 +544,7 @@ export class RingSignature {
     };
   }
 
-  /**
+  /** // TODO: update doc according to function signature
    * Compute a c value
    *
    * @remarks
