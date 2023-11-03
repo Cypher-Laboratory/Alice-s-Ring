@@ -344,9 +344,11 @@ export class RingSignature {
         messageDigest,
         G,
         this.curve.N,
-        this.responses[0],
-        this.c,
-        this.ring[0],
+        {
+          r: this.responses[0],
+          previousC: this.c,
+          previousPubKey: this.ring[0],
+        },
         this.config,
       );
 
@@ -357,9 +359,11 @@ export class RingSignature {
           messageDigest,
           G,
           this.curve.N,
-          this.responses[i - 1],
-          lastComputedCp,
-          this.ring[i - 1],
+          {
+            r: this.responses[i - 1],
+            previousC: lastComputedCp,
+            previousPubKey: this.ring[i - 1],
+          },
           this.config,
         );
       }
@@ -372,9 +376,11 @@ export class RingSignature {
           messageDigest,
           G,
           this.curve.N,
-          this.responses[this.responses.length - 1],
-          lastComputedCp,
-          this.ring[this.ring.length - 1],
+          {
+            r: this.responses[this.responses.length - 1],
+            previousC: lastComputedCp,
+            previousPubKey: this.ring[this.ring.length - 1],
+          },
           this.config,
         )
       );
@@ -468,11 +474,8 @@ export class RingSignature {
         messageDigest,
         G,
         curve.N,
-        responses[pi],
-        alpha,
-        signerPubKey,
+        { alpha: alpha },
         config,
-        { alpha: alpha, curve: curve },
       ),
     );
 
@@ -484,9 +487,11 @@ export class RingSignature {
           messageDigest,
           G,
           curve.N,
-          responses[i - 1],
-          cValuesPI1N[i - pi - 2],
-          ring[i - 1],
+          {
+            r: responses[i - 1],
+            previousC: cValuesPI1N[i - pi - 2],
+            previousPubKey: ring[i - 1],
+          },
           config,
         ),
       );
@@ -502,9 +507,11 @@ export class RingSignature {
         messageDigest,
         G,
         curve.N,
-        responses[responses.length - 1],
-        cValuesPI1N[cValuesPI1N.length - 1],
-        ring[ring.length - 1],
+        {
+          r: responses[responses.length - 1],
+          previousC: cValuesPI1N[cValuesPI1N.length - 1],
+          previousPubKey: ring[ring.length - 1],
+        },
         config,
       ),
     );
@@ -516,9 +523,11 @@ export class RingSignature {
         messageDigest,
         G,
         curve.N,
-        responses[i - 1],
-        cValues0PI[i - 1],
-        ring[i - 1],
+        {
+          r: responses[i - 1],
+          previousC: cValues0PI[i - 1],
+          previousPubKey: ring[i - 1],
+        },
         config,
       );
     }
@@ -538,6 +547,10 @@ export class RingSignature {
   /**
    * Compute a c value
    *
+   * @remarks
+   * This function is used to compute the c value of a partial signature.
+   * Either 'alpha' or all the other parameters of 'params' must be set.
+   *
    * @param ring - Ring of public keys
    * @param message - Message digest
    * @param G - Curve generator point
@@ -555,35 +568,45 @@ export class RingSignature {
     message: string,
     G: Point,
     N: bigint,
-    r: bigint,
-    previousC: bigint,
-    previousPubKey: Point,
+    params: {
+      r?: bigint;
+      previousC?: bigint;
+      previousPubKey?: Point;
+      alpha?: bigint;
+    },
     config?: SignatureConfig,
-    piPlus1?: { alpha: bigint; curve: Curve },
   ): bigint {
-    if (piPlus1) {
+    if (params.alpha) {
       return modulo(
         BigInt(
           "0x" +
             keccak256(
               formatRing(ring, config) +
                 message +
-                G.mult(piPlus1.alpha).toString(),
+                G.mult(params.alpha).toString(),
             ),
         ),
-        piPlus1.curve.N,
+        N,
       );
     }
-    return modulo(
-      BigInt(
-        "0x" +
-          keccak256(
-            formatRing(ring, config) +
-              message +
-              G.mult(r).add(previousPubKey.mult(previousC)).toString(),
-          ),
-      ),
-      N,
+    if (params.r && params.previousC && params.previousPubKey) {
+      return modulo(
+        BigInt(
+          "0x" +
+            keccak256(
+              formatRing(ring, config) +
+                message +
+                G.mult(params.r)
+                  .add(params.previousPubKey.mult(params.previousC))
+                  .toString(),
+            ),
+        ),
+        N,
+      );
+    }
+
+    throw new Error(
+      "computeC: Missing parameters. Either 'piPlus1' or 'params' must be set",
     );
   }
 

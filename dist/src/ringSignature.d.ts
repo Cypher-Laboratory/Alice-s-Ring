@@ -147,6 +147,10 @@ export declare class RingSignature {
     /**
      * Compute a c value
      *
+     * @remarks
+     * This function is used to compute the c value of a partial signature.
+     * Either 'alpha' or all the other parameters of 'params' must be set.
+     *
      * @param ring - Ring of public keys
      * @param message - Message digest
      * @param G - Curve generator point

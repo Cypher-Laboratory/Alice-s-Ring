@@ -73,9 +73,7 @@ const signature_ed = RingSignature.sign(
   ed25519,
   config,
 );
-console.log("ring_ed.length: ", ring_ed.length);
-console.log("signature_ed ring: ", signature_ed.ring.length);
-console.log("signature_ed responses: ", signature_ed.responses.length);
+
 const verifiedSig_ed = signature_ed.verify();
 
 console.log("Is sig valid ? ", verifiedSig_ed);

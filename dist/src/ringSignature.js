@@ -212,14 +212,26 @@ class RingSignature {
             // computes the cees
             let lastComputedCp = RingSignature.computeC(
             // c1'
-            this.ring, messageDigest, G, this.curve.N, this.responses[0], this.c, this.ring[0], this.config);
+            this.ring, messageDigest, G, this.curve.N, {
+                r: this.responses[0],
+                previousC: this.c,
+                previousPubKey: this.ring[0],
+            }, this.config);
             for (let i = 2; i < this.ring.length; i++) {
                 // c2' -> cn'
-                lastComputedCp = RingSignature.computeC(this.ring, messageDigest, G, this.curve.N, this.responses[i - 1], lastComputedCp, this.ring[i - 1], this.config);
+                lastComputedCp = RingSignature.computeC(this.ring, messageDigest, G, this.curve.N, {
+                    r: this.responses[i - 1],
+                    previousC: lastComputedCp,
+                    previousPubKey: this.ring[i - 1],
+                }, this.config);
             }
             // return true if c0 === c0'
             return (this.c ===
-                RingSignature.computeC(this.ring, messageDigest, G, this.curve.N, this.responses[this.responses.length - 1], lastComputedCp, this.ring[this.ring.length - 1], this.config));
+                RingSignature.computeC(this.ring, messageDigest, G, this.curve.N, {
+                    r: this.responses[this.responses.length - 1],
+                    previousC: lastComputedCp,
+                    previousPubKey: this.ring[this.ring.length - 1],
+                }, this.config));
         }
         // if ring length = 1 :
         return (0, piSignature_1.verifyPiSignature)(this.ring[0], this.responses[0], (0, utils_1.modulo)(2n * this.c + 1n, this.curve.N), this.c, this.curve);
@@ -276,18 +288,30 @@ class RingSignature {
         // contains all the cees from pi+1 to n (pi+1, pi+2, ..., n)(n = ring.length - 1)
         const cValuesPI1N = [];
         // compute C pi+1
-        cValuesPI1N.push(RingSignature.computeC(ring, messageDigest, G, curve.N, responses[pi], alpha, signerPubKey, config, { alpha: alpha, curve: curve }));
+        cValuesPI1N.push(RingSignature.computeC(ring, messageDigest, G, curve.N, { alpha: alpha }, config));
         // compute Cpi+2 to Cn
         for (let i = pi + 2; i < ring.length; i++) {
-            cValuesPI1N.push(RingSignature.computeC(ring, messageDigest, G, curve.N, responses[i - 1], cValuesPI1N[i - pi - 2], ring[i - 1], config));
+            cValuesPI1N.push(RingSignature.computeC(ring, messageDigest, G, curve.N, {
+                r: responses[i - 1],
+                previousC: cValuesPI1N[i - pi - 2],
+                previousPubKey: ring[i - 1],
+            }, config));
         }
         // contains all the c from 0 to pi
         const cValues0PI = [];
         // compute c0 using cn
-        cValues0PI.push(RingSignature.computeC(ring, messageDigest, G, curve.N, responses[responses.length - 1], cValuesPI1N[cValuesPI1N.length - 1], ring[ring.length - 1], config));
+        cValues0PI.push(RingSignature.computeC(ring, messageDigest, G, curve.N, {
+            r: responses[responses.length - 1],
+            previousC: cValuesPI1N[cValuesPI1N.length - 1],
+            previousPubKey: ring[ring.length - 1],
+        }, config));
         // compute C0 to C pi -1
         for (let i = 1; i < pi + 1; i++) {
-            cValues0PI[i] = RingSignature.computeC(ring, messageDigest, G, curve.N, responses[i - 1], cValues0PI[i - 1], ring[i - 1], config);
+            cValues0PI[i] = RingSignature.computeC(ring, messageDigest, G, curve.N, {
+                r: responses[i - 1],
+                previousC: cValues0PI[i - 1],
+                previousPubKey: ring[i - 1],
+            }, config);
         }
         // concatenate CValues0PI, cpi and CValuesPI1N to get all the c values
         const cees = cValues0PI.concat(cValuesPI1N);
@@ -302,6 +326,10 @@ class RingSignature {
     /**
      * Compute a c value
      *
+     * @remarks
+     * This function is used to compute the c value of a partial signature.
+     * Either 'alpha' or all the other parameters of 'params' must be set.
+     *
      * @param ring - Ring of public keys
      * @param message - Message digest
      * @param G - Curve generator point
@@ -314,17 +342,22 @@ class RingSignature {
      *
      * @returns A c value
      */
-    static computeC(ring, message, G, N, r, previousC, previousPubKey, config, piPlus1) {
-        if (piPlus1) {
+    static computeC(ring, message, G, N, params, config) {
+        if (params.alpha) {
             return (0, utils_1.modulo)(BigInt("0x" +
                 (0, js_sha3_1.keccak256)((0, utils_1.formatRing)(ring, config) +
                     message +
-                    G.mult(piPlus1.alpha).toString())), piPlus1.curve.N);
+                    G.mult(params.alpha).toString())), N);
         }
-        return (0, utils_1.modulo)(BigInt("0x" +
-            (0, js_sha3_1.keccak256)((0, utils_1.formatRing)(ring, config) +
-                message +
-                G.mult(r).add(previousPubKey.mult(previousC)).toString())), N);
+        if (params.r && params.previousC && params.previousPubKey) {
+            return (0, utils_1.modulo)(BigInt("0x" +
+                (0, js_sha3_1.keccak256)((0, utils_1.formatRing)(ring, config) +
+                    message +
+                    G.mult(params.r)
+                        .add(params.previousPubKey.mult(params.previousC))
+                        .toString())), N);
+        }
+        throw new Error("computeC: Missing parameters. Either 'piPlus1' or 'params' must be set");
     }
     /**
      * Convert a partial signature to a base64 string
