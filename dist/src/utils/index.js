@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.uint8ArrayToHex = exports.Point = exports.modulo = exports.getRandomSecuredNumber = exports.randomBigint = exports.CurveName = exports.Curve = void 0;
+exports.formatRing = exports.uint8ArrayToHex = exports.Point = exports.modulo = exports.getRandomSecuredNumber = exports.randomBigint = exports.CurveName = exports.Curve = void 0;
 var curves_1 = require("./curves");
 Object.defineProperty(exports, "Curve", { enumerable: true, get: function () { return curves_1.Curve; } });
 Object.defineProperty(exports, "CurveName", { enumerable: true, get: function () { return curves_1.CurveName; } });
@@ -13,3 +13,5 @@ var point_1 = require("./point");
 Object.defineProperty(exports, "Point", { enumerable: true, get: function () { return point_1.Point; } });
 var uint8ArrayToHex_1 = require("./uint8ArrayToHex");
 Object.defineProperty(exports, "uint8ArrayToHex", { enumerable: true, get: function () { return uint8ArrayToHex_1.uint8ArrayToHex; } });
+var formatRing_1 = require("./formatRing");
+Object.defineProperty(exports, "formatRing", { enumerable: true, get: function () { return formatRing_1.formatRing; } });

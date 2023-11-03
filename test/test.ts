@@ -1,5 +1,9 @@
 import { piSignature } from "../src";
-import { PartialSignature, RingSignature } from "../src/ringSignature";
+import {
+  PartialSignature,
+  RingSignature,
+  SignatureConfig,
+} from "../src/ringSignature";
 import { Curve, Point, randomBigint, CurveName } from "../src/utils";
 import { deriveKeypair } from "ripple-keypairs";
 import { Config } from "../src/utils/curves";
@@ -8,7 +12,10 @@ import * as ed from "../src/utils/noble-libraries/noble-ED25519";
 const CONFIG = Config.DEFAULT;
 
 console.log("------ TESTING FOR XRPL CONFIG ------");
-const config = { derivationConfig: CONFIG };
+const config: SignatureConfig = {
+  derivationConfig: CONFIG,
+  evmCompatibility: false,
+};
 
 const ringSize = 10;
 const secp256k1 = new Curve(CurveName.SECP256K1);

@@ -47,10 +47,10 @@ class RingSignature {
      * @param curve - Curve used for the signature
      * @param safeMode - If true, check if all the points are on the same curve
      */
-    constructor(message, ring, c, responses, curve, safeMode = false) {
+    constructor(message, ring, c, responses, curve, config) {
         if (ring.length != responses.length)
             throw new Error("Ring and responses length mismatch");
-        if (safeMode) {
+        if (config?.safeMode) {
             for (const i of ring) {
                 if (i.curve.name != curve.name) {
                     throw new Error("Point not on curve");
@@ -62,6 +62,7 @@ class RingSignature {
         this.c = c;
         this.responses = responses;
         this.curve = curve;
+        this.config = config;
     }
     /**
      * Create a RingSignature from a json object
@@ -104,7 +105,11 @@ class RingSignature {
         const decoded = Buffer.from(base64, "base64").toString("ascii");
         const json = JSON.parse(decoded);
         const ring = json.ring.map((point) => utils_1.Point.fromString(point));
-        return new RingSignature(json.message, ring, BigInt(json.c), json.responses.map((response) => BigInt(response)), utils_1.Curve.fromString(json.curve));
+        let config = undefined;
+        if (json.config && json.config != "undefined") {
+            config = JSON.parse(json.config);
+        }
+        return new RingSignature(json.message, ring, BigInt(json.c), json.responses.map((response) => BigInt(response)), utils_1.Curve.fromString(json.curve), config);
     }
     /**
      * Encode a ring signature to base64 string
@@ -143,7 +148,7 @@ class RingSignature {
         // insert the signer response
         rawSignature.responses
             .slice(0, rawSignature.signerIndex)
-            .concat([signerResponse], rawSignature.responses.slice(rawSignature.signerIndex + 1)), curve);
+            .concat([signerResponse], rawSignature.responses.slice(rawSignature.signerIndex + 1)), curve, config);
     }
     /**
      * Sign a message using ring signatures
@@ -169,6 +174,7 @@ class RingSignature {
             pi: rawSignature.signerIndex,
             alpha: rawSignature.alpha,
             curve: curve,
+            config: config,
         };
     }
     /**
@@ -184,7 +190,7 @@ class RingSignature {
         // insert the signer response
         partialSig.responses
             .slice(0, partialSig.pi)
-            .concat([signerResponse], partialSig.responses.slice(partialSig.pi + 1)), partialSig.curve);
+            .concat([signerResponse], partialSig.responses.slice(partialSig.pi + 1)), partialSig.curve, partialSig.config);
     }
     /**
      * Verify a RingSignature
@@ -208,14 +214,14 @@ class RingSignature {
             // computes the cees
             let lastComputedCp = RingSignature.computeC(
             // c1'
-            this.ring, messageDigest, G, this.curve.N, this.responses[0], this.c, this.ring[0]);
+            this.ring, messageDigest, G, this.curve.N, this.responses[0], this.c, this.ring[0], this.config);
             for (let i = 2; i < this.ring.length; i++) {
                 // c2' -> cn'
-                lastComputedCp = RingSignature.computeC(this.ring, messageDigest, G, this.curve.N, this.responses[i - 1], lastComputedCp, this.ring[i - 1]);
+                lastComputedCp = RingSignature.computeC(this.ring, messageDigest, G, this.curve.N, this.responses[i - 1], lastComputedCp, this.ring[i - 1], this.config);
             }
             // return true if c0 === c0'
             return (this.c ===
-                RingSignature.computeC(this.ring, messageDigest, G, this.curve.N, this.responses[this.responses.length - 1], lastComputedCp, this.ring[this.ring.length - 1]));
+                RingSignature.computeC(this.ring, messageDigest, G, this.curve.N, this.responses[this.responses.length - 1], lastComputedCp, this.ring[this.ring.length - 1], this.config));
         }
         // if ring length = 1 :
         return (0, piSignature_1.verifyPiSignature)(this.ring[0], this.responses[0], (0, utils_1.modulo)(2n * this.c + 1n, this.curve.N), this.c, this.curve);
@@ -250,7 +256,7 @@ class RingSignature {
         const alpha = (0, utils_1.randomBigint)(curve.N);
         let signerPubKey;
         if (typeof signerKey === "bigint") {
-            signerPubKey = (0, curves_1.derivePubKey)(signerKey, curve, config.derivationConfig);
+            signerPubKey = (0, curves_1.derivePubKey)(signerKey, curve, config?.derivationConfig);
         }
         else {
             signerPubKey = signerKey;
@@ -272,18 +278,21 @@ class RingSignature {
         // contains all the cees from pi+1 to n (pi+1, pi+2, ..., n)(n = ring.length - 1)
         const cValuesPI1N = [];
         // compute C pi+1
-        cValuesPI1N.push((0, utils_1.modulo)(BigInt("0x" + (0, js_sha3_1.keccak256)(ring + messageDigest + G.mult(alpha).toString())), curve.N));
+        cValuesPI1N.push((0, utils_1.modulo)(BigInt("0x" +
+            (0, js_sha3_1.keccak256)((0, utils_1.formatRing)(ring, config) +
+                messageDigest +
+                G.mult(alpha).toString())), curve.N));
         // compute Cpi+2 to Cn
         for (let i = pi + 2; i < ring.length; i++) {
-            cValuesPI1N.push(RingSignature.computeC(ring, messageDigest, G, curve.N, responses[i - 1], cValuesPI1N[i - pi - 2], ring[i - 1]));
+            cValuesPI1N.push(RingSignature.computeC(ring, messageDigest, G, curve.N, responses[i - 1], cValuesPI1N[i - pi - 2], ring[i - 1], config));
         }
         // contains all the c from 0 to pi
         const cValues0PI = [];
         // compute c0 using cn
-        cValues0PI.push(RingSignature.computeC(ring, messageDigest, G, curve.N, responses[responses.length - 1], cValuesPI1N[cValuesPI1N.length - 1], ring[ring.length - 1]));
+        cValues0PI.push(RingSignature.computeC(ring, messageDigest, G, curve.N, responses[responses.length - 1], cValuesPI1N[cValuesPI1N.length - 1], ring[ring.length - 1], config));
         // compute C0 to C pi -1
         for (let i = 1; i < pi + 1; i++) {
-            cValues0PI[i] = RingSignature.computeC(ring, messageDigest, G, curve.N, responses[i - 1], cValues0PI[i - 1], ring[i - 1]);
+            cValues0PI[i] = RingSignature.computeC(ring, messageDigest, G, curve.N, responses[i - 1], cValues0PI[i - 1], ring[i - 1], config);
         }
         // concatenate CValues0PI, cpi and CValuesPI1N to get all the c values
         const cees = cValues0PI.concat(cValuesPI1N);
@@ -305,12 +314,13 @@ class RingSignature {
      * @param r - The response which will be used to compute the c value
      * @param previousC - The previous c value
      * @param previousPubKey - The previous public key
+     * @param config - The config params to use
      *
      * @returns A c value
      */
-    static computeC(ring, message, G, N, r, previousC, previousPubKey) {
+    static computeC(ring, message, G, N, r, previousC, previousPubKey, config) {
         return (0, utils_1.modulo)(BigInt("0x" +
-            (0, js_sha3_1.keccak256)(ring +
+            (0, js_sha3_1.keccak256)((0, utils_1.formatRing)(ring, config) +
                 message +
                 G.mult(r).add(previousPubKey.mult(previousC)).toString())), N);
     }
@@ -343,6 +353,9 @@ class RingSignature {
         try {
             const decoded = Buffer.from(base64, "base64").toString("ascii");
             const json = JSON.parse(decoded);
+            if (json.config && json.config != "undefined") {
+                json.config = JSON.parse(json.config);
+            }
             return {
                 message: json.message,
                 ring: json.ring.map((point) => utils_1.Point.fromString(point)),
@@ -352,6 +365,7 @@ class RingSignature {
                 pi: Number(json.pi),
                 alpha: BigInt(json.alpha),
                 curve: utils_1.Curve.fromString(json.curve),
+                config: json.config,
             };
         }
         catch (e) {

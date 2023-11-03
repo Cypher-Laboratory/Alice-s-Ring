@@ -1,6 +1,18 @@
 import { Curve, Point } from "./utils";
 import { Config } from "./utils/curves";
 /**
+ * Signature config interface
+ *
+ * @see derivationConfig - The config to use for the key derivation
+ * @see evmCompatibility - If true, the signature will be compatible with our EVM verifier contract
+ * @see safeMode - If true, check if all the points are on the same curve
+ */
+export interface SignatureConfig {
+    derivationConfig?: Config;
+    evmCompatibility?: boolean;
+    safeMode?: boolean;
+}
+/**
  * Partial ring signature interface
  *
  * @see message - Clear message
@@ -21,6 +33,7 @@ export interface PartialSignature {
     alpha: bigint;
     responses: bigint[];
     curve: Curve;
+    config?: SignatureConfig;
 }
 /**
  * Ring signature class.
@@ -33,6 +46,7 @@ export declare class RingSignature {
     responses: bigint[];
     ring: Point[];
     curve: Curve;
+    config?: SignatureConfig;
     /**
      * Ring signature class constructor
      *
@@ -43,7 +57,7 @@ export declare class RingSignature {
      * @param curve - Curve used for the signature
      * @param safeMode - If true, check if all the points are on the same curve
      */
-    constructor(message: string, ring: Point[], c: bigint, responses: bigint[], curve: Curve, safeMode?: boolean);
+    constructor(message: string, ring: Point[], c: bigint, responses: bigint[], curve: Curve, config?: SignatureConfig);
     /**
      * Create a RingSignature from a json object
      *
@@ -82,9 +96,7 @@ export declare class RingSignature {
      * @returns A RingSignature
      */
     static sign(ring: Point[], // ring.length = n
-    signerPrivateKey: bigint, message: string, curve: Curve, config: {
-        derivationConfig: Config;
-    }): RingSignature;
+    signerPrivateKey: bigint, message: string, curve: Curve, config: SignatureConfig): RingSignature;
     /**
      * Sign a message using ring signatures
      *
@@ -96,9 +108,7 @@ export declare class RingSignature {
      * @returns A PartialSignature
      */
     static partialSign(ring: Point[], // ring.length = n
-    message: string, signerPubKey: Point, curve: Curve, config: {
-        derivationConfig: Config;
-    }): PartialSignature;
+    message: string, signerPubKey: Point, curve: Curve, config?: SignatureConfig): PartialSignature;
     /**
      * Combine partial signatures into a RingSignature
      *
@@ -144,6 +154,7 @@ export declare class RingSignature {
      * @param r - The response which will be used to compute the c value
      * @param previousC - The previous c value
      * @param previousPubKey - The previous public key
+     * @param config - The config params to use
      *
      * @returns A c value
      */
