@@ -6,6 +6,7 @@ import {
   Point,
   modulo,
   formatRing,
+  formatPoint,
 } from "./utils";
 import { piSignature, verifyPiSignature } from "./signature/piSignature";
 import * as ed from "./utils/noble-libraries/noble-ED25519";
@@ -433,8 +434,6 @@ export class RingSignature {
     signerIndex: number;
     responses: bigint[];
   } {
-    const G: Point = curve.GtoPoint(); // Curve generator point
-
     // hash the message
     const messageDigest = keccak256(message);
 
@@ -472,7 +471,7 @@ export class RingSignature {
       RingSignature.computeC(
         ring,
         messageDigest,
-        G,
+        curve.GtoPoint(),
         curve.N,
         { alpha: alpha },
         config,
@@ -485,7 +484,7 @@ export class RingSignature {
         RingSignature.computeC(
           ring,
           messageDigest,
-          G,
+          curve.GtoPoint(),
           curve.N,
           {
             r: responses[i - 1],
@@ -505,7 +504,7 @@ export class RingSignature {
       RingSignature.computeC(
         ring,
         messageDigest,
-        G,
+        curve.GtoPoint(),
         curve.N,
         {
           r: responses[responses.length - 1],
@@ -521,7 +520,7 @@ export class RingSignature {
       cValues0PI[i] = RingSignature.computeC(
         ring,
         messageDigest,
-        G,
+        curve.GtoPoint(),
         curve.N,
         {
           r: responses[i - 1],
@@ -583,7 +582,7 @@ export class RingSignature {
             keccak256(
               formatRing(ring, config) +
                 message +
-                G.mult(params.alpha).toString(),
+                formatPoint(G.mult(params.alpha), config),
             ),
         ),
         N,
@@ -596,9 +595,12 @@ export class RingSignature {
             keccak256(
               formatRing(ring, config) +
                 message +
-                G.mult(params.r)
-                  .add(params.previousPubKey.mult(params.previousC))
-                  .toString(),
+                formatPoint(
+                  G.mult(params.r).add(
+                    params.previousPubKey.mult(params.previousC),
+                  ),
+                  config,
+                ),
             ),
         ),
         N,
@@ -606,7 +608,7 @@ export class RingSignature {
     }
 
     throw new Error(
-      "computeC: Missing parameters. Either 'piPlus1' or 'params' must be set",
+      "computeC: Missing parameters. Either 'alpha' or all the others params must be set",
     );
   }
 

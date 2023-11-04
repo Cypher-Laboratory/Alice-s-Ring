@@ -259,7 +259,6 @@ class RingSignature {
      * @returns An incomplete ring signature
      */
     static signature(curve, ring, signerKey, message, config) {
-        const G = curve.GtoPoint(); // Curve generator point
         // hash the message
         const messageDigest = (0, js_sha3_1.keccak256)(message);
         // generate random number alpha
@@ -288,10 +287,10 @@ class RingSignature {
         // contains all the cees from pi+1 to n (pi+1, pi+2, ..., n)(n = ring.length - 1)
         const cValuesPI1N = [];
         // compute C pi+1
-        cValuesPI1N.push(RingSignature.computeC(ring, messageDigest, G, curve.N, { alpha: alpha }, config));
+        cValuesPI1N.push(RingSignature.computeC(ring, messageDigest, curve.GtoPoint(), curve.N, { alpha: alpha }, config));
         // compute Cpi+2 to Cn
         for (let i = pi + 2; i < ring.length; i++) {
-            cValuesPI1N.push(RingSignature.computeC(ring, messageDigest, G, curve.N, {
+            cValuesPI1N.push(RingSignature.computeC(ring, messageDigest, curve.GtoPoint(), curve.N, {
                 r: responses[i - 1],
                 previousC: cValuesPI1N[i - pi - 2],
                 previousPubKey: ring[i - 1],
@@ -300,14 +299,14 @@ class RingSignature {
         // contains all the c from 0 to pi
         const cValues0PI = [];
         // compute c0 using cn
-        cValues0PI.push(RingSignature.computeC(ring, messageDigest, G, curve.N, {
+        cValues0PI.push(RingSignature.computeC(ring, messageDigest, curve.GtoPoint(), curve.N, {
             r: responses[responses.length - 1],
             previousC: cValuesPI1N[cValuesPI1N.length - 1],
             previousPubKey: ring[ring.length - 1],
         }, config));
         // compute C0 to C pi -1
         for (let i = 1; i < pi + 1; i++) {
-            cValues0PI[i] = RingSignature.computeC(ring, messageDigest, G, curve.N, {
+            cValues0PI[i] = RingSignature.computeC(ring, messageDigest, curve.GtoPoint(), curve.N, {
                 r: responses[i - 1],
                 previousC: cValues0PI[i - 1],
                 previousPubKey: ring[i - 1],
@@ -347,17 +346,15 @@ class RingSignature {
             return (0, utils_1.modulo)(BigInt("0x" +
                 (0, js_sha3_1.keccak256)((0, utils_1.formatRing)(ring, config) +
                     message +
-                    G.mult(params.alpha).toString())), N);
+                    (0, utils_1.formatPoint)(G.mult(params.alpha), config))), N);
         }
         if (params.r && params.previousC && params.previousPubKey) {
             return (0, utils_1.modulo)(BigInt("0x" +
                 (0, js_sha3_1.keccak256)((0, utils_1.formatRing)(ring, config) +
                     message +
-                    G.mult(params.r)
-                        .add(params.previousPubKey.mult(params.previousC))
-                        .toString())), N);
+                    (0, utils_1.formatPoint)(G.mult(params.r).add(params.previousPubKey.mult(params.previousC)), config))), N);
         }
-        throw new Error("computeC: Missing parameters. Either 'piPlus1' or 'params' must be set");
+        throw new Error("computeC: Missing parameters. Either 'alpha' or all the others params must be set");
     }
     /**
      * Convert a partial signature to a base64 string

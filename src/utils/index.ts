@@ -4,3 +4,4 @@ export { modulo } from "./modulo";
 export { Point } from "./point";
 export { uint8ArrayToHex } from "./uint8ArrayToHex";
 export { formatRing } from "./formatRing";
+export { formatPoint } from "./formatPoint";

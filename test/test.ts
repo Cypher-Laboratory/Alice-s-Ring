@@ -11,7 +11,7 @@ import * as ed from "../src/utils/noble-libraries/noble-ED25519";
 
 const config: SignatureConfig = {
   derivationConfig: Config.DEFAULT,
-  evmCompatibility: false,
+  evmCompatibility: true,
 };
 
 const ringSize = 10;

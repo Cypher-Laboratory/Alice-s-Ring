@@ -31,7 +31,7 @@ const curves_1 = require("../src/utils/curves");
 const ed = __importStar(require("../src/utils/noble-libraries/noble-ED25519"));
 const config = {
     derivationConfig: curves_1.Config.DEFAULT,
-    evmCompatibility: false,
+    evmCompatibility: true,
 };
 const ringSize = 10;
 const secp256k1 = new utils_1.Curve(utils_1.CurveName.SECP256K1);

@@ -8,7 +8,7 @@ console.log("------------------ TESTING FOR XRPL CONFIG ------------------\n");
 
 const config = { derivationConfig: Config.DEFAULT };
 
-const ringSize = 2;
+const ringSize = 3;
 
 const ed25519 = new Curve(CurveName.ED25519); // could also be SECP256K1
 
@@ -56,3 +56,8 @@ function randomRing(ringLength = 100, G: Point, N: bigint): Point[] {
   }
   return ring;
 }
+
+const secp256k1 = new Curve(CurveName.SECP256K1);
+console.log(
+  randomRing(3, secp256k1.GtoPoint(), secp256k1.N).map((p) => [p.x, p.y]),
+);
