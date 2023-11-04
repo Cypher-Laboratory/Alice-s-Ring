@@ -5,12 +5,27 @@ import {
   Curve,
   Point,
   modulo,
+  formatRing,
+  formatPoint,
 } from "./utils";
 import { piSignature, verifyPiSignature } from "./signature/piSignature";
 import * as ed from "./utils/noble-libraries/noble-ED25519";
 import { sha512 } from "@noble/hashes/sha512";
 import { Config, derivePubKey } from "./utils/curves";
 ed.etc.sha512Sync = (...m) => sha512(ed.etc.concatBytes(...m));
+
+/**
+ * Signature config interface
+ *
+ * @see derivationConfig - The config to use for the key derivation
+ * @see evmCompatibility - If true, the signature will be compatible with our EVM verifier contract
+ * @see safeMode - If true, check if all the points are on the same curve
+ */
+export interface SignatureConfig {
+  derivationConfig?: Config;
+  evmCompatibility?: boolean;
+  safeMode?: boolean;
+}
 
 /**
  * Partial ring signature interface
@@ -33,6 +48,7 @@ export interface PartialSignature {
   alpha: bigint;
   responses: bigint[];
   curve: Curve;
+  config?: SignatureConfig;
 }
 
 /**
@@ -46,6 +62,7 @@ export class RingSignature {
   responses: bigint[];
   ring: Point[];
   curve: Curve;
+  config?: SignatureConfig;
 
   /**
    * Ring signature class constructor
@@ -63,12 +80,12 @@ export class RingSignature {
     c: bigint,
     responses: bigint[],
     curve: Curve,
-    safeMode = false,
+    config?: SignatureConfig,
   ) {
     if (ring.length != responses.length)
       throw new Error("Ring and responses length mismatch");
 
-    if (safeMode) {
+    if (config?.safeMode) {
       for (const i of ring) {
         if (i.curve.name != curve.name) {
           throw new Error("Point not on curve");
@@ -81,6 +98,7 @@ export class RingSignature {
     this.c = c;
     this.responses = responses;
     this.curve = curve;
+    this.config = config;
   }
 
   /**
@@ -98,6 +116,7 @@ export class RingSignature {
         c: string;
         responses: string[];
         curve: string;
+        config?: SignatureConfig;
       };
       return new RingSignature(
         sig.message,
@@ -105,6 +124,7 @@ export class RingSignature {
         BigInt(sig.c),
         sig.responses.map((response: string) => BigInt(response)),
         Curve.fromString(sig.curve),
+        sig.config,
       );
     } catch (e) {
       throw new Error("Invalid json: " + e);
@@ -117,13 +137,16 @@ export class RingSignature {
    * @returns A json string
    */
   toJsonString(): string {
-    return JSON.stringify({
+    const out = JSON.stringify({
       message: this.message,
       ring: this.ring.map((point: Point) => point.toString()),
       c: this.c.toString(),
       responses: this.responses.map((response) => response.toString()),
       curve: this.curve.toString(),
+      config: this.config,
     });
+
+    return out;
   }
 
   /**
@@ -137,12 +160,14 @@ export class RingSignature {
     const decoded = Buffer.from(base64, "base64").toString("ascii");
     const json = JSON.parse(decoded);
     const ring = json.ring.map((point: string) => Point.fromString(point));
+
     return new RingSignature(
       json.message,
       ring,
       BigInt(json.c),
       json.responses.map((response: string) => BigInt(response)),
       Curve.fromString(json.curve),
+      json.config,
     );
   }
 
@@ -168,7 +193,7 @@ export class RingSignature {
     signerPrivateKey: bigint,
     message: string,
     curve: Curve,
-    config: { derivationConfig: Config },
+    config?: SignatureConfig,
   ): RingSignature {
     if (ring.length === 0) {
       /* If the ring is empty, we just sign the message using our schnorr-like signature scheme
@@ -216,6 +241,7 @@ export class RingSignature {
           rawSignature.responses.slice(rawSignature.signerIndex + 1),
         ),
       curve,
+      config,
     );
   }
 
@@ -234,7 +260,7 @@ export class RingSignature {
     message: string,
     signerPubKey: Point,
     curve: Curve,
-    config: { derivationConfig: Config },
+    config?: SignatureConfig,
   ) {
     if (ring.length === 0)
       throw new Error(
@@ -258,6 +284,7 @@ export class RingSignature {
       pi: rawSignature.signerIndex,
       alpha: rawSignature.alpha,
       curve: curve,
+      config: config,
     } as PartialSignature;
   }
 
@@ -285,6 +312,7 @@ export class RingSignature {
           partialSig.responses.slice(partialSig.pi + 1),
         ),
       partialSig.curve,
+      partialSig.config,
     );
   }
 
@@ -317,9 +345,12 @@ export class RingSignature {
         messageDigest,
         G,
         this.curve.N,
-        this.responses[0],
-        this.c,
-        this.ring[0],
+        {
+          r: this.responses[0],
+          previousC: this.c,
+          previousPubKey: this.ring[0],
+        },
+        this.config,
       );
 
       for (let i = 2; i < this.ring.length; i++) {
@@ -329,9 +360,12 @@ export class RingSignature {
           messageDigest,
           G,
           this.curve.N,
-          this.responses[i - 1],
-          lastComputedCp,
-          this.ring[i - 1],
+          {
+            r: this.responses[i - 1],
+            previousC: lastComputedCp,
+            previousPubKey: this.ring[i - 1],
+          },
+          this.config,
         );
       }
 
@@ -343,9 +377,12 @@ export class RingSignature {
           messageDigest,
           G,
           this.curve.N,
-          this.responses[this.responses.length - 1],
-          lastComputedCp,
-          this.ring[this.ring.length - 1],
+          {
+            r: this.responses[this.responses.length - 1],
+            previousC: lastComputedCp,
+            previousPubKey: this.ring[this.ring.length - 1],
+          },
+          this.config,
         )
       );
     }
@@ -389,7 +426,7 @@ export class RingSignature {
     ring: Point[],
     signerKey: Point | bigint,
     message: string,
-    config: { derivationConfig: Config },
+    config?: SignatureConfig,
   ): {
     ring: Point[];
     cees: bigint[];
@@ -397,8 +434,6 @@ export class RingSignature {
     signerIndex: number;
     responses: bigint[];
   } {
-    const G: Point = curve.GtoPoint(); // Curve generator point
-
     // hash the message
     const messageDigest = keccak256(message);
 
@@ -407,7 +442,7 @@ export class RingSignature {
 
     let signerPubKey: Point;
     if (typeof signerKey === "bigint") {
-      signerPubKey = derivePubKey(signerKey, curve, config.derivationConfig);
+      signerPubKey = derivePubKey(signerKey, curve, config?.derivationConfig);
     } else {
       signerPubKey = signerKey;
     }
@@ -433,11 +468,13 @@ export class RingSignature {
 
     // compute C pi+1
     cValuesPI1N.push(
-      modulo(
-        BigInt(
-          "0x" + keccak256(ring + messageDigest + G.mult(alpha).toString()),
-        ),
+      RingSignature.computeC(
+        ring,
+        messageDigest,
+        curve.GtoPoint(),
         curve.N,
+        { alpha: alpha },
+        config,
       ),
     );
 
@@ -447,11 +484,14 @@ export class RingSignature {
         RingSignature.computeC(
           ring,
           messageDigest,
-          G,
+          curve.GtoPoint(),
           curve.N,
-          responses[i - 1],
-          cValuesPI1N[i - pi - 2],
-          ring[i - 1],
+          {
+            r: responses[i - 1],
+            previousC: cValuesPI1N[i - pi - 2],
+            previousPubKey: ring[i - 1],
+          },
+          config,
         ),
       );
     }
@@ -464,11 +504,14 @@ export class RingSignature {
       RingSignature.computeC(
         ring,
         messageDigest,
-        G,
+        curve.GtoPoint(),
         curve.N,
-        responses[responses.length - 1],
-        cValuesPI1N[cValuesPI1N.length - 1],
-        ring[ring.length - 1],
+        {
+          r: responses[responses.length - 1],
+          previousC: cValuesPI1N[cValuesPI1N.length - 1],
+          previousPubKey: ring[ring.length - 1],
+        },
+        config,
       ),
     );
 
@@ -477,11 +520,14 @@ export class RingSignature {
       cValues0PI[i] = RingSignature.computeC(
         ring,
         messageDigest,
-        G,
+        curve.GtoPoint(),
         curve.N,
-        responses[i - 1],
-        cValues0PI[i - 1],
-        ring[i - 1],
+        {
+          r: responses[i - 1],
+          previousC: cValues0PI[i - 1],
+          previousPubKey: ring[i - 1],
+        },
+        config,
       );
     }
 
@@ -497,8 +543,12 @@ export class RingSignature {
     };
   }
 
-  /**
+  /** // TODO: update doc according to function signature
    * Compute a c value
+   *
+   * @remarks
+   * This function is used to compute the c value of a partial signature.
+   * Either 'alpha' or all the other parameters of 'params' must be set.
    *
    * @param ring - Ring of public keys
    * @param message - Message digest
@@ -507,6 +557,8 @@ export class RingSignature {
    * @param r - The response which will be used to compute the c value
    * @param previousC - The previous c value
    * @param previousPubKey - The previous public key
+   * @param config - The config params to use
+   * @param piPlus1 - If set, the c value will be computed as if it was the pi+1 signer
    *
    * @returns A c value
    */
@@ -515,20 +567,48 @@ export class RingSignature {
     message: string,
     G: Point,
     N: bigint,
-    r: bigint,
-    previousC: bigint,
-    previousPubKey: Point,
+    params: {
+      r?: bigint;
+      previousC?: bigint;
+      previousPubKey?: Point;
+      alpha?: bigint;
+    },
+    config?: SignatureConfig,
   ): bigint {
-    return modulo(
-      BigInt(
-        "0x" +
-          keccak256(
-            ring +
-              message +
-              G.mult(r).add(previousPubKey.mult(previousC)).toString(),
-          ),
-      ),
-      N,
+    if (params.alpha) {
+      return modulo(
+        BigInt(
+          "0x" +
+            keccak256(
+              formatRing(ring, config) +
+                message +
+                formatPoint(G.mult(params.alpha), config),
+            ),
+        ),
+        N,
+      );
+    }
+    if (params.r && params.previousC && params.previousPubKey) {
+      return modulo(
+        BigInt(
+          "0x" +
+            keccak256(
+              formatRing(ring, config) +
+                message +
+                formatPoint(
+                  G.mult(params.r).add(
+                    params.previousPubKey.mult(params.previousC),
+                  ),
+                  config,
+                ),
+            ),
+        ),
+        N,
+      );
+    }
+
+    throw new Error(
+      "computeC: Missing parameters. Either 'alpha' or all the others params must be set",
     );
   }
 
@@ -539,6 +619,10 @@ export class RingSignature {
    * @returns A base64 string
    */
   static partialSigToBase64(partialSig: PartialSignature): string {
+    let configStr = undefined;
+    if (partialSig.config) {
+      configStr = JSON.stringify(partialSig.config);
+    }
     const strPartialSig = {
       message: partialSig.message,
       ring: partialSig.ring.map((point: Point) => point.toString()),
@@ -548,6 +632,7 @@ export class RingSignature {
       pi: partialSig.pi.toString(),
       alpha: partialSig.alpha.toString(),
       curve: partialSig.curve.toString(),
+      config: configStr,
     };
     return Buffer.from(JSON.stringify(strPartialSig)).toString("base64");
   }
@@ -562,6 +647,9 @@ export class RingSignature {
     try {
       const decoded = Buffer.from(base64, "base64").toString("ascii");
       const json = JSON.parse(decoded);
+      if (json.config && json.config != "undefined") {
+        json.config = JSON.parse(json.config);
+      }
       return {
         message: json.message,
         ring: json.ring.map((point: string) => Point.fromString(point)),
@@ -571,6 +659,7 @@ export class RingSignature {
         pi: Number(json.pi),
         alpha: BigInt(json.alpha),
         curve: Curve.fromString(json.curve),
+        config: json.config as SignatureConfig,
       };
     } catch (e) {
       throw new Error("Invalid base64 string: " + e);
