@@ -4,20 +4,20 @@ import {
   RingSignature,
   SignatureConfig,
 } from "../src/ringSignature";
-import { randomBigint } from "../src/utils";
+import { Curve, Point, randomBigint, CurveName } from "../src/utils";
 import { deriveKeypair } from "ripple-keypairs";
-import { Config } from "../src/curves";
+import { Config } from "../src/utils/curves";
 import * as ed from "../src/utils/noble-libraries/noble-ED25519";
-import { Curve, CurveName, Point } from "../src";
+import { sha512 } from "@noble/hashes/sha512";
+ed.etc.sha512Sync = (...m) => sha512(ed.etc.concatBytes(...m));
+const config: SignatureConfig = {
+  derivationConfig: Config.DEFAULT,
+  evmCompatibility: true,
+};
 
-// const config: SignatureConfig = {
-//   derivationConfig: Config.DEFAULT,
-//   evmCompatibility: true,
-// };
-
-// const ringSize = 10;
-// const secp256k1 = new Curve(CurveName.SECP256K1);
-// const ed25519 = new Curve(CurveName.ED25519);
+const ringSize = 10;
+const secp256k1 = new Curve(CurveName.SECP256K1);
+const ed25519 = new Curve(CurveName.ED25519);
 
 const G_SECP = secp256k1.GtoPoint();
 const signerPrivKey_secp =
@@ -34,37 +34,37 @@ const G_ED = new Point(ed25519, ed25519.G);
 const signerPubKey_ed = G_ED.mult(signerPrivKey_ed);
 const ring_ed = randomRing(ringSize, G_ED, ed25519.N);
 
-// function randomRing(ringLength = 100, G: Point, N: bigint): Point[] {
-//   let k = randomBigint(N * N);
-//   if (ringLength == 0) return [];
-//   const ring: Point[] = [G.mult(k)];
+function randomRing(ringLength = 100, G: Point, N: bigint): Point[] {
+  let k = randomBigint(N * N);
+  if (ringLength == 0) return [];
+  const ring: Point[] = [G.mult(k)];
 
-//   for (let i = 1; i < ringLength - 1; i++) {
-//     // once we add the signer, we get the wanted ring size
-//     k = randomBigint(N * N);
-//     ring.push(G.mult(k));
-//   }
-//   return ring;
-// }
+  for (let i = 1; i < ringLength - 1; i++) {
+    // once we add the signer, we get the wanted ring size
+    k = randomBigint(N * N);
+    ring.push(G.mult(k));
+  }
+  return ring;
+}
 
 console.log("ring size: ", ring_ed.length + 1);
 
-// /* TEST SIGNATURE GENERATION AND VERIFICATION - SECP256K1 */
-// console.log("------ SIGNATURE USING SECP256K1 ------");
-// const signature_secp = RingSignature.sign(
-//   ring_secp,
-//   signerPrivKey_secp,
-//   "test",
-//   secp256k1,
-//   // config,
-// );
-// const verifiedSig_secp = signature_secp.verify();
-// console.log("Is sig valid ? ", verifiedSig_secp);
+/* TEST SIGNATURE GENERATION AND VERIFICATION - SECP256K1 */
+console.log("------ SIGNATURE USING SECP256K1 ------");
+const signature_secp = RingSignature.sign(
+  ring_secp,
+  signerPrivKey_secp,
+  "test",
+  secp256k1,
+  // config,
+);
+const verifiedSig_secp = signature_secp.verify();
+console.log("Is sig valid ? ", verifiedSig_secp);
 
-// if (!verifiedSig_secp) {
-//   console.log("Error: Ring signature verification failed on SECP256K1");
-//   process.exit(1);
-// }
+if (!verifiedSig_secp) {
+  console.log("Error: Ring signature verification failed on SECP256K1");
+  process.exit(1);
+}
 
 console.log("------ SIGNATURE USING ED25519 ------");
 const signature_ed = RingSignature.sign(
@@ -310,29 +310,4 @@ if (!areIdenticals) {
   process.exit(1);
 }
 
-// tmp
-console.log("\n--------------------------------");
-const tmp_Ring = randomRing(3, G_ED, ed25519.N);
-const seedED25519 = "sEdSWniReyeCh7JLWUHEfNTz53pxsjX";
-const keypairED25519 = deriveKeypair(seedED25519);
-const privKey = BigInt("0x" + keypairED25519.privateKey.slice(2));
 
-const partial_sig = RingSignature.partialSign(
-  tmp_Ring,
-  '{"proofId":"0bd89f47a04a7ab71a00c9ce052e8f8a272def7cc9b71e06531b53c5176dfda2","proverAddress":"reyJ4IjoiMzk2NDIxOTQ0","validAtBlock":"42397167","amount":"0","currency":"XRP"}',
-  G_ED,
-  ed25519,
-);
-
-const piSig = piSignature(partial_sig.alpha, partial_sig.cpi, privKey, ed25519);
-console.log("piSig: ", piSig);
-
-// combine partial signatures
-const combinedSig = RingSignature.combine(partial_sig, piSig);
-
-console.log("Combined signature: ", combinedSig);
-
-// verify signature
-const verified = combinedSig.verify();
-
-console.log("Signature verified: ", verified);

@@ -1,10 +1,11 @@
-import { keccak256 } from "js-sha3";
+import { keccak_256 } from "@noble/hashes/sha3";
 import {
   randomBigint,
   getRandomSecuredNumber,
   modulo,
   formatRing,
   formatPoint,
+  uint8ArrayToHex,
 } from "./utils";
 import { piSignature, verifyPiSignature } from "./signature/piSignature";
 import { Config, derivePubKey } from "./curves";
@@ -326,7 +327,7 @@ export class RingSignature {
 
     if (this.ring.length > 1) {
       // hash the message
-      const messageDigest = keccak256(this.message);
+      const messageDigest: string = uint8ArrayToHex(keccak_256(this.message));
 
       // computes the cees
       let lastComputedCp = RingSignature.computeC(
@@ -425,10 +426,10 @@ export class RingSignature {
     responses: bigint[];
   } {
     // hash the message
-    const messageDigest = keccak256(message);
+    const messageDigest: string = uint8ArrayToHex(keccak_256(message));
 
     // generate random number alpha
-    const alpha = randomBigint(curve.N);
+    const alpha: bigint = randomBigint(curve.N);
 
     let signerPubKey: Point;
     if (typeof signerKey === "bigint") {
@@ -569,10 +570,12 @@ export class RingSignature {
       return modulo(
         BigInt(
           "0x" +
-            keccak256(
-              formatRing(ring, config) +
-                message +
-                formatPoint(G.mult(params.alpha), config),
+            uint8ArrayToHex(
+              keccak_256(
+                formatRing(ring, config) +
+                  message +
+                  formatPoint(G.mult(params.alpha), config),
+              ),
             ),
         ),
         N,
@@ -582,15 +585,17 @@ export class RingSignature {
       return modulo(
         BigInt(
           "0x" +
-            keccak256(
-              formatRing(ring, config) +
-                message +
-                formatPoint(
-                  G.mult(params.r).add(
-                    params.previousPubKey.mult(params.previousC),
+            uint8ArrayToHex(
+              keccak_256(
+                formatRing(ring, config) +
+                  message +
+                  formatPoint(
+                    G.mult(params.r).add(
+                      params.previousPubKey.mult(params.previousC),
+                    ),
+                    config,
                   ),
-                  config,
-                ),
+              ),
             ),
         ),
         N,
@@ -609,7 +614,7 @@ export class RingSignature {
    * @returns A base64 string
    */
   static partialSigToBase64(partialSig: PartialSignature): string {
-    let configStr = undefined;
+    let configStr: string | undefined = undefined;
     if (partialSig.config) {
       configStr = JSON.stringify(partialSig.config);
     }

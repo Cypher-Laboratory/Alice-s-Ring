@@ -1,11 +1,7 @@
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -29,6 +25,8 @@ const src_1 = require("../src");
 const ripple_keypairs_1 = require("ripple-keypairs");
 const curves_1 = require("../src/curves");
 const ed = __importStar(require("../src/utils/noble-libraries/noble-ED25519"));
+const sha512_1 = require("@noble/hashes/sha512");
+ed.etc.sha512Sync = (...m) => (0, sha512_1.sha512)(ed.etc.concatBytes(...m));
 console.log("------------------ TESTING FOR XRPL CONFIG ------------------\n");
 const config = { derivationConfig: curves_1.Config.DEFAULT };
 const ringSize = 3;

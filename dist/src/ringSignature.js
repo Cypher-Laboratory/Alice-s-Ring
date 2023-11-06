@@ -178,7 +178,7 @@ class RingSignature {
         const G = this.curve.GtoPoint(); // generator point
         if (this.ring.length > 1) {
             // hash the message
-            const messageDigest = (0, js_sha3_1.keccak256)(this.message);
+            const messageDigest = (0, utils_1.uint8ArrayToHex)((0, sha3_1.keccak_256)(this.message));
             // computes the cees
             let lastComputedCp = RingSignature.computeC(
             // c1'
@@ -230,7 +230,7 @@ class RingSignature {
      */
     static signature(curve, ring, signerKey, message, config) {
         // hash the message
-        const messageDigest = (0, js_sha3_1.keccak256)(message);
+        const messageDigest = (0, utils_1.uint8ArrayToHex)((0, sha3_1.keccak_256)(message));
         // generate random number alpha
         const alpha = (0, utils_1.randomBigint)(curve.N);
         let signerPubKey;
@@ -314,15 +314,15 @@ class RingSignature {
     static computeC(ring, message, G, N, params, config) {
         if (params.alpha) {
             return (0, utils_1.modulo)(BigInt("0x" +
-                (0, js_sha3_1.keccak256)((0, utils_1.formatRing)(ring, config) +
+                (0, utils_1.uint8ArrayToHex)((0, sha3_1.keccak_256)((0, utils_1.formatRing)(ring, config) +
                     message +
-                    (0, utils_1.formatPoint)(G.mult(params.alpha), config))), N);
+                    (0, utils_1.formatPoint)(G.mult(params.alpha), config)))), N);
         }
         if (params.r && params.previousC && params.previousPubKey) {
             return (0, utils_1.modulo)(BigInt("0x" +
-                (0, js_sha3_1.keccak256)((0, utils_1.formatRing)(ring, config) +
+                (0, utils_1.uint8ArrayToHex)((0, sha3_1.keccak_256)((0, utils_1.formatRing)(ring, config) +
                     message +
-                    (0, utils_1.formatPoint)(G.mult(params.r).add(params.previousPubKey.mult(params.previousC)), config))), N);
+                    (0, utils_1.formatPoint)(G.mult(params.r).add(params.previousPubKey.mult(params.previousC)), config)))), N);
         }
         throw new Error("computeC: Missing parameters. Either 'alpha' or all the others params must be set");
     }
