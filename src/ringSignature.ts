@@ -1,4 +1,4 @@
-import { keccak256 } from "js-sha3";
+import { keccak_256 } from "@noble/hashes/sha3";
 import {
   randomBigint,
   getRandomSecuredNumber,
@@ -7,12 +7,11 @@ import {
   modulo,
   formatRing,
   formatPoint,
+  uint8ArrayToHex
 } from "./utils";
 import { piSignature, verifyPiSignature } from "./signature/piSignature";
-import * as ed from "./utils/noble-libraries/noble-ED25519";
-import { sha512 } from "@noble/hashes/sha512";
 import { Config, derivePubKey } from "./utils/curves";
-ed.etc.sha512Sync = (...m) => sha512(ed.etc.concatBytes(...m));
+
 
 /**
  * Signature config interface
@@ -336,7 +335,7 @@ export class RingSignature {
 
     if (this.ring.length > 1) {
       // hash the message
-      const messageDigest = keccak256(this.message);
+      const messageDigest : string = uint8ArrayToHex(keccak_256(this.message));
 
       // computes the cees
       let lastComputedCp = RingSignature.computeC(
@@ -435,7 +434,7 @@ export class RingSignature {
     responses: bigint[];
   } {
     // hash the message
-    const messageDigest = keccak256(message);
+    const messageDigest = uint8ArrayToHex(keccak_256(message));
 
     // generate random number alpha
     const alpha = randomBigint(curve.N);
@@ -579,11 +578,11 @@ export class RingSignature {
       return modulo(
         BigInt(
           "0x" +
-            keccak256(
+            uint8ArrayToHex(keccak_256(
               formatRing(ring, config) +
                 message +
                 formatPoint(G.mult(params.alpha), config),
-            ),
+            )),
         ),
         N,
       );
@@ -592,7 +591,7 @@ export class RingSignature {
       return modulo(
         BigInt(
           "0x" +
-            keccak256(
+            uint8ArrayToHex(keccak_256(
               formatRing(ring, config) +
                 message +
                 formatPoint(
@@ -601,7 +600,7 @@ export class RingSignature {
                   ),
                   config,
                 ),
-            ),
+            )),
         ),
         N,
       );

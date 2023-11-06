@@ -3,6 +3,8 @@ import { Curve, Point, randomBigint, CurveName } from "../src/utils";
 import { deriveKeypair } from "ripple-keypairs";
 import { Config } from "../src/utils/curves";
 import * as ed from "../src/utils/noble-libraries/noble-ED25519";
+import { sha512 } from "@noble/hashes/sha512";
+ed.etc.sha512Sync = (...m) => sha512(ed.etc.concatBytes(...m));
 
 console.log("------------------ TESTING FOR XRPL CONFIG ------------------\n");
 
