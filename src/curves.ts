@@ -7,6 +7,24 @@ import {
 import { Point } from "./point";
 import { modulo } from "./utils";
 
+// SECP256K1 curve constants
+const SECP256K1 = {
+  P: 2n ** 256n - 2n ** 32n - 977n,
+  N: 2n ** 256n - 0x14551231950b75fc4402da1732fc9bebfn,
+  G: [
+    55066263022277343669578718895168534326250603453777594175500187360389116729240n,
+    32670510020758816978083085130507043184471273380659243275938904335757337482424n,
+  ] as [bigint, bigint],
+};
+
+// ED25519 curve constants
+const GED25519 = new ExtendedPoint(Gx, Gy, 1n, mod(Gx * Gy));
+const ED25519 = {
+  P: 2n ** 255n - 19n,
+  N: 2n ** 252n + 27742317777372353535851937790883648493n, // curve's (group) order
+  G: [GED25519.toAffine().x, GED25519.toAffine().y] as [bigint, bigint],
+};
+
 /**
  * List of supported curves
  */
@@ -147,24 +165,6 @@ export class Curve {
     );
   }
 }
-
-// SECP256K1 curve constants
-const SECP256K1 = {
-  P: 2n ** 256n - 2n ** 32n - 977n,
-  N: 2n ** 256n - 0x14551231950b75fc4402da1732fc9bebfn,
-  G: [
-    55066263022277343669578718895168534326250603453777594175500187360389116729240n,
-    32670510020758816978083085130507043184471273380659243275938904335757337482424n,
-  ] as [bigint, bigint],
-};
-
-// ED25519 curve constants
-const G = new ExtendedPoint(Gx, Gy, 1n, mod(Gx * Gy));
-const ED25519 = {
-  P: 2n ** 255n - 19n,
-  N: 2n ** 252n + 27742317777372353535851937790883648493n, // curve's (group) order
-  G: [G.toAffine().x, G.toAffine().y] as [bigint, bigint],
-};
 
 /**
  * List of supported configs for the `derivePubKey` function
