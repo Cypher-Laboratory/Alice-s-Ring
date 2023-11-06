@@ -124,12 +124,8 @@ export class Curve {
       }
 
       case CurveName.ED25519: {
-        if (
-          modulo(y ** 2n - x ** 2n, this.N) !==
-          modulo(1n - (121665n / 121666n) * x ** 2n * y ** 2n, this.N)
-        ) {
-          return false;
-        }
+        let lhs: bigint = (y * y - x * x - 1n - d * x * x * y * y) % p;
+        return lhs === 0n;
         break;
       }
 
@@ -208,3 +204,33 @@ export function derivePubKey(
     }
   }
 }
+
+function modInverse(a: bigint, m: bigint): bigint {
+  // Extended Euclidean Algorithm to find the modular inverse
+  let m0: bigint = m;
+  let y: bigint = 0n;
+  let x: bigint = 1n;
+
+  if (m === 1n) return 0n;
+
+  while (a > 1n) {
+    let q: bigint = a / m;
+    let t: bigint = m;
+
+    // m is remainder now, process same as Euclid's algo
+    m = a % m;
+    a = t;
+    t = y;
+
+    // Update y and x
+    y = x - q * y;
+    x = t;
+  }
+
+  // Make x positive
+  if (x < 0n) x += m0;
+
+  return x;
+}
+const p: bigint = 2n**255n - 19n;
+const d: bigint = -121665n * modInverse(121666n, p);
