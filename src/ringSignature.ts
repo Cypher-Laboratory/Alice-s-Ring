@@ -433,10 +433,10 @@ export class RingSignature {
     responses: bigint[];
   } {
     // hash the message
-    const messageDigest = uint8ArrayToHex(keccak_256(message));
+    const messageDigest: string = uint8ArrayToHex(keccak_256(message));
 
     // generate random number alpha
-    const alpha = randomBigint(curve.N);
+    const alpha: bigint = randomBigint(curve.N);
 
     let signerPubKey: Point;
     if (typeof signerKey === "bigint") {
@@ -621,7 +621,7 @@ export class RingSignature {
    * @returns A base64 string
    */
   static partialSigToBase64(partialSig: PartialSignature): string {
-    let configStr = undefined;
+    let configStr: string | undefined = undefined;
     if (partialSig.config) {
       configStr = JSON.stringify(partialSig.config);
     }
