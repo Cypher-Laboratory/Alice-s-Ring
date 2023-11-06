@@ -101,10 +101,8 @@ class Curve {
                 break;
             }
             case CurveName.ED25519: {
-                if ((0, utils_1.modulo)(y ** 2n - x ** 2n, this.N) !==
-                    (0, utils_1.modulo)(1n - (121665n / 121666n) * x ** 2n * y ** 2n, this.N)) {
-                    return false;
-                }
+                const lhs = (y * y - x * x - 1n - d * x * x * y * y) % p;
+                return lhs === 0n;
                 break;
             }
             default: {
@@ -170,3 +168,28 @@ function derivePubKey(privateKey, curve, config) {
     }
 }
 exports.derivePubKey = derivePubKey;
+function modInverse(a, m) {
+    // Extended Euclidean Algorithm to find the modular inverse
+    const m0 = m;
+    let y = 0n;
+    let x = 1n;
+    if (m === 1n)
+        return 0n;
+    while (a > 1n) {
+        const q = a / m;
+        let t = m;
+        // m is remainder now, process same as Euclid's algo
+        m = a % m;
+        a = t;
+        t = y;
+        // Update y and x
+        y = x - q * y;
+        x = t;
+    }
+    // Make x positive
+    if (x < 0n)
+        x += m0;
+    return x;
+}
+const p = 2n ** 255n - 19n;
+const d = -121665n * modInverse(121666n, p);
