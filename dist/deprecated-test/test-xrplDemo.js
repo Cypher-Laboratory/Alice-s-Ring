@@ -33,7 +33,7 @@ const sha512_1 = require("@noble/hashes/sha512");
 ed.etc.sha512Sync = (...m) => (0, sha512_1.sha512)(ed.etc.concatBytes(...m));
 console.log("------------------ TESTING FOR XRPL CONFIG ------------------\n");
 const config = { derivationConfig: curves_1.Config.DEFAULT };
-const ringSize = 3;
+const ringSize = 2;
 const ed25519 = new src_1.Curve(src_1.CurveName.ED25519); // could also be SECP256K1
 const seed = "sEdSWniReyeCh7JLWUHEfNTz53pxsjX";
 const keypair = (0, ripple_keypairs_1.deriveKeypair)(seed);
