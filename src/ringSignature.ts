@@ -7,11 +7,10 @@ import {
   modulo,
   formatRing,
   formatPoint,
-  uint8ArrayToHex
+  uint8ArrayToHex,
 } from "./utils";
 import { piSignature, verifyPiSignature } from "./signature/piSignature";
 import { Config, derivePubKey } from "./utils/curves";
-
 
 /**
  * Signature config interface
@@ -335,7 +334,7 @@ export class RingSignature {
 
     if (this.ring.length > 1) {
       // hash the message
-      const messageDigest : string = uint8ArrayToHex(keccak_256(this.message));
+      const messageDigest: string = uint8ArrayToHex(keccak_256(this.message));
 
       // computes the cees
       let lastComputedCp = RingSignature.computeC(
@@ -578,11 +577,13 @@ export class RingSignature {
       return modulo(
         BigInt(
           "0x" +
-            uint8ArrayToHex(keccak_256(
-              formatRing(ring, config) +
-                message +
-                formatPoint(G.mult(params.alpha), config),
-            )),
+            uint8ArrayToHex(
+              keccak_256(
+                formatRing(ring, config) +
+                  message +
+                  formatPoint(G.mult(params.alpha), config),
+              ),
+            ),
         ),
         N,
       );
@@ -591,16 +592,18 @@ export class RingSignature {
       return modulo(
         BigInt(
           "0x" +
-            uint8ArrayToHex(keccak_256(
-              formatRing(ring, config) +
-                message +
-                formatPoint(
-                  G.mult(params.r).add(
-                    params.previousPubKey.mult(params.previousC),
+            uint8ArrayToHex(
+              keccak_256(
+                formatRing(ring, config) +
+                  message +
+                  formatPoint(
+                    G.mult(params.r).add(
+                      params.previousPubKey.mult(params.previousC),
+                    ),
+                    config,
                   ),
-                  config,
-                ),
-            )),
+              ),
+            ),
         ),
         N,
       );
