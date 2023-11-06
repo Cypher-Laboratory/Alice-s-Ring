@@ -1,17 +1,5 @@
-import { Config } from "./curves";
 import { Curve, Point } from ".";
-/**
- * Signature config interface
- *
- * @see derivationConfig - The config to use for the key derivation
- * @see evmCompatibility - If true, the signature will be compatible with our EVM verifier contract
- * @see safeMode - If true, check if all the points are on the same curve
- */
-export interface SignatureConfig {
-    derivationConfig?: Config;
-    evmCompatibility?: boolean;
-    safeMode?: boolean;
-}
+import { SignatureConfig } from "./interfaces";
 /**
  * Partial ring signature interface
  *
@@ -23,6 +11,7 @@ export interface SignatureConfig {
  * @see alpha - The alpha value
  * @see responses - The generated responses
  * @see curve - The elliptic curve to use
+ * @see config - The config params to use (optional)
  */
 export interface PartialSignature {
     message: string;
@@ -47,6 +36,7 @@ export declare class RingSignature {
     ring: Point[];
     curve: Curve;
     config?: SignatureConfig;
+    hash: (message: string) => string;
     /**
      * Ring signature class constructor
      *
@@ -56,6 +46,7 @@ export declare class RingSignature {
      * @param responses - Responses for each public key in the ring
      * @param curve - Curve used for the signature
      * @param safeMode - If true, check if all the points are on the same curve
+     * @param config - The config params to use (optional)
      */
     constructor(message: string, ring: Point[], c: bigint, responses: bigint[], curve: Curve, config?: SignatureConfig);
     /**
@@ -65,7 +56,7 @@ export declare class RingSignature {
      *
      * @returns A RingSignature
      */
-    static fromJsonString(json: string): RingSignature;
+    static fromJsonString(json: string, hashFunction?: (message: string) => string): RingSignature;
     /**
      * Create a Json string from a RingSignature
      *
@@ -79,7 +70,7 @@ export declare class RingSignature {
      *
      * @returns The ring signature
      */
-    static fromBase64(base64: string): RingSignature;
+    static fromBase64(base64: string, hashFunction?: (message: string) => string): RingSignature;
     /**
      * Encode a ring signature to base64 string
      */
@@ -177,7 +168,7 @@ export declare class RingSignature {
      * @param base64 - The base64 string to convert
      * @returns A partial signature
      */
-    static base64ToPartialSig(base64: string): PartialSignature;
+    static base64ToPartialSig(base64: string, hashFunction?: (message: string) => string): PartialSignature;
 }
 /**
  * Check if a ring is valid
@@ -200,3 +191,4 @@ export declare function checkRing(ring: Point[], ref?: Curve): void;
  * @throws Error if at least 1 coordinate is not valid (= 0 or >= curve order)
  */
 export declare function checkPoint(point: Point, curve?: Curve): void;
+export { SignatureConfig };

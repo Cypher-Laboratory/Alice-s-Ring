@@ -1,28 +1,15 @@
-import { keccak_256 } from "@noble/hashes/sha3";
 import {
   randomBigint,
   getRandomSecuredNumber,
   modulo,
   formatRing,
   formatPoint,
-  uint8ArrayToHex,
 } from "./utils";
 import { piSignature, verifyPiSignature } from "./signature/piSignature";
-import { Config, derivePubKey } from "./curves";
+import { derivePubKey } from "./curves";
 import { Curve, Point } from ".";
-
-/**
- * Signature config interface
- *
- * @see derivationConfig - The config to use for the key derivation
- * @see evmCompatibility - If true, the signature will be compatible with our EVM verifier contract
- * @see safeMode - If true, check if all the points are on the same curve
- */
-export interface SignatureConfig {
-  derivationConfig?: Config;
-  evmCompatibility?: boolean;
-  safeMode?: boolean;
-}
+import { SignatureConfig } from "./interfaces";
+import { keccak256 } from "./utils";
 
 /**
  * Partial ring signature interface
@@ -35,6 +22,7 @@ export interface SignatureConfig {
  * @see alpha - The alpha value
  * @see responses - The generated responses
  * @see curve - The elliptic curve to use
+ * @see config - The config params to use (optional)
  */
 export interface PartialSignature {
   message: string;
@@ -60,6 +48,7 @@ export class RingSignature {
   ring: Point[];
   curve: Curve;
   config?: SignatureConfig;
+  hash: (message: string) => string;
 
   /**
    * Ring signature class constructor
@@ -70,6 +59,7 @@ export class RingSignature {
    * @param responses - Responses for each public key in the ring
    * @param curve - Curve used for the signature
    * @param safeMode - If true, check if all the points are on the same curve
+   * @param config - The config params to use (optional)
    */
   constructor(
     message: string,
@@ -83,6 +73,9 @@ export class RingSignature {
       throw new Error("Ring and responses length mismatch");
 
     if (config?.safeMode) checkRing(ring, curve);
+
+    if (config?.hash) this.hash = config.hash;
+    else this.hash = keccak256;
 
     this.ring = ring;
     this.message = message;
@@ -99,7 +92,10 @@ export class RingSignature {
    *
    * @returns A RingSignature
    */
-  static fromJsonString(json: string): RingSignature {
+  static fromJsonString(
+    json: string,
+    hashFunction?: (message: string) => string,
+  ): RingSignature {
     try {
       const sig = JSON.parse(json) as {
         message: string;
@@ -115,7 +111,10 @@ export class RingSignature {
         BigInt(sig.c),
         sig.responses.map((response: string) => BigInt(response)),
         Curve.fromString(sig.curve),
-        sig.config,
+        {
+          ...sig.config,
+          hash: hashFunction,
+        },
       );
     } catch (e) {
       throw new Error("Invalid json: " + e);
@@ -147,7 +146,10 @@ export class RingSignature {
    *
    * @returns The ring signature
    */
-  static fromBase64(base64: string): RingSignature {
+  static fromBase64(
+    base64: string,
+    hashFunction?: (message: string) => string,
+  ): RingSignature {
     const decoded = Buffer.from(base64, "base64").toString("ascii");
     const json = JSON.parse(decoded);
     const ring = json.ring.map((point: string) => Point.fromString(point));
@@ -158,7 +160,10 @@ export class RingSignature {
       BigInt(json.c),
       json.responses.map((response: string) => BigInt(response)),
       Curve.fromString(json.curve),
-      json.config,
+      {
+        ...json.config,
+        hash: hashFunction,
+      },
     );
   }
 
@@ -327,7 +332,7 @@ export class RingSignature {
 
     if (this.ring.length > 1) {
       // hash the message
-      const messageDigest: string = uint8ArrayToHex(keccak_256(this.message));
+      const messageDigest: string = this.hash(this.message);
 
       // computes the cees
       let lastComputedCp = RingSignature.computeC(
@@ -425,8 +430,11 @@ export class RingSignature {
     signerIndex: number;
     responses: bigint[];
   } {
+    let hash = keccak256;
+    if (config?.hash) hash = config.hash;
+
     // hash the message
-    const messageDigest: string = uint8ArrayToHex(keccak_256(message));
+    const messageDigest: string = hash(message);
 
     // generate random number alpha
     const alpha: bigint = randomBigint(curve.N);
@@ -566,16 +574,17 @@ export class RingSignature {
     },
     config?: SignatureConfig,
   ): bigint {
+    let hash = keccak256;
+    if (config?.hash) hash = config.hash;
+
     if (params.alpha) {
       return modulo(
         BigInt(
           "0x" +
-            uint8ArrayToHex(
-              keccak_256(
-                formatRing(ring, config) +
-                  message +
-                  formatPoint(G.mult(params.alpha), config),
-              ),
+            hash(
+              formatRing(ring, config) +
+                message +
+                formatPoint(G.mult(params.alpha), config),
             ),
         ),
         N,
@@ -585,17 +594,15 @@ export class RingSignature {
       return modulo(
         BigInt(
           "0x" +
-            uint8ArrayToHex(
-              keccak_256(
-                formatRing(ring, config) +
-                  message +
-                  formatPoint(
-                    G.mult(params.r).add(
-                      params.previousPubKey.mult(params.previousC),
-                    ),
-                    config,
+            hash(
+              formatRing(ring, config) +
+                message +
+                formatPoint(
+                  G.mult(params.r).add(
+                    params.previousPubKey.mult(params.previousC),
                   ),
-              ),
+                  config,
+                ),
             ),
         ),
         N,
@@ -638,7 +645,10 @@ export class RingSignature {
    * @param base64 - The base64 string to convert
    * @returns A partial signature
    */
-  static base64ToPartialSig(base64: string): PartialSignature {
+  static base64ToPartialSig(
+    base64: string,
+    hashFunction?: (message: string) => string,
+  ): PartialSignature {
     try {
       const decoded = Buffer.from(base64, "base64").toString("ascii");
       const json = JSON.parse(decoded);
@@ -654,7 +664,10 @@ export class RingSignature {
         pi: Number(json.pi),
         alpha: BigInt(json.alpha),
         curve: Curve.fromString(json.curve),
-        config: json.config as SignatureConfig,
+        config: {
+          ...(json.config as SignatureConfig),
+          hash: hashFunction,
+        },
       };
     } catch (e) {
       throw new Error("Invalid base64 string: " + e);
@@ -720,3 +733,4 @@ export function checkPoint(point: Point, curve?: Curve): void {
     throw new Error(errorMsg + "Coordinates are not valid");
   }
 }
+export { SignatureConfig };

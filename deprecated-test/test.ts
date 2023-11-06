@@ -11,12 +11,20 @@ import { deriveKeypair } from "ripple-keypairs";
 import { Config } from "../src/curves";
 import * as ed from "../src/utils/noble-libraries/noble-ED25519";
 import { sha512 } from "@noble/hashes/sha512";
+import { keccak256, sha_512 } from "../src/utils/hashFunction";
 ed.etc.sha512Sync = (...m) => sha512(ed.etc.concatBytes(...m));
 
 const config: SignatureConfig = {
   derivationConfig: Config.DEFAULT,
   evmCompatibility: true,
+  safeMode: false,
+  hash: sha_512,
 };
+
+let hash = keccak256;
+if (config.hash) {
+  hash = config.hash;
+}
 
 const ringSize = 10;
 const secp256k1 = new Curve(CurveName.SECP256K1);
@@ -97,7 +105,7 @@ const signature = RingSignature.sign(
   config,
 );
 const base64Sig = signature.toBase64();
-const retrievedSig = RingSignature.fromBase64(base64Sig);
+const retrievedSig = RingSignature.fromBase64(base64Sig, hash);
 const verifiedRetrievedSig = retrievedSig.verify();
 
 const areIdentical =
@@ -257,7 +265,7 @@ function areRingsEquals(ring1: Point[], ring2: Point[]): boolean {
 /*--------------------- test ring signature <--> JSON conversion ---------------------*/
 console.log("------ CONVERT RING SIGNATURE TO JSON AND RETRIEVE IT ------");
 const json = signature_ed.toJsonString();
-const retrievedSigFromJson = RingSignature.fromJsonString(json);
+const retrievedSigFromJson = RingSignature.fromJsonString(json, hash);
 const verifiedRetrievedSigFromJson = retrievedSigFromJson.verify();
 
 console.log("Is sig from JSON valid? ", verifiedRetrievedSigFromJson);
@@ -305,7 +313,10 @@ console.log(
   "------ CONVERT PARTIAL RING SIGNATURE TO Base64 AND RETRIEVE IT ------",
 );
 const base64RingSig = RingSignature.partialSigToBase64(partialSig_ed);
-const retrievedPartialSig = RingSignature.base64ToPartialSig(base64RingSig);
+const retrievedPartialSig = RingSignature.base64ToPartialSig(
+  base64RingSig,
+  hash,
+);
 const areIdenticals = arePartialSigsEquals(retrievedPartialSig, partialSig_ed);
 console.log("Are the two partial signatures identical? ", areIdenticals);
 if (!areIdenticals) {
