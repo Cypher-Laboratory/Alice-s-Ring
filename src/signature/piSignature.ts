@@ -3,7 +3,9 @@
   and is exclusively reserved for the use of gemWallet. Any form of commercial use, including but 
   not limited to selling, licensing, or generating revenue from this code, is strictly prohibited.
 */
-import { Curve, Point, modulo } from "../utils";
+import { modulo } from "../utils";
+import { Point } from "../point";
+import { Curve } from "../curves";
 
 /**
  * Compute the signature from the actual signer

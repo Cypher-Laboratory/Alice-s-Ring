@@ -2,17 +2,13 @@ import { keccak256 } from "js-sha3";
 import {
   randomBigint,
   getRandomSecuredNumber,
-  Curve,
-  Point,
   modulo,
   formatRing,
   formatPoint,
 } from "./utils";
 import { piSignature, verifyPiSignature } from "./signature/piSignature";
-import * as ed from "./utils/noble-libraries/noble-ED25519";
-import { sha512 } from "@noble/hashes/sha512";
-import { Config, derivePubKey } from "./utils/curves";
-ed.etc.sha512Sync = (...m) => sha512(ed.etc.concatBytes(...m));
+import { Config, derivePubKey } from "./curves";
+import { Curve, Point } from ".";
 
 /**
  * Signature config interface
@@ -85,13 +81,7 @@ export class RingSignature {
     if (ring.length != responses.length)
       throw new Error("Ring and responses length mismatch");
 
-    if (config?.safeMode) {
-      for (const i of ring) {
-        if (i.curve.name != curve.name) {
-          throw new Error("Point not on curve");
-        }
-      }
-    }
+    if (config?.safeMode) checkRing(ring, curve);
 
     this.ring = ring;
     this.message = message;
@@ -664,5 +654,64 @@ export class RingSignature {
     } catch (e) {
       throw new Error("Invalid base64 string: " + e);
     }
+  }
+}
+
+/**
+ * Check if a ring is valid
+ *
+ * @param ring - The ring to check
+ * @param ref - The curve to use as a reference (optional, if not set, the first point's curve will be used)
+ *
+ * @throws Error if the ring is empty
+ * @throws Error if the ring contains duplicates
+ * @throws Error if at least one of the points is invalid
+ */
+export function checkRing(ring: Point[], ref?: Curve): void {
+  const errorMsg = "Invalid ring: ";
+
+  if (!ref) ref = ring[0].curve;
+
+  // check if the ring is empty
+  if (ring.length === 0) throw new Error(errorMsg + "Ring is empty");
+
+  // check for duplicates using a set
+  if (new Set(ring).size !== ring.length)
+    throw new Error(errorMsg + "Ring contains duplicates");
+
+  // check if all the points are valid
+  try {
+    for (const point of ring) {
+      checkPoint(point, ref);
+    }
+  } catch (e) {
+    throw new Error(errorMsg + e);
+  }
+}
+
+/**
+ * Check if a point is valid
+ *
+ * @param point - The point to check
+ * @param curve - The curve to use as a reference
+ *
+ * @throws Error if the point is not on the reference curve
+ * @throws Error if at least 1 coordinate is not valid (= 0 or >= curve order)
+ */
+export function checkPoint(point: Point, curve?: Curve): void {
+  const errorMsg = "Invalid point: ";
+
+  // check if the point is on the reference curve
+  if (curve && !(!curve.isOnCurve(point) && curve.equals(point.curve)))
+    throw new Error(errorMsg + "Point is not on curve");
+
+  // check if coordinates are valid
+  if (
+    point.x === 0n ||
+    point.y === 0n ||
+    point.x >= point.curve.N ||
+    point.y >= point.curve.N
+  ) {
+    throw new Error(errorMsg + "Coordinates are not valid");
   }
 }

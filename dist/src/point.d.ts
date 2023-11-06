@@ -87,4 +87,5 @@ export declare class Point {
      *
      */
     static fromHexXRPL(hex: string): Point;
+    isValid(): boolean;
 }

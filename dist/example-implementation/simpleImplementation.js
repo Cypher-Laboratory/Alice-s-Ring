@@ -2,10 +2,12 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const js_sha3_1 = require("js-sha3");
 const utils_1 = require("../src/utils");
+const curves_1 = require("../src/curves");
+const point_1 = require("../src/point");
 const src_1 = require("../src");
-const secp256k1 = new utils_1.Curve(utils_1.CurveName.SECP256K1);
+const secp256k1 = new curves_1.Curve(curves_1.CurveName.SECP256K1);
 const P = secp256k1.P;
-const G = new utils_1.Point(secp256k1, secp256k1.G);
+const G = new point_1.Point(secp256k1, secp256k1.G);
 // ring pubkeys
 const K1 = G.mult((0, utils_1.randomBigint)(P));
 const K3 = G.mult((0, utils_1.randomBigint)(P));

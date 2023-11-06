@@ -1,8 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.derivePubKey = exports.Config = exports.Curve = exports.CurveName = void 0;
-const noble_ED25519_1 = require("./noble-libraries/noble-ED25519");
+const noble_ED25519_1 = require("./utils/noble-libraries/noble-ED25519");
 const point_1 = require("./point");
+const utils_1 = require("./utils");
 /**
  * List of supported curves
  */
@@ -74,6 +75,50 @@ class Curve {
         const N = BigInt(data.N);
         const P = BigInt(data.P);
         return new Curve(data.curve, { P, G, N });
+    }
+    /**
+     * Checks if a point is on the curve.
+     *
+     * @param point - the point to check
+     * @returns true if the point is on the curve, false otherwise
+     */
+    isOnCurve(point) {
+        let x;
+        let y;
+        if (point instanceof point_1.Point) {
+            x = point.x;
+            y = point.y;
+        }
+        else {
+            x = point[0];
+            y = point[1];
+        }
+        switch (this.name) {
+            case CurveName.SECP256K1: {
+                if ((0, utils_1.modulo)(x ** 3n + 7n, this.P) !== (0, utils_1.modulo)(y ** 2n, this.P)) {
+                    return false;
+                }
+                break;
+            }
+            case CurveName.ED25519: {
+                if ((0, utils_1.modulo)(y ** 2n - x ** 2n, this.N) !==
+                    (0, utils_1.modulo)(1n - (121665n / 12666n) * x ** 2n * y ** 2n, this.N)) {
+                    return false;
+                }
+                break;
+            }
+            default: {
+                console.warn("Unknown curve, cannot check if point is on curve. Returning true.");
+            }
+        }
+        return true;
+    }
+    equals(curve) {
+        return (this.name === curve.name &&
+            this.G[0] === curve.G[0] &&
+            this.G[1] === curve.G[1] &&
+            this.N === curve.N &&
+            this.P === curve.P);
     }
 }
 exports.Curve = Curve;

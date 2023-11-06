@@ -1,5 +1,11 @@
-import { ExtendedPoint, Gx, Gy, mod } from "./noble-libraries/noble-ED25519";
+import {
+  ExtendedPoint,
+  Gx,
+  Gy,
+  mod,
+} from "./utils/noble-libraries/noble-ED25519";
 import { Point } from "./point";
+import { modulo } from "./utils";
 
 /**
  * List of supported curves
@@ -90,6 +96,61 @@ export class Curve {
     const N = BigInt(data.N);
     const P = BigInt(data.P);
     return new Curve(data.curve, { P, G, N });
+  }
+
+  /**
+   * Checks if a point is on the curve.
+   *
+   * @param point - the point to check
+   * @returns true if the point is on the curve, false otherwise
+   */
+  isOnCurve(point: Point | [bigint, bigint]): boolean {
+    let x: bigint;
+    let y: bigint;
+    if (point instanceof Point) {
+      x = point.x;
+      y = point.y;
+    } else {
+      x = point[0];
+      y = point[1];
+    }
+
+    switch (this.name) {
+      case CurveName.SECP256K1: {
+        if (modulo(x ** 3n + 7n, this.P) !== modulo(y ** 2n, this.P)) {
+          return false;
+        }
+        break;
+      }
+
+      case CurveName.ED25519: {
+        if (
+          modulo(y ** 2n - x ** 2n, this.N) !==
+          modulo(1n - (121665n / 12666n) * x ** 2n * y ** 2n, this.N)
+        ) {
+          return false;
+        }
+        break;
+      }
+
+      default: {
+        console.warn(
+          "Unknown curve, cannot check if point is on curve. Returning true.",
+        );
+      }
+    }
+
+    return true;
+  }
+
+  equals(curve: Curve): boolean {
+    return (
+      this.name === curve.name &&
+      this.G[0] === curve.G[0] &&
+      this.G[1] === curve.G[1] &&
+      this.N === curve.N &&
+      this.P === curve.P
+    );
   }
 }
 

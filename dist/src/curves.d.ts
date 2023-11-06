@@ -40,6 +40,14 @@ export declare class Curve {
      * @returns the curve instance
      */
     static fromString(curveData: string): Curve;
+    /**
+     * Checks if a point is on the curve.
+     *
+     * @param point - the point to check
+     * @returns true if the point is on the curve, false otherwise
+     */
+    isOnCurve(point: Point | [bigint, bigint]): boolean;
+    equals(curve: Curve): boolean;
 }
 /**
  * List of supported configs for the `derivePubKey` function

@@ -1,7 +1,8 @@
 import { RingSignature } from "../src/ringSignature";
-import { Curve, Point, randomBigint, CurveName } from "../src/utils";
+import { randomBigint } from "../src/utils";
+import { Curve, CurveName, Point } from "../src";
 import { deriveKeypair } from "ripple-keypairs";
-import { Config } from "../src/utils/curves";
+import { Config } from "../src/curves";
 import * as ed from "../src/utils/noble-libraries/noble-ED25519";
 
 console.log("------------------ TESTING FOR XRPL CONFIG ------------------\n");

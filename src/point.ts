@@ -1,8 +1,9 @@
 import { Curve, CurveName } from "./curves";
-import { ProjectivePoint as SECP256K1Point } from "./noble-libraries/noble-SECP256k1";
-import { ExtendedPoint as ED25519Point } from "./noble-libraries/noble-ED25519";
-import { modulo } from ".";
+import { ProjectivePoint as SECP256K1Point } from "./utils/noble-libraries/noble-SECP256k1";
+import { ExtendedPoint as ED25519Point } from "./utils/noble-libraries/noble-ED25519";
+import { modulo } from "./utils";
 import * as elliptic from "elliptic";
+import { checkPoint } from "./ringSignature";
 
 const Ed25519 = new elliptic.eddsa("ed25519");
 const secp256k1 = new elliptic.ec("secp256k1");
@@ -27,39 +28,13 @@ export class Point {
    *
    * @returns the point
    */
-  constructor(curve: Curve, coordinates: [bigint, bigint], safeMode = false) {
+  constructor(curve: Curve, coordinates: [bigint, bigint], safeMode = true) {
     this.curve = curve;
     this.x = coordinates[0];
     this.y = coordinates[1];
 
-    if (safeMode) {
-      switch (this.curve.name) {
-        case CurveName.SECP256K1: {
-          if (
-            modulo(this.x ** 3n + 7n, curve.P) !== modulo(this.y ** 2n, curve.P)
-          ) {
-            throw new Error("Point is not on SECP256K1 curve");
-          }
-          break;
-        }
-
-        case CurveName.ED25519: {
-          if (
-            modulo(this.y ** 2n - this.x ** 2n, this.curve.N) !==
-            modulo(
-              1n - (121665n / 12666n) * this.x ** 2n * this.y ** 2n,
-              this.curve.N,
-            )
-          ) {
-            throw new Error("Point is not on ED25519 curve");
-          }
-          break;
-        }
-
-        default: {
-          console.warn("Unknown curve, cannot check if point is on curve");
-        }
-      }
+    if (safeMode && !curve.isOnCurve([this.x, this.y])) {
+      throw new Error("Point is not on the curve");
     }
   }
 
@@ -324,5 +299,14 @@ export class Point {
         );
       }
     }
+  }
+
+  isValid(): boolean {
+    try {
+      checkPoint(this);
+    } catch (error) {
+      return false;
+    }
+    return true;
   }
 }

@@ -1,5 +1,5 @@
-import { SignatureConfig } from "../ringSignature";
-import { Point } from "./point";
+import { SignatureConfig } from "../../ringSignature";
+import { Point } from "../../point";
 
 /**
  * Format a point according to the selected config
