@@ -11,7 +11,7 @@ console.log("------------------ TESTING FOR XRPL CONFIG ------------------\n");
 
 const config = { derivationConfig: Config.DEFAULT };
 
-const ringSize = 3;
+const ringSize = 2;
 
 const ed25519 = new Curve(CurveName.ED25519); // could also be SECP256K1
 
