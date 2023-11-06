@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.checkPoint = exports.checkRing = exports.RingSignature = void 0;
-const js_sha3_1 = require("js-sha3");
+const sha3_1 = require("@noble/hashes/sha3");
 const utils_1 = require("./utils");
 const piSignature_1 = require("./signature/piSignature");
 const curves_1 = require("./curves");

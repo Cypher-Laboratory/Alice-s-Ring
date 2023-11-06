@@ -12,7 +12,7 @@ var CurveName;
     CurveName["SECP256K1"] = "SECP256K1";
     CurveName["ED25519"] = "ED25519";
     CurveName["CUSTOM"] = "CUSTOM";
-})(CurveName = exports.CurveName || (exports.CurveName = {}));
+})(CurveName || (exports.CurveName = CurveName = {}));
 class Curve {
     /**
      * Creates a curve instance.
@@ -102,7 +102,7 @@ class Curve {
             }
             case CurveName.ED25519: {
                 if ((0, utils_1.modulo)(y ** 2n - x ** 2n, this.N) !==
-                    (0, utils_1.modulo)(1n - (121665n / 12666n) * x ** 2n * y ** 2n, this.N)) {
+                    (0, utils_1.modulo)(1n - (121665n / 121666n) * x ** 2n * y ** 2n, this.N)) {
                     return false;
                 }
                 break;
@@ -146,7 +146,7 @@ var Config;
 (function (Config) {
     Config["DEFAULT"] = "DEFAULT";
     Config["XRPL"] = "XRPL";
-})(Config = exports.Config || (exports.Config = {}));
+})(Config || (exports.Config = Config = {}));
 /**
  * Derive the public key from the private key.
  *

@@ -126,7 +126,7 @@ export class Curve {
       case CurveName.ED25519: {
         if (
           modulo(y ** 2n - x ** 2n, this.N) !==
-          modulo(1n - (121665n / 12666n) * x ** 2n * y ** 2n, this.N)
+          modulo(1n - (121665n / 121666n) * x ** 2n * y ** 2n, this.N)
         ) {
           return false;
         }

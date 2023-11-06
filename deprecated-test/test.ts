@@ -4,12 +4,15 @@ import {
   RingSignature,
   SignatureConfig,
 } from "../src/ringSignature";
-import { Curve, Point, randomBigint, CurveName } from "../src/utils";
+import { randomBigint } from "../src/utils";
+import { Curve, CurveName } from "../src/curves";
+import { Point } from "../src/point";
 import { deriveKeypair } from "ripple-keypairs";
-import { Config } from "../src/utils/curves";
+import { Config } from "../src/curves";
 import * as ed from "../src/utils/noble-libraries/noble-ED25519";
 import { sha512 } from "@noble/hashes/sha512";
 ed.etc.sha512Sync = (...m) => sha512(ed.etc.concatBytes(...m));
+
 const config: SignatureConfig = {
   derivationConfig: Config.DEFAULT,
   evmCompatibility: true,
@@ -309,5 +312,3 @@ if (!areIdenticals) {
   console.log("Error: Partial signature conversion to base64 failed");
   process.exit(1);
 }
-
-
