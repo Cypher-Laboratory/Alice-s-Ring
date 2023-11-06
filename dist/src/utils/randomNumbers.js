@@ -23,6 +23,15 @@ function getRandomSecuredNumber(min, max) {
     if (min > max) {
         throw new Error("Min value should be less than or equal to max value.");
     }
+    if (min < 0) {
+        throw new Error("Min value should be greater than or equal to 0.");
+    }
+    if (max < 0) {
+        throw new Error("Max value should be greater than or equal to 0.");
+    }
+    if (min === max) {
+        return min;
+    }
     const range = max - min + 1;
     const byteSize = Math.ceil(Math.log2(range) / 8);
     //we use a while loop as a safeguard against the case where the random number is greater than the max value
