@@ -95,15 +95,11 @@ class Curve {
         }
         switch (this.name) {
             case CurveName.SECP256K1: {
-                if ((0, utils_1.modulo)(x ** 3n + 7n, this.P) !== (0, utils_1.modulo)(y ** 2n, this.P)) {
-                    return false;
-                }
-                break;
+                return (0, utils_1.modulo)(x ** 3n + 7n - y ** 2n, this.P) === 0n;
             }
             case CurveName.ED25519: {
-                const lhs = (y * y - x * x - 1n - d * x * x * y * y) % p;
-                return lhs === 0n;
-                break;
+                const d = -4513249062541557337682894930092624173785641285191125241628941591882900924598840740n;
+                return ((0, utils_1.modulo)(y ** 2n - x ** 2n - 1n - d * x ** 2n * y ** 2n, this.P) === 0n);
             }
             default: {
                 console.warn("Unknown curve, cannot check if point is on curve. Returning true.");
@@ -168,28 +164,3 @@ function derivePubKey(privateKey, curve, config) {
     }
 }
 exports.derivePubKey = derivePubKey;
-function modInverse(a, m) {
-    // Extended Euclidean Algorithm to find the modular inverse
-    const m0 = m;
-    let y = 0n;
-    let x = 1n;
-    if (m === 1n)
-        return 0n;
-    while (a > 1n) {
-        const q = a / m;
-        let t = m;
-        // m is remainder now, process same as Euclid's algo
-        m = a % m;
-        a = t;
-        t = y;
-        // Update y and x
-        y = x - q * y;
-        x = t;
-    }
-    // Make x positive
-    if (x < 0n)
-        x += m0;
-    return x;
-}
-const p = 2n ** 255n - 19n;
-const d = -121665n * modInverse(121666n, p);
