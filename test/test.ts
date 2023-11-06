@@ -308,3 +308,32 @@ if (!areIdenticals) {
   console.log("Error: Partial signature conversion to base64 failed");
   process.exit(1);
 }
+
+
+
+// tmp
+console.log("\n--------------------------------");
+const tmp_Ring = randomRing(3, G_ED, ed25519.N);
+const seedED25519 = "sEdSWniReyeCh7JLWUHEfNTz53pxsjX";
+const keypairED25519 = deriveKeypair(seedED25519);
+const privKey = BigInt("0x" + keypairED25519.privateKey.slice(2));
+
+const partial_sig = RingSignature.partialSign(
+  tmp_Ring,
+  '{"proofId":"0bd89f47a04a7ab71a00c9ce052e8f8a272def7cc9b71e06531b53c5176dfda2","proverAddress":"reyJ4IjoiMzk2NDIxOTQ0","validAtBlock":"42397167","amount":"0","currency":"XRP"}',
+  G_ED,
+  ed25519,
+);
+
+const piSig = piSignature(partial_sig.alpha, partial_sig.cpi, privKey, ed25519);
+console.log("piSig: ", piSig);
+
+// combine partial signatures
+const combinedSig = RingSignature.combine(partial_sig, piSig);
+
+console.log("Combined signature: ", combinedSig);
+
+// verify signature
+const verified = combinedSig.verify();
+
+console.log("Signature verified: ", verified);
