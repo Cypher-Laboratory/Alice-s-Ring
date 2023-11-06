@@ -1,8 +1,9 @@
-import { keccak256 } from "js-sha3";
+import { keccak_256 as keccak256 } from "@noble/hashes/sha3";
 import { randomBigint } from "../src/utils";
 import { Curve, CurveName } from "../src/curves";
 import { Point } from "../src/point";
 import { piSignature } from "../src";
+import { uint8ArrayToHex } from "../src/utils";
 
 const secp256k1 = new Curve(CurveName.SECP256K1);
 const P = secp256k1.P;
@@ -29,20 +30,28 @@ const r3 = randomBigint(P);
 // pi = 2
 const ring = [K1, K2, K3];
 // console.log('ring: ', ring);
-const message = keccak256("test");
+const message = uint8ArrayToHex(keccak256("test"));
 // console.log("alpha: ", alpha);
 
 // seed the loop
-const c3 = BigInt("0x" + keccak256(ring + message + G.mult(alpha).toString()));
+const c3 = BigInt(
+  "0x" + uint8ArrayToHex(keccak256(ring + message + G.mult(alpha).toString())),
+);
 console.log("c3: \n", G.mult(alpha), "\n");
 
 // Iterate:
 const c1 = BigInt(
-  "0x" + keccak256(ring + message + G.mult(r3).add(K3.mult(c3)).toString()),
+  "0x" +
+    uint8ArrayToHex(
+      keccak256(ring + message + G.mult(r3).add(K3.mult(c3)).toString()),
+    ),
 );
 
 const c2 = BigInt(
-  "0x" + keccak256(ring + message + G.mult(r1).add(K1.mult(c1)).toString()),
+  "0x" +
+    uint8ArrayToHex(
+      keccak256(ring + message + G.mult(r1).add(K1.mult(c1)).toString()),
+    ),
 );
 
 // signer response
@@ -59,21 +68,30 @@ const r2 = piSignature(alpha, c2, k2, secp256k1);
 /* -------VERIFICATION------- */
 
 const c2p = BigInt(
-  "0x" + keccak256(ring + message + G.mult(r1).add(K1.mult(c1)).toString()),
+  "0x" +
+    uint8ArrayToHex(
+      keccak256(ring + message + G.mult(r1).add(K1.mult(c1)).toString()),
+    ),
 );
 
 // c2 should be equal to c2p
 console.log("c2 === c2p: ", c2 === c2p);
 
 const c3p = BigInt(
-  "0x" + keccak256(ring + message + G.mult(r2).add(K2.mult(c2p)).toString()),
+  "0x" +
+    uint8ArrayToHex(
+      keccak256(ring + message + G.mult(r2).add(K2.mult(c2p)).toString()),
+    ),
 );
 
 // c3 should be equal to c3p
 console.log("c3 === c3p: ", c3 === c3p);
 
 const c1p = BigInt(
-  "0x" + keccak256(ring + message + G.mult(r3).add(K3.mult(c3p)).toString()),
+  "0x" +
+    uint8ArrayToHex(
+      keccak256(ring + message + G.mult(r3).add(K3.mult(c3p)).toString()),
+    ),
 );
 
 console.log("c1: ", c1);
