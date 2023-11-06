@@ -25,10 +25,11 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Point = void 0;
 const curves_1 = require("./curves");
-const noble_SECP256k1_1 = require("./noble-libraries/noble-SECP256k1");
-const noble_ED25519_1 = require("./noble-libraries/noble-ED25519");
-const _1 = require(".");
+const noble_SECP256k1_1 = require("./utils/noble-libraries/noble-SECP256k1");
+const noble_ED25519_1 = require("./utils/noble-libraries/noble-ED25519");
+const utils_1 = require("./utils");
 const elliptic = __importStar(require("elliptic"));
+const ringSignature_1 = require("./ringSignature");
 const Ed25519 = new elliptic.eddsa("ed25519");
 const secp256k1 = new elliptic.ec("secp256k1");
 /**
@@ -47,29 +48,12 @@ class Point {
      *
      * @returns the point
      */
-    constructor(curve, coordinates, safeMode = false) {
+    constructor(curve, coordinates, safeMode = true) {
         this.curve = curve;
         this.x = coordinates[0];
         this.y = coordinates[1];
-        if (safeMode) {
-            switch (this.curve.name) {
-                case curves_1.CurveName.SECP256K1: {
-                    if ((0, _1.modulo)(this.x ** 3n + 7n, curve.P) !== (0, _1.modulo)(this.y ** 2n, curve.P)) {
-                        throw new Error("Point is not on SECP256K1 curve");
-                    }
-                    break;
-                }
-                case curves_1.CurveName.ED25519: {
-                    if ((0, _1.modulo)(this.y ** 2n - this.x ** 2n, this.curve.N) !==
-                        (0, _1.modulo)(1n - (121665n / 12666n) * this.x ** 2n * this.y ** 2n, this.curve.N)) {
-                        throw new Error("Point is not on ED25519 curve");
-                    }
-                    break;
-                }
-                default: {
-                    console.warn("Unknown curve, cannot check if point is on curve");
-                }
-            }
+        if (safeMode && !curve.isOnCurve([this.x, this.y])) {
+            throw new Error("Point is not on the curve");
         }
     }
     /**
@@ -85,14 +69,14 @@ class Point {
                 const result = noble_SECP256k1_1.ProjectivePoint.fromAffine({
                     x: this.x,
                     y: this.y,
-                }).mul((0, _1.modulo)(scalar, this.curve.N));
+                }).mul((0, utils_1.modulo)(scalar, this.curve.N));
                 return new Point(this.curve, [result.x, result.y]);
             }
             case curves_1.CurveName.ED25519: {
                 const result = noble_ED25519_1.ExtendedPoint.fromAffine({
                     x: this.x,
                     y: this.y,
-                }).mul((0, _1.modulo)(scalar, this.curve.N));
+                }).mul((0, utils_1.modulo)(scalar, this.curve.N));
                 return new Point(this.curve, [result.x, result.y]);
             }
             default: {
@@ -306,6 +290,15 @@ class Point {
                 throw new Error("Error while computing coordinates on secp256k1: " + error);
             }
         }
+    }
+    isValid() {
+        try {
+            (0, ringSignature_1.checkPoint)(this);
+        }
+        catch (error) {
+            return false;
+        }
+        return true;
     }
 }
 exports.Point = Point;

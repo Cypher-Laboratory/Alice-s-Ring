@@ -1,5 +1,5 @@
-import { Curve, Point } from "./utils";
-import { Config } from "./utils/curves";
+import { Config } from "./curves";
+import { Curve, Point } from ".";
 /**
  * Signature config interface
  *
@@ -179,3 +179,24 @@ export declare class RingSignature {
      */
     static base64ToPartialSig(base64: string): PartialSignature;
 }
+/**
+ * Check if a ring is valid
+ *
+ * @param ring - The ring to check
+ * @param ref - The curve to use as a reference (optional, if not set, the first point's curve will be used)
+ *
+ * @throws Error if the ring is empty
+ * @throws Error if the ring contains duplicates
+ * @throws Error if at least one of the points is invalid
+ */
+export declare function checkRing(ring: Point[], ref?: Curve): void;
+/**
+ * Check if a point is valid
+ *
+ * @param point - The point to check
+ * @param curve - The curve to use as a reference
+ *
+ * @throws Error if the point is not on the reference curve
+ * @throws Error if at least 1 coordinate is not valid (= 0 or >= curve order)
+ */
+export declare function checkPoint(point: Point, curve?: Curve): void;

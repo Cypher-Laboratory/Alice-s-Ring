@@ -1,4 +1,5 @@
-import { Curve, Point } from "../utils";
+import { Point } from "../point";
+import { Curve } from "../curves";
 /**
  * Compute the signature from the actual signer
  *

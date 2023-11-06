@@ -25,13 +25,14 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const ringSignature_1 = require("../src/ringSignature");
 const utils_1 = require("../src/utils");
+const src_1 = require("../src");
 const ripple_keypairs_1 = require("ripple-keypairs");
-const curves_1 = require("../src/utils/curves");
+const curves_1 = require("../src/curves");
 const ed = __importStar(require("../src/utils/noble-libraries/noble-ED25519"));
 console.log("------------------ TESTING FOR XRPL CONFIG ------------------\n");
 const config = { derivationConfig: curves_1.Config.DEFAULT };
 const ringSize = 3;
-const ed25519 = new utils_1.Curve(utils_1.CurveName.ED25519); // could also be SECP256K1
+const ed25519 = new src_1.Curve(src_1.CurveName.ED25519); // could also be SECP256K1
 const seed = "sEdSWniReyeCh7JLWUHEfNTz53pxsjX";
 const keypair = (0, ripple_keypairs_1.deriveKeypair)(seed);
 const signerPrivKey_ed = ed.utils.getExtendedPublicKey(BigInt("0x" + keypair.privateKey.slice(2)).toString(16)).scalar;
@@ -59,5 +60,5 @@ function randomRing(ringLength = 100, G, N) {
     }
     return ring;
 }
-const secp256k1 = new utils_1.Curve(utils_1.CurveName.SECP256K1);
+const secp256k1 = new src_1.Curve(src_1.CurveName.SECP256K1);
 console.log(randomRing(3, secp256k1.GtoPoint(), secp256k1.N).map((p) => [p.x, p.y]));

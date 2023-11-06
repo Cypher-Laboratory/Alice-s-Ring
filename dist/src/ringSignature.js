@@ -1,36 +1,11 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.RingSignature = void 0;
+exports.checkPoint = exports.checkRing = exports.RingSignature = void 0;
 const js_sha3_1 = require("js-sha3");
 const utils_1 = require("./utils");
 const piSignature_1 = require("./signature/piSignature");
-const ed = __importStar(require("./utils/noble-libraries/noble-ED25519"));
-const sha512_1 = require("@noble/hashes/sha512");
-const curves_1 = require("./utils/curves");
-ed.etc.sha512Sync = (...m) => (0, sha512_1.sha512)(ed.etc.concatBytes(...m));
+const curves_1 = require("./curves");
+const _1 = require(".");
 /**
  * Ring signature class.
  * This class is used to sign messages using ring signatures.
@@ -50,13 +25,8 @@ class RingSignature {
     constructor(message, ring, c, responses, curve, config) {
         if (ring.length != responses.length)
             throw new Error("Ring and responses length mismatch");
-        if (config?.safeMode) {
-            for (const i of ring) {
-                if (i.curve.name != curve.name) {
-                    throw new Error("Point not on curve");
-                }
-            }
-        }
+        if (config?.safeMode)
+            checkRing(ring, curve);
         this.ring = ring;
         this.message = message;
         this.c = c;
@@ -74,7 +44,7 @@ class RingSignature {
     static fromJsonString(json) {
         try {
             const sig = JSON.parse(json);
-            return new RingSignature(sig.message, sig.ring.map((point) => utils_1.Point.fromString(point)), BigInt(sig.c), sig.responses.map((response) => BigInt(response)), utils_1.Curve.fromString(sig.curve), sig.config);
+            return new RingSignature(sig.message, sig.ring.map((point) => _1.Point.fromString(point)), BigInt(sig.c), sig.responses.map((response) => BigInt(response)), _1.Curve.fromString(sig.curve), sig.config);
         }
         catch (e) {
             throw new Error("Invalid json: " + e);
@@ -106,8 +76,8 @@ class RingSignature {
     static fromBase64(base64) {
         const decoded = Buffer.from(base64, "base64").toString("ascii");
         const json = JSON.parse(decoded);
-        const ring = json.ring.map((point) => utils_1.Point.fromString(point));
-        return new RingSignature(json.message, ring, BigInt(json.c), json.responses.map((response) => BigInt(response)), utils_1.Curve.fromString(json.curve), json.config);
+        const ring = json.ring.map((point) => _1.Point.fromString(point));
+        return new RingSignature(json.message, ring, BigInt(json.c), json.responses.map((response) => BigInt(response)), _1.Curve.fromString(json.curve), json.config);
     }
     /**
      * Encode a ring signature to base64 string
@@ -395,13 +365,13 @@ class RingSignature {
             }
             return {
                 message: json.message,
-                ring: json.ring.map((point) => utils_1.Point.fromString(point)),
+                ring: json.ring.map((point) => _1.Point.fromString(point)),
                 c: BigInt(json.c),
                 cpi: BigInt(json.cpi),
                 responses: json.responses.map((response) => BigInt(response)),
                 pi: Number(json.pi),
                 alpha: BigInt(json.alpha),
-                curve: utils_1.Curve.fromString(json.curve),
+                curve: _1.Curve.fromString(json.curve),
                 config: json.config,
             };
         }
@@ -411,3 +381,57 @@ class RingSignature {
     }
 }
 exports.RingSignature = RingSignature;
+/**
+ * Check if a ring is valid
+ *
+ * @param ring - The ring to check
+ * @param ref - The curve to use as a reference (optional, if not set, the first point's curve will be used)
+ *
+ * @throws Error if the ring is empty
+ * @throws Error if the ring contains duplicates
+ * @throws Error if at least one of the points is invalid
+ */
+function checkRing(ring, ref) {
+    const errorMsg = "Invalid ring: ";
+    if (!ref)
+        ref = ring[0].curve;
+    // check if the ring is empty
+    if (ring.length === 0)
+        throw new Error(errorMsg + "Ring is empty");
+    // check for duplicates using a set
+    if (new Set(ring).size !== ring.length)
+        throw new Error(errorMsg + "Ring contains duplicates");
+    // check if all the points are valid
+    try {
+        for (const point of ring) {
+            checkPoint(point, ref);
+        }
+    }
+    catch (e) {
+        throw new Error(errorMsg + e);
+    }
+}
+exports.checkRing = checkRing;
+/**
+ * Check if a point is valid
+ *
+ * @param point - The point to check
+ * @param curve - The curve to use as a reference
+ *
+ * @throws Error if the point is not on the reference curve
+ * @throws Error if at least 1 coordinate is not valid (= 0 or >= curve order)
+ */
+function checkPoint(point, curve) {
+    const errorMsg = "Invalid point: ";
+    // check if the point is on the reference curve
+    if (curve && !(!curve.isOnCurve(point) && curve.equals(point.curve)))
+        throw new Error(errorMsg + "Point is not on curve");
+    // check if coordinates are valid
+    if (point.x === 0n ||
+        point.y === 0n ||
+        point.x >= point.curve.N ||
+        point.y >= point.curve.N) {
+        throw new Error(errorMsg + "Coordinates are not valid");
+    }
+}
+exports.checkPoint = checkPoint;
