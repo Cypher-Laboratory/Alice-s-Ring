@@ -591,7 +591,7 @@ export class RingSignature {
                   message +
                   formatPoint(
                     G.mult(params.r).add(
-                      params.previousPubKey.mult(params.previousC),
+                      params.previousPubKey.mult(params.previousC).negate(),
                     ),
                     config,
                   ),
