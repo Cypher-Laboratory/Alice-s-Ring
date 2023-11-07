@@ -27,7 +27,7 @@ export function piSignature(
   signerPrivKey: bigint,
   curve: Curve,
 ): bigint {
-  return modulo(nonce - message * signerPrivKey, curve.N);
+  return modulo(nonce + message * signerPrivKey, curve.N);
 }
 
 /**
@@ -38,6 +38,7 @@ export function piSignature(
  * @param nonce - The nonce used (= alpha in our ring signature scheme)
  * @param message - The message (as bigint) (= c[pi] in our ring signature scheme)
  * @param curve - The curve to use
+ *
  * @returns true if the signature is valid, false otherwise
  */
 export function verifyPiSignature(
@@ -48,8 +49,8 @@ export function verifyPiSignature(
   curve: Curve,
 ): boolean {
   const G: Point = curve.GtoPoint(); // curve generator
-  // G * piSignature === (alpha * G) - c * (k * G)
+  // G * piSignature === (alpha * G) + c * (k * G)
   return G.mult(piSignature).equals(
-    G.mult(nonce).add(signerPubKey.mult(message).negate()),
+    G.mult(nonce).add(signerPubKey.mult(message)),
   );
 }
