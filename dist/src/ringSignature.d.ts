@@ -1,29 +1,6 @@
-import { Curve, Point } from ".";
+import { Curve, PartialSignature, Point } from ".";
 import { SignatureConfig } from "./interfaces";
-/**
- * Partial ring signature interface
- *
- * @see message - Clear message
- * @see ring - Ring of public keys
- * @see pi - The signer index -> should be kept secret
- * @see c - The first c computed during the first part of the signing
- * @see cpi - The c value of the signer
- * @see alpha - The alpha value
- * @see responses - The generated responses
- * @see curve - The elliptic curve to use
- * @see config - The config params to use (optional)
- */
-export interface PartialSignature {
-    message: string;
-    ring: Point[];
-    pi: number;
-    c: bigint;
-    cpi: bigint;
-    alpha: bigint;
-    responses: bigint[];
-    curve: Curve;
-    config?: SignatureConfig;
-}
+import { hashFunction } from "./utils/hashFunction";
 /**
  * Ring signature class.
  * This class is used to sign messages using ring signatures.
@@ -36,7 +13,7 @@ export declare class RingSignature {
     ring: Point[];
     curve: Curve;
     config?: SignatureConfig;
-    hash: (message: string) => string;
+    hash: hashFunction;
     /**
      * Ring signature class constructor
      *
@@ -56,7 +33,7 @@ export declare class RingSignature {
      *
      * @returns A RingSignature
      */
-    static fromJsonString(json: string, hashFunction?: (message: string) => string): RingSignature;
+    static fromJsonString(json: string): RingSignature;
     /**
      * Create a Json string from a RingSignature
      *
@@ -70,7 +47,7 @@ export declare class RingSignature {
      *
      * @returns The ring signature
      */
-    static fromBase64(base64: string, hashFunction?: (message: string) => string): RingSignature;
+    static fromBase64(base64: string): RingSignature;
     /**
      * Encode a ring signature to base64 string
      */
@@ -168,7 +145,7 @@ export declare class RingSignature {
      * @param base64 - The base64 string to convert
      * @returns A partial signature
      */
-    static base64ToPartialSig(base64: string, hashFunction?: (message: string) => string): PartialSignature;
+    static base64ToPartialSig(base64: string): PartialSignature;
 }
 /**
  * Check if a ring is valid

@@ -5,4 +5,6 @@ export { Curve, CurveName } from "./curves";
 
 export { randomBigint, getRandomSecuredNumber, uint8ArrayToHex } from "./utils";
 
-export { RingSignature, PartialSignature } from "./ringSignature";
+export { RingSignature } from "./ringSignature";
+
+export { PartialSignature, SignatureConfig } from "./interfaces";

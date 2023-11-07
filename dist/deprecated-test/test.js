@@ -38,12 +38,8 @@ const config = {
     derivationConfig: curves_2.Config.DEFAULT,
     evmCompatibility: true,
     safeMode: false,
-    hash: hashFunction_1.sha_512,
+    hash: hashFunction_1.hashFunction.SHA512,
 };
-let hash = hashFunction_1.keccak256;
-if (config.hash) {
-    hash = config.hash;
-}
 const ringSize = 10;
 const secp256k1 = new curves_1.Curve(curves_1.CurveName.SECP256K1);
 const ed25519 = new curves_1.Curve(curves_1.CurveName.ED25519);
@@ -91,7 +87,7 @@ if (!verifiedSig_ed) {
 console.log("------ TEST BASE64 ENCODING/DECODING ------");
 const signature = ringSignature_1.RingSignature.sign(ring_ed, signerPrivKey_ed, "test", ed25519, config);
 const base64Sig = signature.toBase64();
-const retrievedSig = ringSignature_1.RingSignature.fromBase64(base64Sig, hash);
+const retrievedSig = ringSignature_1.RingSignature.fromBase64(base64Sig);
 const verifiedRetrievedSig = retrievedSig.verify();
 const areIdentical = retrievedSig.message === signature.message &&
     retrievedSig.c === signature.c &&
@@ -192,7 +188,7 @@ function areRingsEquals(ring1, ring2) {
 /*--------------------- test ring signature <--> JSON conversion ---------------------*/
 console.log("------ CONVERT RING SIGNATURE TO JSON AND RETRIEVE IT ------");
 const json = signature_ed.toJsonString();
-const retrievedSigFromJson = ringSignature_1.RingSignature.fromJsonString(json, hash);
+const retrievedSigFromJson = ringSignature_1.RingSignature.fromJsonString(json);
 const verifiedRetrievedSigFromJson = retrievedSigFromJson.verify();
 console.log("Is sig from JSON valid? ", verifiedRetrievedSigFromJson);
 if (!verifiedRetrievedSigFromJson) {
@@ -224,7 +220,7 @@ function areConfigEquals(config1, config2) {
 /*--------------------- test partial ring signature <--> Base64 conversion ---------------------*/
 console.log("------ CONVERT PARTIAL RING SIGNATURE TO Base64 AND RETRIEVE IT ------");
 const base64RingSig = ringSignature_1.RingSignature.partialSigToBase64(partialSig_ed);
-const retrievedPartialSig = ringSignature_1.RingSignature.base64ToPartialSig(base64RingSig, hash);
+const retrievedPartialSig = ringSignature_1.RingSignature.base64ToPartialSig(base64RingSig);
 const areIdenticals = arePartialSigsEquals(retrievedPartialSig, partialSig_ed);
 console.log("Are the two partial signatures identical? ", areIdenticals);
 if (!areIdenticals) {

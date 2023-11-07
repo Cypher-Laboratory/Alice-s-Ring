@@ -1,4 +1,5 @@
 import { Config } from "../curves";
+import { hashFunction } from "../utils/hashFunction";
 
 /**
  * Signature config interface
@@ -12,5 +13,5 @@ export interface SignatureConfig {
   derivationConfig?: Config;
   evmCompatibility?: boolean;
   safeMode?: boolean;
-  hash?: (input: string) => string;
+  hash?: hashFunction;
 }

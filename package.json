@@ -6,7 +6,7 @@
   "module": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
   "scripts": {
-    "build": "rm -r ./dist && npm run fmt && tsc",
+    "build": "npm run fmt && rm -r ./dist && tsc",
     "test": "jest",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
