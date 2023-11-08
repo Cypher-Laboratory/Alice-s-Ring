@@ -4,6 +4,22 @@ exports.derivePubKey = exports.Config = exports.Curve = exports.CurveName = void
 const noble_ED25519_1 = require("./utils/noble-libraries/noble-ED25519");
 const point_1 = require("./point");
 const utils_1 = require("./utils");
+// SECP256K1 curve constants
+const SECP256K1 = {
+    P: 2n ** 256n - 2n ** 32n - 977n,
+    N: 2n ** 256n - 0x14551231950b75fc4402da1732fc9bebfn,
+    G: [
+        55066263022277343669578718895168534326250603453777594175500187360389116729240n,
+        32670510020758816978083085130507043184471273380659243275938904335757337482424n,
+    ],
+};
+// ED25519 curve constants
+const GED25519 = new noble_ED25519_1.ExtendedPoint(noble_ED25519_1.Gx, noble_ED25519_1.Gy, 1n, (0, noble_ED25519_1.mod)(noble_ED25519_1.Gx * noble_ED25519_1.Gy));
+const ED25519 = {
+    P: 2n ** 255n - 19n,
+    N: 2n ** 252n + 27742317777372353535851937790883648493n,
+    G: [GED25519.toAffine().x, GED25519.toAffine().y],
+};
 /**
  * List of supported curves
  */
@@ -95,15 +111,11 @@ class Curve {
         }
         switch (this.name) {
             case CurveName.SECP256K1: {
-                if ((0, utils_1.modulo)(x ** 3n + 7n, this.P) !== (0, utils_1.modulo)(y ** 2n, this.P)) {
-                    return false;
-                }
-                break;
+                return (0, utils_1.modulo)(x ** 3n + 7n - y ** 2n, this.P) === 0n;
             }
             case CurveName.ED25519: {
-                const lhs = (y * y - x * x - 1n - d * x * x * y * y) % p;
-                return lhs === 0n;
-                break;
+                const d = -4513249062541557337682894930092624173785641285191125241628941591882900924598840740n;
+                return ((0, utils_1.modulo)(y ** 2n - x ** 2n - 1n - d * x ** 2n * y ** 2n, this.P) === 0n);
             }
             default: {
                 console.warn("Unknown curve, cannot check if point is on curve. Returning true.");
@@ -120,22 +132,6 @@ class Curve {
     }
 }
 exports.Curve = Curve;
-// SECP256K1 curve constants
-const SECP256K1 = {
-    P: 2n ** 256n - 2n ** 32n - 977n,
-    N: 2n ** 256n - 0x14551231950b75fc4402da1732fc9bebfn,
-    G: [
-        55066263022277343669578718895168534326250603453777594175500187360389116729240n,
-        32670510020758816978083085130507043184471273380659243275938904335757337482424n,
-    ],
-};
-// ED25519 curve constants
-const G = new noble_ED25519_1.ExtendedPoint(noble_ED25519_1.Gx, noble_ED25519_1.Gy, 1n, (0, noble_ED25519_1.mod)(noble_ED25519_1.Gx * noble_ED25519_1.Gy));
-const ED25519 = {
-    P: 2n ** 255n - 19n,
-    N: 2n ** 252n + 27742317777372353535851937790883648493n,
-    G: [G.toAffine().x, G.toAffine().y],
-};
 /**
  * List of supported configs for the `derivePubKey` function
  * This configs are used to specify if a specific way to derive the public key is used. (such as for xrpl keys)
@@ -168,28 +164,3 @@ function derivePubKey(privateKey, curve, config) {
     }
 }
 exports.derivePubKey = derivePubKey;
-function modInverse(a, m) {
-    // Extended Euclidean Algorithm to find the modular inverse
-    const m0 = m;
-    let y = 0n;
-    let x = 1n;
-    if (m === 1n)
-        return 0n;
-    while (a > 1n) {
-        const q = a / m;
-        let t = m;
-        // m is remainder now, process same as Euclid's algo
-        m = a % m;
-        a = t;
-        t = y;
-        // Update y and x
-        y = x - q * y;
-        x = t;
-    }
-    // Make x positive
-    if (x < 0n)
-        x += m0;
-    return x;
-}
-const p = 2n ** 255n - 19n;
-const d = -121665n * modInverse(121666n, p);

@@ -25,6 +25,7 @@ signerPrivKey: bigint, curve: Curve): bigint;
  * @param nonce - The nonce used (= alpha in our ring signature scheme)
  * @param message - The message (as bigint) (= c[pi] in our ring signature scheme)
  * @param curve - The curve to use
+ *
  * @returns true if the signature is valid, false otherwise
  */
 export declare function verifyPiSignature(signerPubKey: Point, piSignature: bigint, nonce: bigint, message: bigint, curve: Curve): boolean;

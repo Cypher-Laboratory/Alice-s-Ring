@@ -559,12 +559,14 @@ export class RingSignature {
       return modulo(
         BigInt(
           "0x" +
+
             hash(
               formatRing(ring, config) +
                 message +
                 formatPoint(
                   G.mult(params.r).add(
                     params.previousPubKey.mult(params.previousC).negate(),
+
                   ),
                   config,
                 ),

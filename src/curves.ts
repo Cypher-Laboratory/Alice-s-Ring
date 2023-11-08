@@ -7,6 +7,24 @@ import {
 import { Point } from "./point";
 import { modulo } from "./utils";
 
+// SECP256K1 curve constants
+const SECP256K1 = {
+  P: 2n ** 256n - 2n ** 32n - 977n,
+  N: 2n ** 256n - 0x14551231950b75fc4402da1732fc9bebfn,
+  G: [
+    55066263022277343669578718895168534326250603453777594175500187360389116729240n,
+    32670510020758816978083085130507043184471273380659243275938904335757337482424n,
+  ] as [bigint, bigint],
+};
+
+// ED25519 curve constants
+const GED25519 = new ExtendedPoint(Gx, Gy, 1n, mod(Gx * Gy));
+const ED25519 = {
+  P: 2n ** 255n - 19n,
+  N: 2n ** 252n + 27742317777372353535851937790883648493n, // curve's (group) order
+  G: [GED25519.toAffine().x, GED25519.toAffine().y] as [bigint, bigint],
+};
+
 /**
  * List of supported curves
  */
@@ -117,16 +135,14 @@ export class Curve {
 
     switch (this.name) {
       case CurveName.SECP256K1: {
-        if (modulo(x ** 3n + 7n, this.P) !== modulo(y ** 2n, this.P)) {
-          return false;
-        }
-        break;
+        return modulo(x ** 3n + 7n - y ** 2n, this.P) === 0n;
       }
-
       case CurveName.ED25519: {
-        const lhs: bigint = (y * y - x * x - 1n - d * x * x * y * y) % p;
-        return lhs === 0n;
-        break;
+        const d =
+          -4513249062541557337682894930092624173785641285191125241628941591882900924598840740n;
+        return (
+          modulo(y ** 2n - x ** 2n - 1n - d * x ** 2n * y ** 2n, this.P) === 0n
+        );
       }
 
       default: {
@@ -149,24 +165,6 @@ export class Curve {
     );
   }
 }
-
-// SECP256K1 curve constants
-const SECP256K1 = {
-  P: 2n ** 256n - 2n ** 32n - 977n,
-  N: 2n ** 256n - 0x14551231950b75fc4402da1732fc9bebfn,
-  G: [
-    55066263022277343669578718895168534326250603453777594175500187360389116729240n,
-    32670510020758816978083085130507043184471273380659243275938904335757337482424n,
-  ] as [bigint, bigint],
-};
-
-// ED25519 curve constants
-const G = new ExtendedPoint(Gx, Gy, 1n, mod(Gx * Gy));
-const ED25519 = {
-  P: 2n ** 255n - 19n,
-  N: 2n ** 252n + 27742317777372353535851937790883648493n, // curve's (group) order
-  G: [G.toAffine().x, G.toAffine().y] as [bigint, bigint],
-};
 
 /**
  * List of supported configs for the `derivePubKey` function
@@ -204,33 +202,3 @@ export function derivePubKey(
     }
   }
 }
-
-function modInverse(a: bigint, m: bigint): bigint {
-  // Extended Euclidean Algorithm to find the modular inverse
-  const m0: bigint = m;
-  let y = 0n;
-  let x = 1n;
-
-  if (m === 1n) return 0n;
-
-  while (a > 1n) {
-    const q: bigint = a / m;
-    let t: bigint = m;
-
-    // m is remainder now, process same as Euclid's algo
-    m = a % m;
-    a = t;
-    t = y;
-
-    // Update y and x
-    y = x - q * y;
-    x = t;
-  }
-
-  // Make x positive
-  if (x < 0n) x += m0;
-
-  return x;
-}
-const p: bigint = 2n ** 255n - 19n;
-const d: bigint = -121665n * modInverse(121666n, p);
