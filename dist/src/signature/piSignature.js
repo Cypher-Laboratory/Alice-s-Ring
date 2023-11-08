@@ -24,7 +24,7 @@ const utils_1 = require("../utils");
 function piSignature(nonce, // = alpha in our ring signature scheme
 message, // = c in our ring signature scheme
 signerPrivKey, curve) {
-    return (0, utils_1.modulo)(nonce - message * signerPrivKey, curve.N);
+    return (0, utils_1.modulo)(nonce + message * signerPrivKey, curve.N);
 }
 exports.piSignature = piSignature;
 /**
@@ -40,6 +40,6 @@ exports.piSignature = piSignature;
 function verifyPiSignature(signerPubKey, piSignature, nonce, message, curve) {
     const G = curve.GtoPoint(); // curve generator
     // G * piSignature === (alpha * G) - c * (k * G)
-    return G.mult(piSignature).equals(G.mult(nonce).add(signerPubKey.mult(message).negate()));
+    return G.mult(piSignature).equals(G.mult(nonce).add(signerPubKey.mult(message)));
 }
 exports.verifyPiSignature = verifyPiSignature;

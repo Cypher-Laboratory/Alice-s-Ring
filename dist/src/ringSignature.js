@@ -333,7 +333,7 @@ class RingSignature {
             return (0, utils_1.modulo)(BigInt("0x" +
                 (0, utils_1.hash)((0, utils_1.formatRing)(ring, config) +
                     message +
-                    (0, utils_1.formatPoint)(G.mult(params.r).add(params.previousPubKey.mult(params.previousC)), config), hashFct)), N);
+                    (0, utils_1.formatPoint)(G.mult(params.r).add(params.previousPubKey.mult(params.previousC).negate()), config), hashFct)), N);
         }
         throw new Error("computeC: Missing parameters. Either 'alpha' or all the others params must be set");
     }
