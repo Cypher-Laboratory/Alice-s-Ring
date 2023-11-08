@@ -1,8 +1,6 @@
 import { uint8ArrayToHex } from "./convertTypes/uint8ArrayToHex";
 import { keccak_256 } from "@noble/hashes/sha3";
-import * as ed from "../utils/noble-libraries/noble-ED25519";
 import { sha512 } from "@noble/hashes/sha512";
-ed.etc.sha512Sync = (...m) => sha512(ed.etc.concatBytes(...m));
 
 export enum hashFunction {
   KECCAK256 = "keccak256",
