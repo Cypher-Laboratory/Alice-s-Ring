@@ -1,52 +1,16 @@
-import { keccak_256 } from "@noble/hashes/sha3";
 import {
   randomBigint,
   getRandomSecuredNumber,
   modulo,
   formatRing,
   formatPoint,
-  uint8ArrayToHex,
+  hash,
 } from "./utils";
 import { piSignature, verifyPiSignature } from "./signature/piSignature";
-import { Config, derivePubKey } from "./curves";
-import { Curve, Point } from ".";
-
-/**
- * Signature config interface
- *
- * @see derivationConfig - The config to use for the key derivation
- * @see evmCompatibility - If true, the signature will be compatible with our EVM verifier contract
- * @see safeMode - If true, check if all the points are on the same curve
- */
-export interface SignatureConfig {
-  derivationConfig?: Config;
-  evmCompatibility?: boolean;
-  safeMode?: boolean;
-}
-
-/**
- * Partial ring signature interface
- *
- * @see message - Clear message
- * @see ring - Ring of public keys
- * @see pi - The signer index -> should be kept secret
- * @see c - The first c computed during the first part of the signing
- * @see cpi - The c value of the signer
- * @see alpha - The alpha value
- * @see responses - The generated responses
- * @see curve - The elliptic curve to use
- */
-export interface PartialSignature {
-  message: string;
-  ring: Point[];
-  pi: number;
-  c: bigint;
-  cpi: bigint;
-  alpha: bigint;
-  responses: bigint[];
-  curve: Curve;
-  config?: SignatureConfig;
-}
+import { derivePubKey } from "./curves";
+import { Curve, PartialSignature, Point } from ".";
+import { SignatureConfig } from "./interfaces";
+import { hashFunction } from "./utils/hashFunction";
 
 /**
  * Ring signature class.
@@ -60,6 +24,7 @@ export class RingSignature {
   ring: Point[];
   curve: Curve;
   config?: SignatureConfig;
+  hash: hashFunction;
 
   /**
    * Ring signature class constructor
@@ -70,6 +35,7 @@ export class RingSignature {
    * @param responses - Responses for each public key in the ring
    * @param curve - Curve used for the signature
    * @param safeMode - If true, check if all the points are on the same curve
+   * @param config - The config params to use (optional)
    */
   constructor(
     message: string,
@@ -83,6 +49,9 @@ export class RingSignature {
       throw new Error("Ring and responses length mismatch");
 
     if (config?.safeMode) checkRing(ring, curve);
+
+    if (config?.hash) this.hash = config.hash;
+    else this.hash = hashFunction.KECCAK256;
 
     this.ring = ring;
     this.message = message;
@@ -327,7 +296,7 @@ export class RingSignature {
 
     if (this.ring.length > 1) {
       // hash the message
-      const messageDigest: string = uint8ArrayToHex(keccak_256(this.message));
+      const messageDigest: string = hash(this.message, this.hash);
 
       // computes the cees
       let lastComputedCp = RingSignature.computeC(
@@ -425,8 +394,11 @@ export class RingSignature {
     signerIndex: number;
     responses: bigint[];
   } {
+    let hashFct = hashFunction.KECCAK256;
+    if (config?.hash) hashFct = config.hash;
+
     // hash the message
-    const messageDigest: string = uint8ArrayToHex(keccak_256(message));
+    const messageDigest: string = hash(message, hashFct);
 
     // generate random number alpha
     const alpha: bigint = randomBigint(curve.N);
@@ -566,16 +538,18 @@ export class RingSignature {
     },
     config?: SignatureConfig,
   ): bigint {
+    let hashFct = hashFunction.KECCAK256;
+    if (config?.hash) hashFct = config.hash;
+
     if (params.alpha) {
       return modulo(
         BigInt(
           "0x" +
-            uint8ArrayToHex(
-              keccak_256(
-                formatRing(ring, config) +
-                  message +
-                  formatPoint(G.mult(params.alpha), config),
-              ),
+            hash(
+              formatRing(ring, config) +
+                message +
+                formatPoint(G.mult(params.alpha), config),
+              hashFct,
             ),
         ),
         N,
@@ -585,17 +559,16 @@ export class RingSignature {
       return modulo(
         BigInt(
           "0x" +
-            uint8ArrayToHex(
-              keccak_256(
-                formatRing(ring, config) +
-                  message +
-                  formatPoint(
-                    G.mult(params.r).add(
-                      params.previousPubKey.mult(params.previousC).negate(),
-                    ),
-                    config,
+            hash(
+              formatRing(ring, config) +
+                message +
+                formatPoint(
+                  G.mult(params.r).add(
+                    params.previousPubKey.mult(params.previousC).negate(),
                   ),
-              ),
+                  config,
+                ),
+              hashFct,
             ),
         ),
         N,
@@ -720,3 +693,4 @@ export function checkPoint(point: Point, curve?: Curve): void {
     throw new Error(errorMsg + "Coordinates are not valid");
   }
 }
+export { SignatureConfig };

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.formatPoint = exports.formatRing = exports.uint8ArrayToHex = exports.modulo = exports.getRandomSecuredNumber = exports.randomBigint = void 0;
+exports.sha_512 = exports.hash = exports.keccak256 = exports.formatPoint = exports.formatRing = exports.uint8ArrayToHex = exports.modulo = exports.getRandomSecuredNumber = exports.randomBigint = void 0;
 var randomNumbers_1 = require("./randomNumbers");
 Object.defineProperty(exports, "randomBigint", { enumerable: true, get: function () { return randomNumbers_1.randomBigint; } });
 Object.defineProperty(exports, "getRandomSecuredNumber", { enumerable: true, get: function () { return randomNumbers_1.getRandomSecuredNumber; } });
@@ -12,3 +12,7 @@ var formatRing_1 = require("./formatData/formatRing");
 Object.defineProperty(exports, "formatRing", { enumerable: true, get: function () { return formatRing_1.formatRing; } });
 var formatPoint_1 = require("./formatData/formatPoint");
 Object.defineProperty(exports, "formatPoint", { enumerable: true, get: function () { return formatPoint_1.formatPoint; } });
+var hashFunction_1 = require("./hashFunction");
+Object.defineProperty(exports, "keccak256", { enumerable: true, get: function () { return hashFunction_1.keccak256; } });
+Object.defineProperty(exports, "hash", { enumerable: true, get: function () { return hashFunction_1.hash; } });
+Object.defineProperty(exports, "sha_512", { enumerable: true, get: function () { return hashFunction_1.sha_512; } });

@@ -32,10 +32,13 @@ const ripple_keypairs_1 = require("ripple-keypairs");
 const curves_2 = require("../src/curves");
 const ed = __importStar(require("../src/utils/noble-libraries/noble-ED25519"));
 const sha512_1 = require("@noble/hashes/sha512");
+const hashFunction_1 = require("../src/utils/hashFunction");
 ed.etc.sha512Sync = (...m) => (0, sha512_1.sha512)(ed.etc.concatBytes(...m));
 const config = {
     derivationConfig: curves_2.Config.DEFAULT,
     evmCompatibility: true,
+    safeMode: false,
+    hash: hashFunction_1.hashFunction.SHA512,
 };
 const ringSize = 10;
 const secp256k1 = new curves_1.Curve(curves_1.CurveName.SECP256K1);

@@ -1,40 +1,6 @@
-import { Config } from "./curves";
-import { Curve, Point } from ".";
-/**
- * Signature config interface
- *
- * @see derivationConfig - The config to use for the key derivation
- * @see evmCompatibility - If true, the signature will be compatible with our EVM verifier contract
- * @see safeMode - If true, check if all the points are on the same curve
- */
-export interface SignatureConfig {
-    derivationConfig?: Config;
-    evmCompatibility?: boolean;
-    safeMode?: boolean;
-}
-/**
- * Partial ring signature interface
- *
- * @see message - Clear message
- * @see ring - Ring of public keys
- * @see pi - The signer index -> should be kept secret
- * @see c - The first c computed during the first part of the signing
- * @see cpi - The c value of the signer
- * @see alpha - The alpha value
- * @see responses - The generated responses
- * @see curve - The elliptic curve to use
- */
-export interface PartialSignature {
-    message: string;
-    ring: Point[];
-    pi: number;
-    c: bigint;
-    cpi: bigint;
-    alpha: bigint;
-    responses: bigint[];
-    curve: Curve;
-    config?: SignatureConfig;
-}
+import { Curve, PartialSignature, Point } from ".";
+import { SignatureConfig } from "./interfaces";
+import { hashFunction } from "./utils/hashFunction";
 /**
  * Ring signature class.
  * This class is used to sign messages using ring signatures.
@@ -47,6 +13,7 @@ export declare class RingSignature {
     ring: Point[];
     curve: Curve;
     config?: SignatureConfig;
+    hash: hashFunction;
     /**
      * Ring signature class constructor
      *
@@ -56,6 +23,7 @@ export declare class RingSignature {
      * @param responses - Responses for each public key in the ring
      * @param curve - Curve used for the signature
      * @param safeMode - If true, check if all the points are on the same curve
+     * @param config - The config params to use (optional)
      */
     constructor(message: string, ring: Point[], c: bigint, responses: bigint[], curve: Curve, config?: SignatureConfig);
     /**
@@ -200,3 +168,4 @@ export declare function checkRing(ring: Point[], ref?: Curve): void;
  * @throws Error if at least 1 coordinate is not valid (= 0 or >= curve order)
  */
 export declare function checkPoint(point: Point, curve?: Curve): void;
+export { SignatureConfig };
