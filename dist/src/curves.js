@@ -4,6 +4,7 @@ exports.derivePubKey = exports.Config = exports.Curve = exports.CurveName = void
 const noble_ED25519_1 = require("./utils/noble-libraries/noble-ED25519");
 const point_1 = require("./point");
 const utils_1 = require("./utils");
+const errors_1 = require("./errors");
 // SECP256K1 curve constants
 const SECP256K1 = {
     P: 2n ** 256n - 2n ** 32n - 977n,
@@ -38,7 +39,8 @@ class Curve {
      */
     constructor(curve, params) {
         this.name = curve;
-        switch (this.name) {
+        switch (this.name // TODO: CHECK IF G IS ON CURVE
+        ) {
             case CurveName.SECP256K1:
                 this.G = SECP256K1.G;
                 this.N = SECP256K1.N;
@@ -56,7 +58,7 @@ class Curve {
                     this.P = params.P;
                     break;
                 }
-                throw new Error("Invalid params");
+                throw (0, errors_1.invalidParams)("Curve parameters are missing");
         }
     }
     /**

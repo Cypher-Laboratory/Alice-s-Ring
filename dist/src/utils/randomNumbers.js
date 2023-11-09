@@ -2,9 +2,10 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getRandomSecuredNumber = exports.randomBigint = void 0;
 const node_crypto_1 = require("node:crypto");
+const errors_1 = require("../errors");
 function randomBigint(max) {
     if (max <= 0n) {
-        throw new Error("Max value should be greater than 0.");
+        throw (0, errors_1.tooSmall)("Max", 0);
     }
     const byteSize = (max.toString(16).length + 1) >> 1;
     //we use a while loop as a safeguard against the case where the random number is greater than the max value

@@ -30,6 +30,7 @@ const noble_ED25519_1 = require("./utils/noble-libraries/noble-ED25519");
 const utils_1 = require("./utils");
 const elliptic = __importStar(require("elliptic"));
 const ringSignature_1 = require("./ringSignature");
+const errors_1 = require("./errors");
 const Ed25519 = new elliptic.eddsa("ed25519");
 const secp256k1 = new elliptic.ec("secp256k1");
 /**
@@ -53,7 +54,7 @@ class Point {
         this.x = coordinates[0];
         this.y = coordinates[1];
         if (safeMode && !curve.isOnCurve([this.x, this.y])) {
-            throw new Error("Point is not on the curve");
+            throw (0, errors_1.notOnCurve)(`[${this.x}, ${this.y}]`);
         }
     }
     /**
@@ -80,7 +81,7 @@ class Point {
                 return new Point(this.curve, [result.x, result.y]);
             }
             default: {
-                throw new Error("Unknown curve");
+                throw (0, errors_1.unknownCurve)(this.curve.name);
             }
         }
     }
@@ -92,7 +93,7 @@ class Point {
      */
     add(point) {
         if (this.curve.name !== point.curve.name)
-            throw new Error("Cannot add points: different curves");
+            throw (0, errors_1.differentCurves)("Cannot add points");
         switch (this.curve.name) {
             case curves_1.CurveName.SECP256K1: {
                 const result = noble_SECP256k1_1.ProjectivePoint.fromAffine({
@@ -116,7 +117,7 @@ class Point {
                 return new Point(this.curve, [result.x, result.y]);
             }
             default: {
-                throw new Error("Unknown curve");
+                throw (0, errors_1.unknownCurve)(this.curve.name);
             }
         }
     }
@@ -149,7 +150,7 @@ class Point {
                 }));
             }
             default: {
-                throw new Error("Unknown curve");
+                throw (0, errors_1.unknownCurve)();
             }
         }
     }
@@ -177,7 +178,7 @@ class Point {
                 return new Point(this.curve, [result.x, result.y]);
             }
             default: {
-                throw new Error("Unknown curve");
+                throw (0, errors_1.unknownCurve)("Cannot negate point");
             }
         }
     }
@@ -268,7 +269,7 @@ class Point {
                 ]);
             }
             catch (error) {
-                throw new Error("Error while computing coordinates on ed25519: " + error);
+                throw (0, errors_1.computationError)("error while computing coordinates on ed25519");
             }
         }
         else {
@@ -287,7 +288,7 @@ class Point {
                 ]);
             }
             catch (error) {
-                throw new Error("Error while computing coordinates on secp256k1: " + error);
+                throw (0, errors_1.computationError)("error while computing coordinates on secp256k1");
             }
         }
     }

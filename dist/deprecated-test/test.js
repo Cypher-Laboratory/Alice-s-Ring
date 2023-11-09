@@ -60,7 +60,7 @@ function randomRing(ringLength = 100, G, N) {
     const ring = [G.mult(k)];
     for (let i = 1; i < ringLength - 1; i++) {
         // once we add the signer, we get the wanted ring size
-        k = (0, utils_1.randomBigint)(N * N);
+        k = (0, utils_1.randomBigint)(N);
         ring.push(G.mult(k));
     }
     return ring;

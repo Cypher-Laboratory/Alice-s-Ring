@@ -92,6 +92,10 @@ export const differentCurves = (data?: string) => {
   if (data) return new Error(`Different curves: ${data}`);
   return new Error("Different curves");
 };
+export const curveMismatch = (data?: string) => {
+  if (data) return new Error(`Curve mismatch: ${data}`);
+  return new Error("Curve mismatch");
+};
 
 /* -------------RESPONSES------------- */
 export const noEmptyResponses = new Error("Responses cannot be empty");

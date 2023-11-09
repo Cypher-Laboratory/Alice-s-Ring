@@ -671,7 +671,7 @@ export function checkRing(ring: Point[], ref?: Curve): void {
       checkPoint(point, ref);
     }
   } catch (e) {
-    throw err.invalidPoint("At least one point is not valid");
+    throw err.invalidPoint(("At least one point is not valid: " + e) as string);
   }
 }
 
@@ -686,15 +686,20 @@ export function checkRing(ring: Point[], ref?: Curve): void {
  */
 export function checkPoint(point: Point, curve?: Curve): void {
   // check if the point is on the reference curve
-  if (curve && !(!curve.isOnCurve(point) && curve.equals(point.curve)))
+  if (!point.curve.isOnCurve(point)) {
     throw err.notOnCurve();
+  }
+
+  if (curve && !curve.equals(point.curve)) {
+    throw err.curveMismatch();
+  }
 
   // check if coordinates are valid
   if (
     point.x === 0n ||
     point.y === 0n ||
-    point.x >= point.curve.N ||
-    point.y >= point.curve.N
+    point.x >= point.curve.P ||
+    point.y >= point.curve.P
   ) {
     throw err.invalidCoordinates();
   }
