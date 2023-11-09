@@ -56,9 +56,9 @@ export class RingSignature {
     // check ring, c and responses validity if config.safeMode is true or if config.safeMode is not set
     if ((config && config.safeMode === true) || !(config && config.safeMode)) {
       checkRing(ring, curve);
-      if (c >= curve.N || c === 0n) throw err.invalidParams("c");
+      if (c >= curve.P || c === 0n) throw err.invalidParams("c");
       for (const response of responses) {
-        if (response >= curve.N || response === 0n) throw err.invalidResponses;
+        if (response >= curve.P || response === 0n) throw err.invalidResponses;
       }
     }
 
@@ -297,7 +297,6 @@ export class RingSignature {
     // finally, if we substitute lastC for lastC' and c0' == c0, the signature is valid
     if (this.ring.length === 0) throw err.noEmptyRing;
 
-    // TODO: is this useful since we check this in constructor ?
     if (this.ring.length !== this.responses.length) {
       throw err.lengthMismatch("ring", "responses");
     }
@@ -362,7 +361,7 @@ export class RingSignature {
     return verifyPiSignature(
       this.ring[0],
       this.responses[0],
-      modulo(2n * this.c + 1n, this.curve.N),
+      modulo(2n * this.c + 1n, this.curve.P),
       this.c,
       this.curve,
     );
