@@ -78,7 +78,7 @@ class Point {
         const result = SECP256K1Point.fromAffine({
           x: this.x,
           y: this.y,
-        }).mul(modulo(scalar, this.curve.N));
+        }).mul(modulo(scalar, this.curve.P));
 
         return new Point(this.curve, [result.x, result.y]);
       }
@@ -86,7 +86,7 @@ class Point {
         const result = ED25519Point.fromAffine({
           x: this.x,
           y: this.y,
-        }).mul(modulo(scalar, this.curve.N));
+        }).mul(modulo(scalar, this.curve.P));
 
         return new Point(this.curve, [result.x, result.y]);
       }
@@ -407,5 +407,5 @@ export function piSignature(
   signerPrivKey: bigint,
   curve: Curve,
 ): bigint {
-  return modulo(nonce - message * signerPrivKey, curve.N);
+  return modulo(nonce - message * signerPrivKey, curve.P);
 }

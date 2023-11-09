@@ -24,7 +24,7 @@ const utils_1 = require("../utils");
 function piSignature(nonce, // = alpha in our ring signature scheme
 message, // = c in our ring signature scheme
 signerPrivKey, curve) {
-    return (0, utils_1.modulo)(nonce + message * signerPrivKey, curve.N);
+    return (0, utils_1.modulo)(nonce + message * signerPrivKey, curve.P);
 }
 exports.piSignature = piSignature;
 /**
