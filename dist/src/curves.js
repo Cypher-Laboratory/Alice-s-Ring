@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.derivePubKey = exports.Config = exports.Curve = exports.CurveName = void 0;
+exports.derivePubKey = exports.Curve = exports.CurveName = void 0;
 const noble_ED25519_1 = require("./utils/noble-libraries/noble-ED25519");
 const point_1 = require("./point");
 const utils_1 = require("./utils");
@@ -135,15 +135,6 @@ class Curve {
 }
 exports.Curve = Curve;
 /**
- * List of supported configs for the `derivePubKey` function
- * This configs are used to specify if a specific way to derive the public key is used. (such as for xrpl keys)
- */
-var Config;
-(function (Config) {
-    Config["DEFAULT"] = "DEFAULT";
-    Config["XRPL"] = "XRPL";
-})(Config || (exports.Config = Config = {}));
-/**
  * Derive the public key from the private key.
  *
  * @param privateKey - the private key
@@ -152,17 +143,7 @@ var Config;
  *
  * @returns the public key
  */
-function derivePubKey(privateKey, curve, config) {
-    if (!config)
-        config = Config.DEFAULT;
-    switch (config) {
-        case Config.DEFAULT: {
-            return curve.GtoPoint().mult(privateKey);
-        }
-        default: {
-            console.warn("Unknown derivation Config. Using PublicKey = G * privateKey");
-            return curve.GtoPoint().mult(privateKey);
-        }
-    }
+function derivePubKey(privateKey, curve) {
+    return curve.GtoPoint().mult(privateKey);
 }
 exports.derivePubKey = derivePubKey;

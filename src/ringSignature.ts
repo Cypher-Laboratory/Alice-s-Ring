@@ -416,7 +416,7 @@ export class RingSignature {
 
     let signerPubKey: Point;
     if (typeof signerKey === "bigint") {
-      signerPubKey = derivePubKey(signerKey, curve, config?.derivationConfig);
+      signerPubKey = derivePubKey(signerKey, curve);
     } else {
       signerPubKey = signerKey;
     }

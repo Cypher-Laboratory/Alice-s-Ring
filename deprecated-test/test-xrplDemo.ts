@@ -2,14 +2,11 @@ import { RingSignature } from "../src/ringSignature";
 import { randomBigint } from "../src/utils";
 import { Curve, CurveName, Point } from "../src";
 import { deriveKeypair } from "ripple-keypairs";
-import { Config } from "../src/curves";
 import * as ed from "../src/utils/noble-libraries/noble-ED25519";
 import { sha512 } from "@noble/hashes/sha512";
 ed.etc.sha512Sync = (...m) => sha512(ed.etc.concatBytes(...m));
 
 console.log("------------------ TESTING FOR XRPL CONFIG ------------------\n");
-
-const config = { derivationConfig: Config.DEFAULT };
 
 const ringSize = 2;
 
@@ -33,7 +30,6 @@ const signature_ed = RingSignature.sign(
   signerPrivKey_ed,
   "test-xrpl-demo",
   ed25519,
-  config,
 );
 
 console.log(signature_ed);

@@ -29,13 +29,11 @@ const utils_1 = require("../src/utils");
 const curves_1 = require("../src/curves");
 const point_1 = require("../src/point");
 const ripple_keypairs_1 = require("ripple-keypairs");
-const curves_2 = require("../src/curves");
 const ed = __importStar(require("../src/utils/noble-libraries/noble-ED25519"));
 const sha512_1 = require("@noble/hashes/sha512");
 const hashFunction_1 = require("../src/utils/hashFunction");
 ed.etc.sha512Sync = (...m) => (0, sha512_1.sha512)(ed.etc.concatBytes(...m));
 const config = {
-    derivationConfig: curves_2.Config.DEFAULT,
     evmCompatibility: true,
     safeMode: false,
     hash: hashFunction_1.hashFunction.SHA512,
@@ -214,7 +212,6 @@ function areConfigEquals(config1, config2) {
         return false;
     }
     return (config1.evmCompatibility === config2.evmCompatibility &&
-        config1.derivationConfig === config2.derivationConfig &&
         config1.safeMode === config2.safeMode);
 }
 /*--------------------- test partial ring signature <--> Base64 conversion ---------------------*/

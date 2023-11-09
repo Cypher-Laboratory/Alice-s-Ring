@@ -5,14 +5,12 @@ import { randomBigint } from "../src/utils";
 import { Curve, CurveName } from "../src/curves";
 import { Point } from "../src/point";
 import { deriveKeypair } from "ripple-keypairs";
-import { Config } from "../src/curves";
 import * as ed from "../src/utils/noble-libraries/noble-ED25519";
 import { sha512 } from "@noble/hashes/sha512";
 import { hashFunction } from "../src/utils/hashFunction";
 ed.etc.sha512Sync = (...m) => sha512(ed.etc.concatBytes(...m));
 
 const config: SignatureConfig = {
-  derivationConfig: Config.DEFAULT,
   evmCompatibility: true,
   safeMode: false,
   hash: hashFunction.SHA512,
@@ -295,7 +293,6 @@ function areConfigEquals(
   }
   return (
     config1.evmCompatibility === config2.evmCompatibility &&
-    config1.derivationConfig === config2.derivationConfig &&
     config1.safeMode === config2.safeMode
   );
 }

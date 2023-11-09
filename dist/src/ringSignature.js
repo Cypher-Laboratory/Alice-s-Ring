@@ -281,7 +281,7 @@ class RingSignature {
         const alpha = (0, utils_1.randomBigint)(curve.N);
         let signerPubKey;
         if (typeof signerKey === "bigint") {
-            signerPubKey = (0, curves_1.derivePubKey)(signerKey, curve, config?.derivationConfig);
+            signerPubKey = (0, curves_1.derivePubKey)(signerKey, curve);
         }
         else {
             signerPubKey = signerKey;
