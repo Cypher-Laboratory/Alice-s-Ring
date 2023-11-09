@@ -6,6 +6,7 @@ import {
 } from "./utils/noble-libraries/noble-ED25519";
 import { Point } from "./point";
 import { modulo } from "./utils";
+import { invalidParams } from "./errors";
 
 // SECP256K1 curve constants
 const SECP256K1 = {
@@ -52,7 +53,9 @@ export class Curve {
   ) {
     this.name = curve;
 
-    switch (this.name) {
+    switch (
+      this.name // TODO: CHECK IF G IS ON CURVE
+    ) {
       case CurveName.SECP256K1:
         this.G = SECP256K1.G;
         this.N = SECP256K1.N;
@@ -70,7 +73,7 @@ export class Curve {
           this.P = params.P;
           break;
         }
-        throw new Error("Invalid params");
+        throw invalidParams("Curve parameters are missing");
     }
   }
 

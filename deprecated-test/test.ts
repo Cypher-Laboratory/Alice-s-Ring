@@ -44,7 +44,7 @@ function randomRing(ringLength = 100, G: Point, N: bigint): Point[] {
 
   for (let i = 1; i < ringLength - 1; i++) {
     // once we add the signer, we get the wanted ring size
-    k = randomBigint(N * N);
+    k = randomBigint(N);
     ring.push(G.mult(k));
   }
   return ring;

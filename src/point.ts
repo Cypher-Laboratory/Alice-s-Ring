@@ -4,6 +4,12 @@ import { ExtendedPoint as ED25519Point } from "./utils/noble-libraries/noble-ED2
 import { modulo } from "./utils";
 import * as elliptic from "elliptic";
 import { checkPoint } from "./ringSignature";
+import {
+  computationError,
+  differentCurves,
+  notOnCurve,
+  unknownCurve,
+} from "./errors";
 
 const Ed25519 = new elliptic.eddsa("ed25519");
 const secp256k1 = new elliptic.ec("secp256k1");
@@ -34,7 +40,7 @@ export class Point {
     this.y = coordinates[1];
 
     if (safeMode && !curve.isOnCurve([this.x, this.y])) {
-      throw new Error("Point is not on the curve");
+      throw notOnCurve(`[${this.x}, ${this.y}]`);
     }
   }
 
@@ -64,7 +70,7 @@ export class Point {
         return new Point(this.curve, [result.x, result.y]);
       }
       default: {
-        throw new Error("Unknown curve");
+        throw unknownCurve(this.curve.name);
       }
     }
   }
@@ -77,7 +83,7 @@ export class Point {
    */
   add(point: Point): Point {
     if (this.curve.name !== point.curve.name)
-      throw new Error("Cannot add points: different curves");
+      throw differentCurves("Cannot add points");
 
     switch (this.curve.name) {
       case CurveName.SECP256K1: {
@@ -108,7 +114,7 @@ export class Point {
         return new Point(this.curve, [result.x, result.y]);
       }
       default: {
-        throw new Error("Unknown curve");
+        throw unknownCurve(this.curve.name);
       }
     }
   }
@@ -148,7 +154,7 @@ export class Point {
       }
 
       default: {
-        throw new Error("Unknown curve");
+        throw unknownCurve();
       }
     }
   }
@@ -179,7 +185,7 @@ export class Point {
         return new Point(this.curve, [result.x, result.y]);
       }
       default: {
-        throw new Error("Unknown curve");
+        throw unknownCurve("Cannot negate point");
       }
     }
   }
@@ -275,9 +281,7 @@ export class Point {
           BigInt("0x" + yValue),
         ]);
       } catch (error) {
-        throw new Error(
-          "Error while computing coordinates on ed25519: " + error,
-        );
+        throw computationError("error while computing coordinates on ed25519");
       }
     } else {
       // Compute on secp256k1
@@ -294,8 +298,8 @@ export class Point {
           BigInt("0x" + yValue),
         ]);
       } catch (error) {
-        throw new Error(
-          "Error while computing coordinates on secp256k1: " + error,
+        throw computationError(
+          "error while computing coordinates on secp256k1",
         );
       }
     }

@@ -11,6 +11,7 @@ import { derivePubKey } from "./curves";
 import { Curve, PartialSignature, Point } from ".";
 import { SignatureConfig } from "./interfaces";
 import { hashFunction } from "./utils/hashFunction";
+import * as err from "./errors";
 
 /**
  * Ring signature class.
@@ -45,10 +46,21 @@ export class RingSignature {
     curve: Curve,
     config?: SignatureConfig,
   ) {
-    if (ring.length != responses.length)
-      throw new Error("Ring and responses length mismatch");
+    if (!message || message === "") throw err.noEmptyMsg;
 
-    if (config?.safeMode) checkRing(ring, curve);
+    if (ring.length === 0) throw err.noEmptyRing;
+
+    if (ring.length != responses.length)
+      throw err.lengthMismatch("ring", "responses");
+
+    // check ring, c and responses validity if config.safeMode is true or if config.safeMode is not set
+    if ((config && config.safeMode === true) || !(config && config.safeMode)) {
+      checkRing(ring, curve);
+      if (c >= curve.N || c === 0n) throw err.invalidParams("c");
+      for (const response of responses) {
+        if (response >= curve.N || response === 0n) throw err.invalidResponses;
+      }
+    }
 
     if (config?.hash) this.hash = config.hash;
     else this.hash = hashFunction.KECCAK256;
@@ -87,7 +99,7 @@ export class RingSignature {
         sig.config,
       );
     } catch (e) {
-      throw new Error("Invalid json: " + e);
+      throw err.invalidJson(e);
     }
   }
 
@@ -222,10 +234,7 @@ export class RingSignature {
     curve: Curve,
     config?: SignatureConfig,
   ) {
-    if (ring.length === 0)
-      throw new Error(
-        "To proceed partial signing, ring length must be greater than 0",
-      );
+    if (ring.length === 0) throw err.noEmptyRing;
 
     const rawSignature = RingSignature.signature(
       curve,
@@ -286,13 +295,15 @@ export class RingSignature {
     // then, for each ci (1 < i < n), compute ci' = Hash(Ring, message, [riG + ciKi])
     // (G = generator, K = ring public key)
     // finally, if we substitute lastC for lastC' and c0' == c0, the signature is valid
-    if (this.ring.length === 0)
-      throw new Error("Ring length must be greater than 0");
+    if (this.ring.length === 0) throw err.noEmptyRing;
 
+    // TODO: is this useful since we check this in constructor ?
     if (this.ring.length !== this.responses.length) {
-      throw new Error("ring and responses length mismatch");
+      throw err.lengthMismatch("ring", "responses");
     }
-    const G: Point = this.curve.GtoPoint(); // generator point
+
+    // set curve generator point
+    const G: Point = this.curve.GtoPoint();
 
     if (this.ring.length > 1) {
       // hash the message
@@ -417,7 +428,7 @@ export class RingSignature {
     // check for duplicates using a set
     const ringSet = new Set(ring);
     if (ringSet.size !== ring.length) {
-      throw new Error("Ring contains duplicates");
+      throw err.noDuplicates("ring");
     }
 
     // generate random responses for every public key in the ring
@@ -575,8 +586,8 @@ export class RingSignature {
       );
     }
 
-    throw new Error(
-      "computeC: Missing parameters. Either 'alpha' or all the others params must be set",
+    throw err.missingParams(
+      "Either 'alpha' or all the others params must be set",
     );
   }
 
@@ -630,7 +641,7 @@ export class RingSignature {
         config: json.config as SignatureConfig,
       };
     } catch (e) {
-      throw new Error("Invalid base64 string: " + e);
+      throw err.invalidBase64();
     }
   }
 }
@@ -646,16 +657,13 @@ export class RingSignature {
  * @throws Error if at least one of the points is invalid
  */
 export function checkRing(ring: Point[], ref?: Curve): void {
-  const errorMsg = "Invalid ring: ";
-
   if (!ref) ref = ring[0].curve;
 
   // check if the ring is empty
-  if (ring.length === 0) throw new Error(errorMsg + "Ring is empty");
+  if (ring.length === 0) throw err.noEmptyRing;
 
   // check for duplicates using a set
-  if (new Set(ring).size !== ring.length)
-    throw new Error(errorMsg + "Ring contains duplicates");
+  if (new Set(ring).size !== ring.length) throw err.noDuplicates("ring");
 
   // check if all the points are valid
   try {
@@ -663,7 +671,7 @@ export function checkRing(ring: Point[], ref?: Curve): void {
       checkPoint(point, ref);
     }
   } catch (e) {
-    throw new Error(errorMsg + e);
+    throw err.invalidPoint("At least one point is not valid");
   }
 }
 
@@ -677,11 +685,9 @@ export function checkRing(ring: Point[], ref?: Curve): void {
  * @throws Error if at least 1 coordinate is not valid (= 0 or >= curve order)
  */
 export function checkPoint(point: Point, curve?: Curve): void {
-  const errorMsg = "Invalid point: ";
-
   // check if the point is on the reference curve
   if (curve && !(!curve.isOnCurve(point) && curve.equals(point.curve)))
-    throw new Error(errorMsg + "Point is not on curve");
+    throw err.notOnCurve();
 
   // check if coordinates are valid
   if (
@@ -690,7 +696,7 @@ export function checkPoint(point: Point, curve?: Curve): void {
     point.x >= point.curve.N ||
     point.y >= point.curve.N
   ) {
-    throw new Error(errorMsg + "Coordinates are not valid");
+    throw err.invalidCoordinates();
   }
 }
 export { SignatureConfig };

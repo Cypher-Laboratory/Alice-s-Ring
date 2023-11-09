@@ -6,6 +6,11 @@ const config: Config.InitialOptions = {
     "<rootDir>/dist/",
     "<rootDir>/deprecated-test/",
   ],
+  preset: "ts-jest",
+  testEnvironment: "node",
+  transform: {
+    "^.+\\.ts?$": "ts-jest",
+  },
 };
 
 export default config;
