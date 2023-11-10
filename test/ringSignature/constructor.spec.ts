@@ -1,5 +1,4 @@
 import { Curve, CurveName, Point, RingSignature } from "../../src";
-import * as ed from "../../src/utils/noble-libraries/noble-ED25519";
 import * as points from "../points";
 import * as message from "../message";
 import {
@@ -11,7 +10,6 @@ import {
   notOnCurve,
 } from "../../src/errors";
 import { hashFunction } from "../../src/utils/hashFunction";
-import { ED25519 } from "../curves";
 
 const ed25519 = new Curve(CurveName.ED25519);
 const secp256k1 = new Curve(CurveName.SECP256K1);
@@ -32,11 +30,7 @@ describe("Test Constructor", () => {
         () =>
           new RingSignature(
             "",
-            points.privateKey.map((key) =>
-              ed25519
-                .GtoPoint()
-                .mult(ed.utils.getExtendedPublicKey(key.toString(16)).scalar),
-            ),
+            points.publicKeys_ed25519,
             points.randomC,
             points.randomResponses,
             ed25519,
@@ -48,7 +42,7 @@ describe("Test Constructor", () => {
         () =>
           new RingSignature(
             "",
-            points.privateKey.map((key) => secp256k1.GtoPoint().mult(key)),
+            points.publicKeys_secp256k1,
             points.randomC,
             points.randomResponses,
             secp256k1,
@@ -83,9 +77,7 @@ describe("Test Constructor", () => {
     });
 
     it("Should throw if at least 1 public key is not on the curve - ed25519", () => {
-      const ring = points.privateKey
-        .map((key) => ed25519.GtoPoint().mult(key))
-        .slice(1);
+      const ring = points.publicKeys_ed25519.slice(1);
 
       expect(
         () =>
@@ -99,9 +91,7 @@ describe("Test Constructor", () => {
       ).toThrow(notOnCurve(`[2, 3]`));
     });
     it("Should throw if at least 1 public key is not on the curve - secp256k1", () => {
-      const ring = points.privateKey
-        .map((key) => secp256k1.GtoPoint().mult(key))
-        .slice(1);
+      const ring = points.publicKeys_secp256k1.slice(1);
 
       expect(
         () =>
@@ -116,13 +106,7 @@ describe("Test Constructor", () => {
     });
 
     it("Should throw if one point is (0, 0) - ed25519", () => {
-      const ring = points.privateKey
-        .map((key) =>
-          ED25519.GtoPoint().mult(
-            ed.utils.getExtendedPublicKey(key.toString(16)).scalar,
-          ),
-        )
-        .slice(1);
+      const ring = points.publicKeys_ed25519.slice(1);
 
       expect(
         () =>
@@ -136,9 +120,7 @@ describe("Test Constructor", () => {
       ).toThrow(notOnCurve(`[0, 0]`));
     });
     it("Should throw if one point is (0, 0) - secp256k1", () => {
-      const ring = points.privateKey
-        .map((key) => secp256k1.GtoPoint().mult(key))
-        .slice(1);
+      const ring = points.publicKeys_secp256k1.slice(1);
 
       expect(
         () =>
@@ -158,11 +140,7 @@ describe("Test Constructor", () => {
         () =>
           new RingSignature(
             message.message,
-            points.privateKey.map((key) =>
-              ed25519
-                .GtoPoint()
-                .mult(ed.utils.getExtendedPublicKey(key.toString(16)).scalar),
-            ),
+            points.publicKeys_ed25519,
             points.randomC,
             points.randomResponses.slice(1),
             ed25519,
@@ -174,7 +152,7 @@ describe("Test Constructor", () => {
         () =>
           new RingSignature(
             message.message,
-            points.privateKey.map((key) => secp256k1.GtoPoint().mult(key)),
+            points.publicKeys_secp256k1,
             points.randomC,
             points.randomResponses.slice(1),
             secp256k1,
@@ -188,11 +166,7 @@ describe("Test Constructor", () => {
         () =>
           new RingSignature(
             message.message,
-            points.privateKey.map((key) =>
-              ed25519
-                .GtoPoint()
-                .mult(ed.utils.getExtendedPublicKey(key.toString(16)).scalar),
-            ),
+            points.publicKeys_ed25519,
             points.randomC,
             points.randomResponses, // [0n].concat(points.randomResponses.slice(1)),
             ed25519,
@@ -204,7 +178,7 @@ describe("Test Constructor", () => {
         () =>
           new RingSignature(
             message.message,
-            points.privateKey.map((key) => secp256k1.GtoPoint().mult(key)),
+            points.publicKeys_secp256k1,
             points.randomC,
             [0n].concat(points.randomResponses.slice(1)),
             secp256k1,
@@ -218,11 +192,7 @@ describe("Test Constructor", () => {
         () =>
           new RingSignature(
             message.message,
-            points.privateKey.map((key) =>
-              ed25519
-                .GtoPoint()
-                .mult(ed.utils.getExtendedPublicKey(key.toString(16)).scalar),
-            ),
+            points.publicKeys_ed25519,
             0n,
             points.randomResponses,
             ed25519,
@@ -235,7 +205,7 @@ describe("Test Constructor", () => {
         () =>
           new RingSignature(
             message.message,
-            points.privateKey.map((key) => secp256k1.GtoPoint().mult(key)),
+            points.publicKeys_secp256k1,
             0n,
             points.randomResponses,
             secp256k1,
@@ -249,11 +219,7 @@ describe("Test Constructor", () => {
         () =>
           new RingSignature(
             message.message,
-            points.privateKey.map((key) =>
-              ed25519
-                .GtoPoint()
-                .mult(ed.utils.getExtendedPublicKey(key.toString(16)).scalar),
-            ),
+            points.publicKeys_ed25519,
             points.randomC,
             points.randomResponses,
             new Curve(CurveName.CUSTOM),
@@ -267,11 +233,7 @@ describe("Test Constructor", () => {
         () =>
           new RingSignature(
             message.message,
-            points.privateKey.map((key) =>
-              ed25519
-                .GtoPoint()
-                .mult(ed.utils.getExtendedPublicKey(key.toString(16)).scalar),
-            ),
+            points.publicKeys_ed25519,
             points.randomC,
             points.randomResponses,
             ed25519,
@@ -284,11 +246,7 @@ describe("Test Constructor", () => {
         () =>
           new RingSignature(
             message.message,
-            points.privateKey.map((key) =>
-              ed25519
-                .GtoPoint()
-                .mult(ed.utils.getExtendedPublicKey(key.toString(16)).scalar),
-            ),
+            points.publicKeys_ed25519,
             points.randomC,
             points.randomResponses,
             ed25519,
@@ -301,11 +259,7 @@ describe("Test Constructor", () => {
         () =>
           new RingSignature(
             message.message,
-            points.privateKey.map((key) =>
-              ed25519
-                .GtoPoint()
-                .mult(ed.utils.getExtendedPublicKey(key.toString(16)).scalar),
-            ),
+            points.publicKeys_ed25519,
             points.randomC,
             points.randomResponses,
             ed25519,
@@ -320,11 +274,7 @@ describe("Test Constructor", () => {
         () =>
           new RingSignature(
             message.message,
-            points.privateKey.map((key) =>
-              ed25519
-                .GtoPoint()
-                .mult(ed.utils.getExtendedPublicKey(key.toString(16)).scalar),
-            ),
+            points.publicKeys_ed25519,
             points.randomC,
             points.randomResponses,
             ed25519,
@@ -337,11 +287,7 @@ describe("Test Constructor", () => {
         () =>
           new RingSignature(
             message.message,
-            points.privateKey.map((key) =>
-              ed25519
-                .GtoPoint()
-                .mult(ed.utils.getExtendedPublicKey(key.toString(16)).scalar),
-            ),
+            points.publicKeys_ed25519,
             points.randomC,
             points.randomResponses,
             ed25519,
@@ -354,11 +300,7 @@ describe("Test Constructor", () => {
         () =>
           new RingSignature(
             message.message,
-            points.privateKey.map((key) =>
-              ed25519
-                .GtoPoint()
-                .mult(ed.utils.getExtendedPublicKey(key.toString(16)).scalar),
-            ),
+            points.publicKeys_ed25519,
             points.randomC,
             points.randomResponses,
             ed25519,
@@ -373,11 +315,7 @@ describe("Test Constructor", () => {
         () =>
           new RingSignature(
             message.message,
-            points.privateKey.map((key) =>
-              ed25519
-                .GtoPoint()
-                .mult(ed.utils.getExtendedPublicKey(key.toString(16)).scalar),
-            ),
+            points.publicKeys_ed25519,
             points.randomC,
             points.randomResponses,
             ed25519,
@@ -390,11 +328,7 @@ describe("Test Constructor", () => {
         () =>
           new RingSignature(
             message.message,
-            points.privateKey.map((key) =>
-              ed25519
-                .GtoPoint()
-                .mult(ed.utils.getExtendedPublicKey(key.toString(16)).scalar),
-            ),
+            points.publicKeys_ed25519,
             points.randomC,
             points.randomResponses,
             ed25519,
@@ -407,11 +341,7 @@ describe("Test Constructor", () => {
         () =>
           new RingSignature(
             message.message,
-            points.privateKey.map((key) =>
-              ed25519
-                .GtoPoint()
-                .mult(ed.utils.getExtendedPublicKey(key.toString(16)).scalar),
-            ),
+            points.publicKeys_ed25519,
             points.randomC,
             points.randomResponses,
             ed25519,
@@ -426,11 +356,7 @@ describe("Test Constructor", () => {
         () =>
           new RingSignature(
             message.message,
-            points.privateKey.map((key) =>
-              ed25519
-                .GtoPoint()
-                .mult(ed.utils.getExtendedPublicKey(key.toString(16)).scalar),
-            ),
+            points.publicKeys_ed25519,
             points.randomC,
             points.randomResponses,
             ed25519,
@@ -442,7 +368,7 @@ describe("Test Constructor", () => {
         () =>
           new RingSignature(
             message.message,
-            points.privateKey.map((key) => secp256k1.GtoPoint().mult(key)),
+            points.publicKeys_secp256k1,
             points.randomC,
             points.randomResponses,
             secp256k1,

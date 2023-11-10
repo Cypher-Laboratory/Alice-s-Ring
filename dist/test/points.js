@@ -23,7 +23,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.randomResponses = exports.randomC = exports.idPointY_ed25519 = exports.idPointX_ed25519 = exports.idPoint_ed25519 = exports.idPointY_secp256k1 = exports.idPointX_secp256k1 = exports.idPoint_secp256k1 = exports.publicKey_ed25519 = exports.publicKey_secp156k1 = exports.zeroPivateKey = exports.privateKey = void 0;
+exports.randomResponses = exports.randomC = exports.idPointY_ed25519 = exports.idPointX_ed25519 = exports.idPoint_ed25519 = exports.idPointY_secp256k1 = exports.idPointX_secp256k1 = exports.idPoint_secp256k1 = exports.publicKeys_ed25519 = exports.publicKeys_secp256k1 = exports.zeroPivateKey = exports.privateKey = void 0;
 const src_1 = require("../src");
 const utils_1 = require("../src/utils");
 const curves_1 = require("./curves");
@@ -39,7 +39,7 @@ exports.privateKey = [
     BigInt("0x" +
         (0, utils_1.hash)("10579313822749735210413161819590856590862794332884737964405659760314")),
     BigInt("0x" +
-        (0, utils_1.hash)("6811763693580201300943912337684944208977417910319730619449844563940")),
+        (0, utils_1.hash)("68161763693580201300943912337684944208977417910319730619449844563940")),
     BigInt("0x" +
         (0, utils_1.hash)("8634119974408146311716701391246969535999260973264641793056688235068")),
     BigInt("0x" +
@@ -54,8 +54,12 @@ exports.privateKey = [
         (0, utils_1.hash)("3466046328795217128129578311582509952671098725444443823446053020103")),
 ];
 exports.zeroPivateKey = 0n;
-exports.publicKey_secp156k1 = exports.privateKey.map((privKey) => curves_1.SECP256K1.GtoPoint().mult(privKey));
-exports.publicKey_ed25519 = exports.privateKey.map((key) => curves_1.ED25519.GtoPoint().mult(ed.utils.getExtendedPublicKey(key.toString(16)).scalar));
+exports.publicKeys_secp256k1 = exports.privateKey.map((privKey) => curves_1.SECP256K1.GtoPoint().mult(privKey));
+exports.publicKeys_ed25519 = exports.privateKey.map((key) => {
+    console.log(key.toString(16));
+    return curves_1.ED25519.GtoPoint().mult(ed.utils.getExtendedPublicKey(key.toString(16)).scalar);
+});
+// invalid points
 exports.idPoint_secp256k1 = new src_1.Point(curves_1.SECP256K1, [0n, 0n], false);
 exports.idPointX_secp256k1 = new src_1.Point(curves_1.SECP256K1, [0n, 1n], false);
 exports.idPointY_secp256k1 = new src_1.Point(curves_1.SECP256K1, [1n, 0n], false);

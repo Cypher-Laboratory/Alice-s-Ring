@@ -28,7 +28,7 @@ export const privateKey = [
   BigInt(
     "0x" +
       hash(
-        "6811763693580201300943912337684944208977417910319730619449844563940",
+        "68161763693580201300943912337684944208977417910319730619449844563940",
       ),
   ),
   BigInt(
@@ -71,16 +71,17 @@ export const privateKey = [
 
 export const zeroPivateKey = 0n;
 
-export const publicKey_secp156k1 = privateKey.map((privKey) =>
+export const publicKeys_secp256k1 = privateKey.map((privKey) =>
   SECP256K1.GtoPoint().mult(privKey),
 );
-
-export const publicKey_ed25519 = privateKey.map((key) =>
-  ED25519.GtoPoint().mult(
+export const publicKeys_ed25519 = privateKey.map((key) => {
+  console.log(key.toString(16));
+  return ED25519.GtoPoint().mult(
     ed.utils.getExtendedPublicKey(key.toString(16)).scalar,
-  ),
-);
+  );
+});
 
+// invalid points
 export const idPoint_secp256k1 = new Point(SECP256K1, [0n, 0n], false);
 export const idPointX_secp256k1 = new Point(SECP256K1, [0n, 1n], false);
 export const idPointY_secp256k1 = new Point(SECP256K1, [1n, 0n], false);

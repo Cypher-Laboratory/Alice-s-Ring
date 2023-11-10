@@ -1,8 +1,8 @@
 import { Point } from "../src";
 export declare const privateKey: bigint[];
 export declare const zeroPivateKey = 0n;
-export declare const publicKey_secp156k1: Point[];
-export declare const publicKey_ed25519: Point[];
+export declare const publicKeys_secp256k1: Point[];
+export declare const publicKeys_ed25519: Point[];
 export declare const idPoint_secp256k1: Point;
 export declare const idPointX_secp256k1: Point;
 export declare const idPointY_secp256k1: Point;
