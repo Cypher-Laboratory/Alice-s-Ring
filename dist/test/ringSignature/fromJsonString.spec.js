@@ -51,7 +51,7 @@ describe("Test fromJsonString()", () => {
     it("Should throw an error if the input is not a valid json", () => {
         expect(() => {
             src_1.RingSignature.fromJsonString(JSON.stringify(jsonRS.valid).slice(0, 1));
-        }).toThrow("Expected property name or '}' in JSON at position 1");
+        }).toThrow(); // no error message because it depends on the vm used (different error in local and on github actions)
     });
     // TODO: here we test an invalid coordinates
     // test with invalid param types
