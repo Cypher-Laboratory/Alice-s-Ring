@@ -91,6 +91,12 @@ class RingSignature {
     static fromJsonString(json) {
         if (typeof json === "object")
             json = JSON.stringify(json);
+        try {
+            JSON.parse(json);
+        }
+        catch (e) {
+            throw err.invalidJson(e);
+        }
         // check if message is stored as array or object. If so, throw an error
         if (JSON.parse(json).message instanceof Array ||
             typeof JSON.parse(json).message === "object")
