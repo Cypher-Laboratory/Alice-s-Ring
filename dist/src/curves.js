@@ -39,8 +39,25 @@ class Curve {
      */
     constructor(curve, params) {
         this.name = curve;
-        switch (this.name // TODO: CHECK IF G IS ON CURVE
-        ) {
+        if (curve === CurveName.CUSTOM && !params) {
+            throw (0, errors_1.invalidParams)("Curve parameters are missing");
+        }
+        if (params) {
+            this.G = params.G;
+            this.N = params.N;
+            this.P = params.P;
+            // check if G is on curve
+            try {
+                if (!this.isOnCurve(this.G)) {
+                    throw (0, errors_1.invalidParams)("Generator point is not on curve");
+                }
+            }
+            catch (e) {
+                throw (0, errors_1.invalidParams)("Generator point is not on curve");
+            }
+            return;
+        }
+        switch (this.name) {
             case CurveName.SECP256K1:
                 this.G = SECP256K1.G;
                 this.N = SECP256K1.N;
@@ -51,14 +68,9 @@ class Curve {
                 this.N = ED25519.N;
                 this.P = ED25519.P;
                 break;
-            default:
-                if (params) {
-                    this.G = params.G;
-                    this.N = params.N;
-                    this.P = params.P;
-                    break;
-                }
-                throw (0, errors_1.invalidParams)("Curve parameters are missing");
+            default: {
+                throw (0, errors_1.unknownCurve)(curve);
+            }
         }
     }
     /**
@@ -111,6 +123,8 @@ class Curve {
             x = point[0];
             y = point[1];
         }
+        if (x === 0n || y === 0n)
+            throw (0, errors_1.invalidParams)("Point is not on curve: " + point);
         switch (this.name) {
             case CurveName.SECP256K1: {
                 return (0, utils_1.modulo)(x ** 3n + 7n - y ** 2n, this.P) === 0n;

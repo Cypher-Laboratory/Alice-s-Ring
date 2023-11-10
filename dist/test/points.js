@@ -56,7 +56,6 @@ exports.privateKey = [
 exports.zeroPivateKey = 0n;
 exports.publicKeys_secp256k1 = exports.privateKey.map((privKey) => curves_1.SECP256K1.GtoPoint().mult(privKey));
 exports.publicKeys_ed25519 = exports.privateKey.map((key) => {
-    console.log(key.toString(16));
     return curves_1.ED25519.GtoPoint().mult(ed.utils.getExtendedPublicKey(key.toString(16)).scalar);
 });
 // invalid points

@@ -6,7 +6,7 @@ import {
 } from "./utils/noble-libraries/noble-ED25519";
 import { Point } from "./point";
 import { modulo } from "./utils";
-import { invalidParams } from "./errors";
+import { invalidParams, unknownCurve } from "./errors";
 
 // SECP256K1 curve constants
 const SECP256K1 = {
@@ -53,9 +53,26 @@ export class Curve {
   ) {
     this.name = curve;
 
-    switch (
-      this.name // TODO: CHECK IF G IS ON CURVE
-    ) {
+    if (curve === CurveName.CUSTOM && !params) {
+      throw invalidParams("Curve parameters are missing");
+    }
+
+    if (params) {
+      this.G = params.G;
+      this.N = params.N;
+      this.P = params.P;
+      // check if G is on curve
+      try {
+        if (!this.isOnCurve(this.G)) {
+          throw invalidParams("Generator point is not on curve");
+        }
+      } catch (e) {
+        throw invalidParams("Generator point is not on curve");
+      }
+      return;
+    }
+
+    switch (this.name) {
       case CurveName.SECP256K1:
         this.G = SECP256K1.G;
         this.N = SECP256K1.N;
@@ -66,14 +83,9 @@ export class Curve {
         this.N = ED25519.N;
         this.P = ED25519.P;
         break;
-      default:
-        if (params) {
-          this.G = params.G;
-          this.N = params.N;
-          this.P = params.P;
-          break;
-        }
-        throw invalidParams("Curve parameters are missing");
+      default: {
+        throw unknownCurve(curve);
+      }
     }
   }
 
@@ -135,6 +147,9 @@ export class Curve {
       x = point[0];
       y = point[1];
     }
+
+    if (x === 0n || y === 0n)
+      throw invalidParams("Point is not on curve: " + point);
 
     switch (this.name) {
       case CurveName.SECP256K1: {

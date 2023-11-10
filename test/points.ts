@@ -75,7 +75,6 @@ export const publicKeys_secp256k1 = privateKey.map((privKey) =>
   SECP256K1.GtoPoint().mult(privKey),
 );
 export const publicKeys_ed25519 = privateKey.map((key) => {
-  console.log(key.toString(16));
   return ED25519.GtoPoint().mult(
     ed.utils.getExtendedPublicKey(key.toString(16)).scalar,
   );

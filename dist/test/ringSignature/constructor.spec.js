@@ -64,11 +64,11 @@ describe("Test Constructor", () => {
         });
         it("Should throw if one point is (0, 0) - ed25519", () => {
             const ring = points.publicKeys_ed25519.slice(1);
-            expect(() => new src_1.RingSignature(message.message, [new src_1.Point(ed25519, [0n, 0n])].concat(ring), points.randomC, points.randomResponses, ed25519)).toThrow((0, errors_1.notOnCurve)(`[0, 0]`));
+            expect(() => new src_1.RingSignature(message.message, [new src_1.Point(ed25519, [0n, 0n])].concat(ring), points.randomC, points.randomResponses, ed25519)).toThrow((0, errors_1.invalidParams)("Point is not on curve: 0,0"));
         });
         it("Should throw if one point is (0, 0) - secp256k1", () => {
             const ring = points.publicKeys_secp256k1.slice(1);
-            expect(() => new src_1.RingSignature(message.message, [new src_1.Point(secp256k1, [0n, 0n])].concat(ring), points.randomC, points.randomResponses, secp256k1)).toThrow((0, errors_1.notOnCurve)(`[0, 0]`));
+            expect(() => new src_1.RingSignature(message.message, [new src_1.Point(secp256k1, [0n, 0n])].concat(ring), points.randomC, points.randomResponses, secp256k1)).toThrow((0, errors_1.invalidParams)("Point is not on curve: 0,0"));
         });
         /* -------------TEST INVALID RING<->RESPONSES CORRELATION------------- */
         it("Should throw if ring and responses length do not match - ed25519", () => {

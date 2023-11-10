@@ -29,11 +29,14 @@ export declare class RingSignature {
     /**
      * Create a RingSignature from a json object
      *
+     * @remarks
+     * message can be stored in the json as string or number. Not array or object
+     *
      * @param json - The json to convert
      *
      * @returns A RingSignature
      */
-    static fromJsonString(json: string): RingSignature;
+    static fromJsonString(json: string | object): RingSignature;
     /**
      * Create a Json string from a RingSignature
      *

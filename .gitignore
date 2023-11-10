@@ -1,4 +1,5 @@
 .vscode
+tmp.ts
 # Logs
 logs
 *.log

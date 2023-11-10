@@ -54,6 +54,9 @@ class RingSignature {
             throw err.noEmptyRing;
         if (ring.length != responses.length)
             throw err.lengthMismatch("ring", "responses");
+        // check if config is an object
+        if (config && typeof config !== "object")
+            throw err.invalidParams("Config must be an object");
         // check ring, c and responses validity if config.safeMode is true or if config.safeMode is not set
         if ((config && config.safeMode === true) || !(config && config.safeMode)) {
             checkRing(ring, curve);
@@ -78,11 +81,42 @@ class RingSignature {
     /**
      * Create a RingSignature from a json object
      *
+     * @remarks
+     * message can be stored in the json as string or number. Not array or object
+     *
      * @param json - The json to convert
      *
      * @returns A RingSignature
      */
     static fromJsonString(json) {
+        if (typeof json === "object")
+            json = JSON.stringify(json);
+        // check if message is stored as array or object. If so, throw an error
+        if (JSON.parse(json).message instanceof Array ||
+            typeof JSON.parse(json).message === "object")
+            throw err.invalidJson("Message must be a string or a number");
+        // check if c is stored as array or object. If so, throw an error
+        if (JSON.parse(json).c instanceof Array ||
+            typeof JSON.parse(json).c === "object")
+            throw err.invalidJson("c must be a string or a number");
+        // check if config is an object
+        if (JSON.parse(json).config && typeof JSON.parse(json).config !== "object")
+            throw err.invalidJson("Config must be an object");
+        // check if config.safeMode is a boolean. If not, throw an error
+        if (JSON.parse(json).config &&
+            JSON.parse(json).config.safeMode &&
+            typeof JSON.parse(json).config.safeMode !== "boolean")
+            throw err.invalidJson("Config.safeMode must be a boolean");
+        // check if config.hash is an element from hashFunction. If not, throw an error
+        if (JSON.parse(json).config &&
+            JSON.parse(json).config.hash &&
+            !Object.values(hashFunction_1.hashFunction).includes(JSON.parse(json).config.hash))
+            throw err.invalidJson("Config.hash must be an element from hashFunction");
+        // check if config.evmCompatibility is a boolean. If not, throw an error
+        if (JSON.parse(json).config &&
+            JSON.parse(json).config.evmCompatibility &&
+            typeof JSON.parse(json).config.evmCompatibility !== "boolean")
+            throw err.invalidJson("Config.evmCompatibility must be a boolean");
         try {
             const sig = JSON.parse(json);
             return new RingSignature(sig.message, sig.ring.map((point) => _1.Point.fromString(point)), BigInt(sig.c), sig.responses.map((response) => BigInt(response)), _1.Curve.fromString(sig.curve), sig.config);
