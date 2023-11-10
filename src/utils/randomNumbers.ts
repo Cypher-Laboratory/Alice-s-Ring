@@ -1,5 +1,5 @@
 import { randomBytes } from "node:crypto";
-import { tooSmall } from "../errors";
+import { tooBig, tooSmall } from "../errors";
 
 export function randomBigint(max: bigint): bigint {
   if (max <= 0n) {
@@ -26,10 +26,10 @@ export function getRandomSecuredNumber(min: number, max: number): number {
     throw new Error("Min value should be less than or equal to max value.");
   }
   if (min < 0) {
-    throw new Error("Min value should be greater than or equal to 0.");
+    throw tooSmall("Max", 0);
   }
   if (max < 0) {
-    throw new Error("Max value should be greater than or equal to 0.");
+    throw tooBig("Max", 0);
   }
   if (min === max) {
     return min;
