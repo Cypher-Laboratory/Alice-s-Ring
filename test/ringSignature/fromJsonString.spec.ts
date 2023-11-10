@@ -33,7 +33,6 @@ describe("Test fromJsonString()", () => {
     }).toThrow(); // no error message because it depends on the node version used
   });
 
-  // TODO: here we test an invalid coordinates
   // test with invalid param types
   it("Should throw if a point is not valid", () => {
     expect(() => {
