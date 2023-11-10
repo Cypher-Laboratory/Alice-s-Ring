@@ -66,14 +66,14 @@ class Point {
                 const result = noble_SECP256k1_1.ProjectivePoint.fromAffine({
                     x: this.x,
                     y: this.y,
-                }).mul(modulo(scalar, this.curve.N));
+                }).mul(modulo(scalar, this.curve.P));
                 return new Point(this.curve, [result.x, result.y]);
             }
             case CurveName.ED25519: {
                 const result = noble_ED25519_1.ExtendedPoint.fromAffine({
                     x: this.x,
                     y: this.y,
-                }).mul(modulo(scalar, this.curve.N));
+                }).mul(modulo(scalar, this.curve.P));
                 return new Point(this.curve, [result.x, result.y]);
             }
             default: {
@@ -342,6 +342,6 @@ const ED25519 = {
 function piSignature(nonce, // = alpha in our ring signature scheme
 message, // = c in our ring signature scheme
 signerPrivKey, curve) {
-    return modulo(nonce - message * signerPrivKey, curve.N);
+    return modulo(nonce - message * signerPrivKey, curve.P);
 }
 exports.piSignature = piSignature;

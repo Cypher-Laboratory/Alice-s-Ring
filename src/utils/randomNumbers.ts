@@ -1,8 +1,9 @@
 import { randomBytes } from "node:crypto";
+import { tooSmall } from "../errors";
 
 export function randomBigint(max: bigint): bigint {
   if (max <= 0n) {
-    throw new Error("Max value should be greater than 0.");
+    throw tooSmall("Max", 0);
   }
 
   const byteSize = (max.toString(16).length + 1) >> 1;

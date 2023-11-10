@@ -50,14 +50,6 @@ export declare class Curve {
     equals(curve: Curve): boolean;
 }
 /**
- * List of supported configs for the `derivePubKey` function
- * This configs are used to specify if a specific way to derive the public key is used. (such as for xrpl keys)
- */
-export declare enum Config {
-    DEFAULT = "DEFAULT",
-    XRPL = "XRPL"
-}
-/**
  * Derive the public key from the private key.
  *
  * @param privateKey - the private key
@@ -66,4 +58,4 @@ export declare enum Config {
  *
  * @returns the public key
  */
-export declare function derivePubKey(privateKey: bigint, curve: Curve, config?: Config): Point;
+export declare function derivePubKey(privateKey: bigint, curve: Curve): Point;

@@ -27,12 +27,10 @@ const ringSignature_1 = require("../src/ringSignature");
 const utils_1 = require("../src/utils");
 const src_1 = require("../src");
 const ripple_keypairs_1 = require("ripple-keypairs");
-const curves_1 = require("../src/curves");
 const ed = __importStar(require("../src/utils/noble-libraries/noble-ED25519"));
 const sha512_1 = require("@noble/hashes/sha512");
 ed.etc.sha512Sync = (...m) => (0, sha512_1.sha512)(ed.etc.concatBytes(...m));
 console.log("------------------ TESTING FOR XRPL CONFIG ------------------\n");
-const config = { derivationConfig: curves_1.Config.DEFAULT };
 const ringSize = 2;
 const ed25519 = new src_1.Curve(src_1.CurveName.ED25519); // could also be SECP256K1
 const seed = "sEdSWniReyeCh7JLWUHEfNTz53pxsjX";
@@ -42,7 +40,7 @@ const ring_ed = randomRing(ringSize, ed25519.GtoPoint(), ed25519.N);
 console.log("ring size: ", ring_ed.length + 1 + "\n"); // + 1 for the signer
 /* TEST SIGNATURE GENERATION AND VERIFICATION - ED25519 */
 console.log("------ SIGNATURE USING ED25519 ------\n");
-const signature_ed = ringSignature_1.RingSignature.sign(ring_ed, signerPrivKey_ed, "test-xrpl-demo", ed25519, config);
+const signature_ed = ringSignature_1.RingSignature.sign(ring_ed, signerPrivKey_ed, "test-xrpl-demo", ed25519);
 console.log(signature_ed);
 const verifiedSig_ed = signature_ed.verify();
 console.log("\nIs sig valid ? ", verifiedSig_ed);

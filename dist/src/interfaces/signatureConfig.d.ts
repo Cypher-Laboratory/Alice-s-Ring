@@ -1,4 +1,3 @@
-import { Config } from "../curves";
 import { hashFunction } from "../utils/hashFunction";
 /**
  * Signature config interface
@@ -9,7 +8,6 @@ import { hashFunction } from "../utils/hashFunction";
  * @see hash - The hash function to use (input: string, output: Uint8Array)
  */
 export interface SignatureConfig {
-    derivationConfig?: Config;
     evmCompatibility?: boolean;
     safeMode?: boolean;
     hash?: hashFunction;

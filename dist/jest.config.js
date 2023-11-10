@@ -6,5 +6,10 @@ const config = {
         "<rootDir>/dist/",
         "<rootDir>/deprecated-test/",
     ],
+    preset: "ts-jest",
+    testEnvironment: "node",
+    transform: {
+        "^.+\\.ts?$": "ts-jest",
+    },
 };
 exports.default = config;
