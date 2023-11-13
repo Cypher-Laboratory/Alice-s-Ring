@@ -5,6 +5,7 @@ import {
   formatRing,
   formatPoint,
   hash,
+  base64Regex,
 } from "./utils";
 import { piSignature, verifyPiSignature } from "./signature/piSignature";
 import { derivePubKey } from "./curves";
@@ -184,6 +185,9 @@ export class RingSignature {
    * @returns The ring signature
    */
   static fromBase64(base64: string): RingSignature {
+    // check if the base64 string is valid
+    if (!base64Regex.test(base64)) throw err.invalidBase64();
+
     const decoded = Buffer.from(base64, "base64").toString("ascii");
     const json = JSON.parse(decoded);
     const ring = json.ring.map((point: string) => Point.fromString(point));

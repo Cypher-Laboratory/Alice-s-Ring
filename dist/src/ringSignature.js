@@ -160,6 +160,9 @@ class RingSignature {
      * @returns The ring signature
      */
     static fromBase64(base64) {
+        // check if the base64 string is valid
+        if (!utils_1.base64Regex.test(base64))
+            throw err.invalidBase64();
         const decoded = Buffer.from(base64, "base64").toString("ascii");
         const json = JSON.parse(decoded);
         const ring = json.ring.map((point) => _1.Point.fromString(point));
