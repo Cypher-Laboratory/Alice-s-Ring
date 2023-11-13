@@ -27,7 +27,7 @@ export function piSignature(
   signerPrivKey: bigint,
   curve: Curve,
 ): bigint {
-  return modulo(nonce - message * signerPrivKey, curve.N);
+  return modulo(nonce + message * signerPrivKey, curve.N);
 }
 
 /**
@@ -50,7 +50,7 @@ export function verifyPiSignature(
   config?: SignatureConfig,
 ): boolean {
   const G: Point = curve.GtoPoint(); // curve generator
-  const cprime = hash(message+formatPoint(G.mult(piSignature).add(signerPubKey.mult(c)), config), config?.hash)
+  const cprime = hash(message+formatPoint(G.mult(piSignature).add(signerPubKey.mult(c).negate()), config), config?.hash)
   return (
 cprime === c.toString(16)  );
 }

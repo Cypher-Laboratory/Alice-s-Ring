@@ -242,6 +242,7 @@ export class RingSignature {
         c,
         [sig],
         curve,
+        config
       );
     }
 
