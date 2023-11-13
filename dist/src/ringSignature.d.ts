@@ -27,6 +27,12 @@ export declare class RingSignature {
      */
     constructor(message: string, ring: Point[], c: bigint, responses: bigint[], curve: Curve, config?: SignatureConfig);
     /**
+     * Get the message hash
+     *
+     * @returns The message hash
+     */
+    get messageHash(): string;
+    /**
      * Create a RingSignature from a json object
      *
      * @remarks

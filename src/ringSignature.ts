@@ -83,6 +83,15 @@ export class RingSignature {
   }
 
   /**
+   * Get the message hash
+   *
+   * @returns The message hash
+   */
+  get messageHash(): string {
+    return hash(this.message, this.hash);
+  }
+
+  /**
    * Create a RingSignature from a json object
    *
    * @remarks
