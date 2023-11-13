@@ -30,17 +30,20 @@ exports.piSignature = piSignature;
 /**
  * Verify a signature generated with the `piSignature` function
  *
- * @param signerPubKey - The signer public key
- * @param piSignature - The signature
- * @param nonce - The nonce used (= alpha in our ring signature scheme)
  * @param message - The message (as bigint) (= c[pi] in our ring signature scheme)
+ * @param signerPubKey - The signer public key
+ * @param c - The challenge (= c in our ring signature scheme)
+ * @param piSignature - The signature
  * @param curve - The curve to use
+ * @param config - The signature config
  *
  * @returns true if the signature is valid, false otherwise
  */
-function verifyPiSignature(signerPubKey, piSignature, nonce, message, curve) {
+function verifyPiSignature(message, signerPubKey, c, piSignature, curve, config) {
     const G = curve.GtoPoint(); // curve generator
-    // G * piSignature === (alpha * G) + c * (k * G)
-    return G.mult(piSignature).equals(G.mult(nonce).add(signerPubKey.mult(message)));
+    // compute H(m|[r*G - c*K])
+    const cprime = (0, utils_1.hash)(message +
+        (0, utils_1.formatPoint)(G.mult(piSignature).add(signerPubKey.mult(c).negate()), config), config?.hash);
+    return cprime === c.toString(16);
 }
 exports.verifyPiSignature = verifyPiSignature;

@@ -87,11 +87,11 @@ const signature = ringSignature_1.RingSignature.sign(ring_ed, signerPrivKey_ed, 
 const base64Sig = signature.toBase64();
 const retrievedSig = ringSignature_1.RingSignature.fromBase64(base64Sig);
 const verifiedRetrievedSig = retrievedSig.verify();
-const areIdentical = retrievedSig.message === signature.message &&
-    retrievedSig.c === signature.c &&
-    areResponsesEquals(retrievedSig.responses, signature.responses) &&
-    areRingsEquals(retrievedSig.ring, signature.ring) &&
-    retrievedSig.curve.name === signature.curve.name;
+const areIdentical = retrievedSig.getMessage() === signature.getMessage() &&
+    retrievedSig.getC() === signature.getC() &&
+    areResponsesEquals(retrievedSig.getResponses(), signature.getResponses()) &&
+    areRingsEquals(retrievedSig.getRing(), signature.getRing()) &&
+    retrievedSig.getCurve().name === signature.getCurve().name;
 console.log("Is sig valid? ", verifiedRetrievedSig);
 console.log("Are the two signatures identical? ", areIdentical);
 if (!verifiedRetrievedSig) {
