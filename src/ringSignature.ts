@@ -334,6 +334,18 @@ export class RingSignature {
     partialSig: PartialSignature,
     signerResponse: bigint,
   ): RingSignature {
+    // check pi value
+    if (partialSig.pi < 0) throw err.invalidParams("pi must be >= 0");
+    if (partialSig.pi >= partialSig.ring.length)
+      throw err.invalidParams("pi must be < ring.length");
+    // check cpi value
+    if (partialSig.cpi >= partialSig.curve.N)
+      throw err.invalidParams("cpi must be < curve.N");
+    if (partialSig.cpi <= 0) throw err.invalidParams("cpi must be > 0");
+    // check alpha value
+    if (partialSig.alpha >= partialSig.curve.N)
+      throw err.invalidParams("alpha must be < curve.N");
+    if (partialSig.alpha <= 0) throw err.invalidParams("alpha must be > 0");
     return new RingSignature(
       partialSig.message,
       partialSig.ring,

@@ -9,7 +9,7 @@ const secp256k1 = new Curve(CurveName.SECP256K1);
 const ed25519 = new Curve(CurveName.ED25519);
 
 /**
- * Test the RingSignature.fromJsonString() method
+ * Test the RingSignature.sign() method
  *
  * test if:
  * - the method returns a valid RingSignature object

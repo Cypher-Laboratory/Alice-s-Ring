@@ -28,7 +28,7 @@ const points = __importStar(require("../data/points"));
 const message = __importStar(require("../data/message"));
 const secp256k1 = new src_1.Curve(src_1.CurveName.SECP256K1);
 /**
- * Test the RingSignature.fromJsonString() method
+ * Test the RingSignature.toJsonString() method
  *
  * test if:
  * - the method returns a valid json string
