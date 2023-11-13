@@ -33,18 +33,19 @@ export function piSignature(
 /**
  * Verify a signature generated with the `piSignature` function
  *
- * @param signerPubKey - The signer public key
- * @param piSignature - The signature
- * @param nonce - The nonce used (= alpha in our ring signature scheme)
  * @param message - The message (as bigint) (= c[pi] in our ring signature scheme)
+ * @param signerPubKey - The signer public key
+ * @param c - The challenge (= c in our ring signature scheme)
+ * @param piSignature - The signature
  * @param curve - The curve to use
+ * @param config - The signature config
  *
  * @returns true if the signature is valid, false otherwise
  */
 export function verifyPiSignature(
-  message : string,
+  message: string,
   signerPubKey: Point,
-  c : bigint, 
+  c: bigint,
   piSignature: bigint,
   curve: Curve,
   config?: SignatureConfig,
@@ -52,7 +53,13 @@ export function verifyPiSignature(
   const G: Point = curve.GtoPoint(); // curve generator
 
   // compute H(m|[r*G - c*K])
-  const cprime = hash(message+formatPoint(G.mult(piSignature).add(signerPubKey.mult(c).negate()), config), config?.hash)
-  return (
-cprime === c.toString(16)  );
+  const cprime = hash(
+    message +
+      formatPoint(
+        G.mult(piSignature).add(signerPubKey.mult(c).negate()),
+        config,
+      ),
+    config?.hash,
+  );
+  return cprime === c.toString(16);
 }

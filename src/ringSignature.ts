@@ -60,9 +60,10 @@ export class RingSignature {
     // check ring, c and responses validity if config.safeMode is true or if config.safeMode is not set
     if ((config && config.safeMode === true) || !(config && config.safeMode)) {
       checkRing(ring, curve);
-      if (c >= curve.P || c === 0n) throw err.invalidParams("c");
+
+      if (c === 0n) throw err.invalidParams("c");
       for (const response of responses) {
-        if (response >= curve.P || response === 0n) throw err.invalidResponses;
+        if (response >= curve.N || response === 0n) throw err.invalidResponses;
       }
     }
 
@@ -233,16 +234,17 @@ export class RingSignature {
       const alpha = randomBigint(curve.N);
       const alphaG = curve.GtoPoint().mult(alpha);
 
-      const c = BigInt("0x" + hash(message + formatPoint(alphaG, config), config?.hash)); 
+      const c = BigInt(
+        "0x" + hash(message + formatPoint(alphaG, config), config?.hash),
+      );
       const sig = piSignature(alpha, c, signerPrivateKey, curve);
-
       return new RingSignature(
         message,
         [curve.GtoPoint().mult(signerPrivateKey)], // curve's generator point * private key
         c,
         [sig],
         curve,
-        config
+        config,
       );
     }
 
@@ -432,7 +434,7 @@ export class RingSignature {
       this.c,
       this.responses[0],
       this.curve,
-      this.config
+      this.config,
     );
   }
 
