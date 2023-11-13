@@ -25,10 +25,10 @@ function getRandomSecuredNumber(min, max) {
         throw new Error("Min value should be less than or equal to max value.");
     }
     if (min < 0) {
-        throw new Error("Min value should be greater than or equal to 0.");
+        throw (0, errors_1.tooSmall)("Max", 0);
     }
     if (max < 0) {
-        throw new Error("Max value should be greater than or equal to 0.");
+        throw (0, errors_1.tooBig)("Max", 0);
     }
     if (min === max) {
         return min;
