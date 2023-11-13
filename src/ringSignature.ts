@@ -230,8 +230,10 @@ export class RingSignature {
        * and return a ring signature with only one response.
        * Note that alpha is computed from c to allow verification.
        */
-      const c = BigInt("0x" + hash(message, config?.hash));
-      const alpha = modulo(2n * c + 1n, curve.N);
+      const alpha = randomBigint(curve.N);
+      const alphaG = curve.GtoPoint().mult(alpha);
+
+      const c = BigInt("0x" + hash(message + formatPoint(alphaG, config), config?.hash)); 
       const sig = piSignature(alpha, c, signerPrivateKey, curve);
 
       return new RingSignature(
@@ -424,11 +426,12 @@ export class RingSignature {
 
     // if ring length = 1 :
     return verifyPiSignature(
+      this.message,
       this.ring[0],
-      this.responses[0],
-      modulo(2n * this.c + 1n, this.curve.N),
       this.c,
+      this.responses[0],
       this.curve,
+      this.config
     );
   }
 

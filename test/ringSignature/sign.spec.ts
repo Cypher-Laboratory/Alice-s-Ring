@@ -90,11 +90,12 @@ describe("Test sign()", () => {
     // test if the ring signature is a Schnorr signature
     expect(
       verifyPiSignature(
+        data.message,
         ringSignature.ring[0],
-        ringSignature.responses[0],
-        modulo(2n * ringSignature.c + 1n, ringSignature.curve.N),
         ringSignature.c,
+        ringSignature.responses[0],
         ringSignature.curve,
+        ringSignature.config,
       ),
     ).toBe(true);
   });
@@ -113,11 +114,12 @@ describe("Test sign()", () => {
     // test if the ring signature is a Schnorr signature
     expect(
       verifyPiSignature(
+        data.message,
         ringSignature.ring[0],
-        ringSignature.responses[0],
-        modulo(2n * ringSignature.c + 1n, ringSignature.curve.N),
         ringSignature.c,
+        ringSignature.responses[0],
         ringSignature.curve,
+        ringSignature.config,
       ),
     ).toBe(true);
   });
