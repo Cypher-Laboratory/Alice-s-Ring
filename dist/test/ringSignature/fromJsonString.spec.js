@@ -25,7 +25,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const src_1 = require("../../src");
 const errors_1 = require("../../src/errors");
-const jsonRS = __importStar(require("../data/jsonSignatures.json"));
+const data = __importStar(require("../data"));
 /**
  * Test the RingSignature.fromJsonString() method
  *
@@ -46,77 +46,77 @@ const jsonRS = __importStar(require("../data/jsonSignatures.json"));
  */
 describe("Test fromJsonString()", () => {
     it("Should return a RingSignature object", () => {
-        expect(src_1.RingSignature.fromJsonString(jsonRS.valid)).toBeInstanceOf(src_1.RingSignature);
+        expect(src_1.RingSignature.fromJsonString(data.jsonRS.valid)).toBeInstanceOf(src_1.RingSignature);
     });
     it("Should throw an error if the input is not a valid json", () => {
         expect(() => {
-            src_1.RingSignature.fromJsonString(JSON.stringify(jsonRS.valid).slice(0, 1));
+            src_1.RingSignature.fromJsonString(JSON.stringify(data.jsonRS.valid).slice(0, 1));
         }).toThrow(); // no error message because it depends on the node version used
     });
     // test with invalid param types
     it("Should throw if a point is not valid", () => {
         expect(() => {
-            src_1.RingSignature.fromJsonString(jsonRS.invalidPoint);
+            src_1.RingSignature.fromJsonString(data.jsonRS.invalidPoint);
         }).toThrow((0, errors_1.invalidJson)("Error: Invalid param: Point is not on curve: 0,20165396248642806335661137158563863822683438728408180285542980607824890485122"));
     });
     it("Should throw if the curve is not valid (invalid G)", () => {
         expect(() => {
-            src_1.RingSignature.fromJsonString(jsonRS.invalidCurve);
+            src_1.RingSignature.fromJsonString(data.jsonRS.invalidCurve);
         }).toThrow((0, errors_1.invalidJson)("Error: Invalid param: Generator point is not on curve"));
     });
     it("Should throw if the message is empty", () => {
         expect(() => {
-            src_1.RingSignature.fromJsonString(jsonRS.emptyMessage);
+            src_1.RingSignature.fromJsonString(data.jsonRS.emptyMessage);
         }).toThrow((0, errors_1.invalidJson)("Error: Cannot sign empty message"));
     });
     it("Should throw if the message is not a string or a number", () => {
         expect(() => {
-            src_1.RingSignature.fromJsonString(jsonRS.msgNotString);
+            src_1.RingSignature.fromJsonString(data.jsonRS.msgNotString);
         }).toThrow((0, errors_1.invalidJson)("Message must be a string or a number"));
     });
     it("Should throw if the c is 0 ", () => {
         expect(() => {
-            src_1.RingSignature.fromJsonString(jsonRS.cEquals0);
+            src_1.RingSignature.fromJsonString(data.jsonRS.cEquals0);
         }).toThrow((0, errors_1.invalidJson)("Error: Invalid param: c"));
     });
     it("Should throw if c is not a string or a number ", () => {
         expect(() => {
-            src_1.RingSignature.fromJsonString(jsonRS.cIsArray);
+            src_1.RingSignature.fromJsonString(data.jsonRS.cIsArray);
         }).toThrow((0, errors_1.invalidJson)("c must be a string or a number"));
     });
     it("Should throw if the randomResponses is not valid", () => {
         expect(() => {
-            src_1.RingSignature.fromJsonString(jsonRS.invalidRandomResponses);
+            src_1.RingSignature.fromJsonString(data.jsonRS.invalidRandomResponses);
         }).toThrow((0, errors_1.invalidJson)("TypeError: sig.responses.map is not a function"));
     });
     it("Should throw if at least one argument is undefined", () => {
         expect(() => {
-            src_1.RingSignature.fromJsonString(jsonRS.undefinedResponses);
+            src_1.RingSignature.fromJsonString(data.jsonRS.undefinedResponses);
         }).toThrow((0, errors_1.invalidJson)("TypeError: Cannot read properties of undefined (reading 'map')"));
     });
     it("Should throw if at least one argument is null", () => {
         expect(() => {
-            src_1.RingSignature.fromJsonString(jsonRS.nullMessage);
+            src_1.RingSignature.fromJsonString(data.jsonRS.nullMessage);
         }).toThrow((0, errors_1.invalidJson)("Message must be a string or a number"));
     });
     it("Should throw if the config is not an object", () => {
         expect(() => {
-            src_1.RingSignature.fromJsonString(jsonRS.configNotObject);
+            src_1.RingSignature.fromJsonString(data.jsonRS.configNotObject);
         }).toThrow((0, errors_1.invalidJson)("Config must be an object"));
     });
     it("Should throw if config.safeMode is not a boolean", () => {
         expect(() => {
-            src_1.RingSignature.fromJsonString(jsonRS.configSafeModeNotBoolean);
+            src_1.RingSignature.fromJsonString(data.jsonRS.configSafeModeNotBoolean);
         }).toThrow((0, errors_1.invalidJson)("Config.safeMode must be a boolean"));
     });
     it("Should throw if config.evmCompatibility is not a boolean", () => {
         expect(() => {
-            src_1.RingSignature.fromJsonString(jsonRS.configEvmCompatibilityNotBoolean);
+            src_1.RingSignature.fromJsonString(data.jsonRS.configEvmCompatibilityNotBoolean);
         }).toThrow((0, errors_1.invalidJson)("Config.evmCompatibility must be a boolean"));
     });
     it("Should throw if config.hash is not in the list of supported hash functions", () => {
         expect(() => {
-            src_1.RingSignature.fromJsonString(jsonRS.configHashNotSupported);
+            src_1.RingSignature.fromJsonString(data.jsonRS.configHashNotSupported);
         }).toThrow((0, errors_1.invalidJson)("Config.hash must be an element from hashFunction"));
     });
 });

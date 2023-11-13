@@ -1,7 +1,7 @@
-import { Point } from "../src";
-import { hash } from "../src/utils";
+import { Point } from "../../src";
+import { hash } from "../../src/utils";
 import { SECP256K1, ED25519 } from "./curves";
-import * as ed from "../src/utils/noble-libraries/noble-ED25519";
+import * as ed from "../../src/utils/noble-libraries/noble-ED25519";
 import { sha512 } from "@noble/hashes/sha512";
 ed.etc.sha512Sync = (...m) => sha512(ed.etc.concatBytes(...m));
 
@@ -105,3 +105,14 @@ export const randomResponses = [
   74091150300363372893247715377341913096446778788031541336871110197911481146359n,
   29896340703093012145909022712244181911546003092922234877958412520719305671945n,
 ];
+
+/* -------------SIGNER KEYS------------- */
+export const signerPrivKey = BigInt(
+  "0x" +
+    hash("4705133659738916056634998425092693862103756529453934308865022401716"),
+);
+
+export const signerPubKey_secp256k1 = SECP256K1.GtoPoint().mult(signerPrivKey);
+export const signerPubKey_ed25519 = ED25519.GtoPoint().mult(
+  ed.utils.getExtendedPublicKey(signerPrivKey.toString(16)).scalar,
+);

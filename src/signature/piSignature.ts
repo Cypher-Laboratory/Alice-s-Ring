@@ -27,7 +27,7 @@ export function piSignature(
   signerPrivKey: bigint,
   curve: Curve,
 ): bigint {
-  return modulo(nonce + message * signerPrivKey, curve.P);
+  return modulo(nonce + message * signerPrivKey, curve.N); // P??
 }
 
 /**

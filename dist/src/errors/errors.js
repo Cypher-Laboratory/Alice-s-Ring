@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.invalidResponses = exports.noEmptyResponses = exports.curveMismatch = exports.differentCurves = exports.invalidCurve = exports.unknownCurve = exports.invalidCoordinates = exports.notOnCurve = exports.invalidPoint = exports.invalidBase64 = exports.invalidJson = exports.missingParams = exports.invalidParams = exports.tooBig = exports.tooSmall = exports.noDuplicates = exports.lengthMismatch = exports.computationError = exports.invalidSignature = exports.noEmptyRing = exports.noEmptyMsg = void 0;
+exports.invalidRing = exports.invalidResponses = exports.noEmptyResponses = exports.curveMismatch = exports.differentCurves = exports.invalidCurve = exports.unknownCurve = exports.invalidCoordinates = exports.notOnCurve = exports.invalidPoint = exports.invalidBase64 = exports.invalidJson = exports.missingParams = exports.invalidParams = exports.tooBig = exports.tooSmall = exports.noDuplicates = exports.lengthMismatch = exports.computationError = exports.invalidSignature = exports.noEmptyRing = exports.noEmptyMsg = void 0;
 exports.noEmptyMsg = new Error("Cannot sign empty message");
 exports.noEmptyRing = new Error("Ring cannot be empty");
 exports.invalidSignature = new Error("Invalid signature");
@@ -125,3 +125,10 @@ exports.curveMismatch = curveMismatch;
 /* -------------RESPONSES------------- */
 exports.noEmptyResponses = new Error("Responses cannot be empty");
 exports.invalidResponses = new Error("At least one response is not valid");
+/* -------------RING------------- */
+const invalidRing = (data) => {
+    if (data)
+        return new Error(`Invalid ring: ${data}`);
+    return new Error("Invalid ring");
+};
+exports.invalidRing = invalidRing;

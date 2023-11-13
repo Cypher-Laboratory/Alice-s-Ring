@@ -67,6 +67,11 @@ class RingSignature {
                     throw err.invalidResponses;
             }
         }
+        // check params
+        if (c === 0n)
+            throw err.invalidParams("c cannot be 0");
+        if (responses.includes(0n))
+            throw err.invalidParams("Responses cannot contain 0");
         if (config?.hash)
             this.hash = config.hash;
         else
@@ -179,6 +184,8 @@ class RingSignature {
      */
     static sign(ring, // ring.length = n
     signerPrivateKey, message, curve, config) {
+        if (signerPrivateKey === 0n)
+            throw err.invalidParams("Signer private key cannot be 0");
         if (ring.length === 0) {
             /* If the ring is empty, we just sign the message using our schnorr-like signature scheme
              * and return a ring signature with only one response.
@@ -189,6 +196,13 @@ class RingSignature {
             const sig = (0, piSignature_1.piSignature)(alpha, c, signerPrivateKey, curve);
             return new RingSignature(message, [curve.GtoPoint().mult(signerPrivateKey)], // curve's generator point * private key
             c, [sig], curve);
+        }
+        // check if ring is valid
+        try {
+            checkRing(ring, curve);
+        }
+        catch (e) {
+            throw err.invalidRing(e);
         }
         const rawSignature = RingSignature.signature(curve, ring, signerPrivateKey, message, config);
         // compute the signer response
@@ -286,7 +300,7 @@ class RingSignature {
                 }, this.config));
         }
         // if ring length = 1 :
-        return (0, piSignature_1.verifyPiSignature)(this.ring[0], this.responses[0], (0, utils_1.modulo)(2n * this.c + 1n, this.curve.P), this.c, this.curve);
+        return (0, piSignature_1.verifyPiSignature)(this.ring[0], this.responses[0], (0, utils_1.modulo)(2n * this.c + 1n, this.curve.N), this.c, this.curve);
     }
     /**
      * Verify a RingSignature stored as a json string

@@ -66,6 +66,11 @@ export class RingSignature {
       }
     }
 
+    // check params
+    if (c === 0n) throw err.invalidParams("c cannot be 0");
+    if (responses.includes(0n))
+      throw err.invalidParams("Responses cannot contain 0");
+
     if (config?.hash) this.hash = config.hash;
     else this.hash = hashFunction.KECCAK256;
 
@@ -217,6 +222,9 @@ export class RingSignature {
     curve: Curve,
     config?: SignatureConfig,
   ): RingSignature {
+    if (signerPrivateKey === 0n)
+      throw err.invalidParams("Signer private key cannot be 0");
+
     if (ring.length === 0) {
       /* If the ring is empty, we just sign the message using our schnorr-like signature scheme
        * and return a ring signature with only one response.
@@ -233,6 +241,13 @@ export class RingSignature {
         [sig],
         curve,
       );
+    }
+
+    // check if ring is valid
+    try {
+      checkRing(ring, curve);
+    } catch (e) {
+      throw err.invalidRing(e as string);
     }
 
     const rawSignature = RingSignature.signature(
@@ -411,7 +426,7 @@ export class RingSignature {
     return verifyPiSignature(
       this.ring[0],
       this.responses[0],
-      modulo(2n * this.c + 1n, this.curve.P),
+      modulo(2n * this.c + 1n, this.curve.N),
       this.c,
       this.curve,
     );

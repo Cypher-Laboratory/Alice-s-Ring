@@ -22,25 +22,13 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const src_1 = require("../../src");
-const points = __importStar(require("../data/points"));
-const message = __importStar(require("../data/message"));
-const secp256k1 = new src_1.Curve(src_1.CurveName.SECP256K1);
-/**
- * Test the RingSignature.fromJsonString() method
- *
- * test if:
- * - the method returns a valid json string
- * - the method's output can be used to create a valid RingSignature
- */
-describe("Test toJsonString()", () => {
-    it("Should return a valid json string", () => {
-        const rs = new src_1.RingSignature(message.message, points.publicKeys_secp256k1, points.randomC, points.randomResponses, secp256k1);
-        expect(() => JSON.parse(rs.toJsonString())).not.toThrow();
-    });
-    it("Should return a valid RingSignature", () => {
-        const rs = new src_1.RingSignature(message.message, points.publicKeys_secp256k1, points.randomC, points.randomResponses, secp256k1);
-        expect(src_1.RingSignature.fromJsonString(rs.toJsonString())).toBeInstanceOf(src_1.RingSignature);
-    });
-});
+exports.jsonRS = void 0;
+const jsonRS = __importStar(require("../data/jsonSignatures.json"));
+exports.jsonRS = jsonRS;
+__exportStar(require("./curves"), exports);
+__exportStar(require("./message"), exports);
+__exportStar(require("./points"), exports);

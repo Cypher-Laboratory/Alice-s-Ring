@@ -70,14 +70,14 @@ class Point {
                 const result = noble_SECP256k1_1.ProjectivePoint.fromAffine({
                     x: this.x,
                     y: this.y,
-                }).mul((0, utils_1.modulo)(scalar, this.curve.P));
+                }).mul((0, utils_1.modulo)(scalar, this.curve.N)); // P??
                 return new Point(this.curve, [result.x, result.y]);
             }
             case curves_1.CurveName.ED25519: {
                 const result = noble_ED25519_1.ExtendedPoint.fromAffine({
                     x: this.x,
                     y: this.y,
-                }).mul((0, utils_1.modulo)(scalar, this.curve.P));
+                }).mul((0, utils_1.modulo)(scalar, this.curve.N)); // P??
                 return new Point(this.curve, [result.x, result.y]);
             }
             default: {
