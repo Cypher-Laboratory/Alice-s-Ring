@@ -230,7 +230,7 @@ export class RingSignature {
        * and return a ring signature with only one response.
        * Note that alpha is computed from c to allow verification.
        */
-      const c = randomBigint(curve.N);
+      const c = BigInt("0x" + hash(message, config?.hash));
       const alpha = modulo(2n * c + 1n, curve.N);
       const sig = piSignature(alpha, c, signerPrivateKey, curve);
 

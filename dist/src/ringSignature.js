@@ -191,7 +191,7 @@ class RingSignature {
              * and return a ring signature with only one response.
              * Note that alpha is computed from c to allow verification.
              */
-            const c = (0, utils_1.randomBigint)(curve.N);
+            const c = BigInt("0x" + (0, utils_1.hash)(message, config?.hash));
             const alpha = (0, utils_1.modulo)(2n * c + 1n, curve.N);
             const sig = (0, piSignature_1.piSignature)(alpha, c, signerPrivateKey, curve);
             return new RingSignature(message, [curve.GtoPoint().mult(signerPrivateKey)], // curve's generator point * private key
