@@ -80,7 +80,7 @@ exports.randomResponses = [
     29896340703093012145909022712244181911546003092922234877958412520719305671945n,
 ];
 /* -------------SIGNER KEYS------------- */
-exports.signerPrivKey = BigInt("0x" +
-    (0, utils_1.hash)("4705133659738916056634998425092693862103756529453934308865022401716"));
+exports.signerPrivKey = ed.utils.getExtendedPublicKey(BigInt("0x" +
+    (0, utils_1.hash)("4705133659738916056634998425092693862103756529453934308865022401716")).toString(16)).scalar;
 exports.signerPubKey_secp256k1 = curves_1.SECP256K1.GtoPoint().mult(exports.signerPrivKey);
-exports.signerPubKey_ed25519 = curves_1.ED25519.GtoPoint().mult(ed.utils.getExtendedPublicKey(exports.signerPrivKey.toString(16)).scalar);
+exports.signerPubKey_ed25519 = curves_1.ED25519.GtoPoint().mult(exports.signerPrivKey);

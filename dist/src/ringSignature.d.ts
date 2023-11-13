@@ -1,19 +1,18 @@
 import { Curve, PartialSignature, Point } from ".";
 import { SignatureConfig } from "./interfaces";
-import { hashFunction } from "./utils/hashFunction";
 /**
  * Ring signature class.
  * This class is used to sign messages using ring signatures.
  * It can also be used to verify ring signatures.
  */
 export declare class RingSignature {
-    message: string;
-    c: bigint;
-    responses: bigint[];
-    ring: Point[];
-    curve: Curve;
-    config?: SignatureConfig;
-    hash: hashFunction;
+    private message;
+    private c;
+    private responses;
+    private ring;
+    private curve;
+    private config?;
+    private hash;
     /**
      * Ring signature class constructor
      *
@@ -27,11 +26,41 @@ export declare class RingSignature {
      */
     constructor(message: string, ring: Point[], c: bigint, responses: bigint[], curve: Curve, config?: SignatureConfig);
     /**
-     * Get the message hash
+     * Get the message
      *
-     * @returns The message hash
+     * @returns The message
      */
-    get messageHash(): string;
+    getRing(): Point[];
+    /**
+     * Get the seed value
+     *
+     * @returns The seed value
+     */
+    getC(): bigint;
+    /**
+     * Get the responses
+     *
+     * @returns The responses
+     */
+    getResponses(): bigint[];
+    /**
+     * Get the curve
+     *
+     * @returns The curve
+     */
+    getCurve(): Curve;
+    /**
+     * Get the config
+     *
+     * @returns The config
+     */
+    getConfig(): SignatureConfig | undefined;
+    /**
+     * Get the message
+     *
+     * @returns The message
+     */
+    getMessage(): string;
     /**
      * Create a RingSignature from a json object
      *

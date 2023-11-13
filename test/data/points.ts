@@ -107,12 +107,14 @@ export const randomResponses = [
 ];
 
 /* -------------SIGNER KEYS------------- */
-export const signerPrivKey = BigInt(
-  "0x" +
-    hash("4705133659738916056634998425092693862103756529453934308865022401716"),
-);
+export const signerPrivKey = ed.utils.getExtendedPublicKey(
+  BigInt(
+    "0x" +
+      hash(
+        "4705133659738916056634998425092693862103756529453934308865022401716",
+      ),
+  ).toString(16),
+).scalar;
 
 export const signerPubKey_secp256k1 = SECP256K1.GtoPoint().mult(signerPrivKey);
-export const signerPubKey_ed25519 = ED25519.GtoPoint().mult(
-  ed.utils.getExtendedPublicKey(signerPrivKey.toString(16)).scalar,
-);
+export const signerPubKey_ed25519 = ED25519.GtoPoint().mult(signerPrivKey);

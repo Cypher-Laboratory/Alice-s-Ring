@@ -89,12 +89,12 @@ describe("Test sign()", () => {
     // test if the ring signature is a Schnorr signature
     expect(
       verifyPiSignature(
-        ringSignature.getRing()[0],
+        ringSignature.getMessage(),
+        data.signerPubKey_secp256k1,
+        ringSignature.getC(),
         ringSignature.getResponses()[0],
-        modulo(2n * ringSignature.getC() + 1n, ringSignature.curve.N),
-        ringSignature.c,
-        ringSignature.curve,
-        ringSignature.config,
+        secp256k1,
+        ringSignature.getConfig(),
       ),
     ).toBe(true);
   });
@@ -109,19 +109,27 @@ describe("Test sign()", () => {
 
     expect(ringSignature).toBeInstanceOf(RingSignature);
     // test if the ring signature is valid
-    //expect(ringSignature.verify()).toBe(true);
+    expect(ringSignature.verify()).toBe(true);
     // test if the ring signature is a Schnorr signature
     expect(
       verifyPiSignature(
-        ringSignature.message,
-        ringSignature.ring[0],
-        ringSignature.c,
-        ringSignature.responses[0],
-        ringSignature.curve,
-        ringSignature.config,
+        ringSignature.getMessage(),
+        data.signerPubKey_ed25519,
+        ringSignature.getC(),
+        ringSignature.getResponses()[0],
+        ed25519,
+        ringSignature.getConfig(),
       ),
     ).toBe(true);
   });
+  // return verifyPiSignature(
+  //   this.message,
+  //   this.ring[0],
+  //   this.c,
+  //   this.responses[0],
+  //   this.curve,
+  //   this.config,
+  // );
 
   it("Should throw if signerPrivKey is not valid - secp256k1", () => {
     expect(() => {

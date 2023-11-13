@@ -86,17 +86,16 @@ export class RingSignature {
 
   /**
    * Get the message
-   * 
+   *
    * @returns The message
    */
   getRing(): Point[] {
     return this.ring;
   }
 
-
   /**
    * Get the seed value
-   * 
+   *
    * @returns The seed value
    */
   getC(): bigint {
@@ -105,7 +104,7 @@ export class RingSignature {
 
   /**
    * Get the responses
-   * 
+   *
    * @returns The responses
    */
   getResponses(): bigint[] {
@@ -114,7 +113,7 @@ export class RingSignature {
 
   /**
    * Get the curve
-   * 
+   *
    * @returns The curve
    */
   getCurve(): Curve {
@@ -123,7 +122,7 @@ export class RingSignature {
 
   /**
    * Get the config
-   * 
+   *
    * @returns The config
    */
   getConfig(): SignatureConfig | undefined {
@@ -132,7 +131,7 @@ export class RingSignature {
 
   /**
    * Get the message
-   * 
+   *
    * @returns The message
    */
   getMessage(): string {
