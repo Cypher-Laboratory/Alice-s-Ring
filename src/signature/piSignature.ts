@@ -50,6 +50,8 @@ export function verifyPiSignature(
   config?: SignatureConfig,
 ): boolean {
   const G: Point = curve.GtoPoint(); // curve generator
+
+  // compute H(m|[r*G - c*K])
   const cprime = hash(message+formatPoint(G.mult(piSignature).add(signerPubKey.mult(c).negate()), config), config?.hash)
   return (
 cprime === c.toString(16)  );
