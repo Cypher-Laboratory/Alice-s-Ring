@@ -55,7 +55,6 @@ export const invalidParams = (data?: string) => {
 export const missingParams = (data = "") => {
   return new Error(`Missing parameters: ${data}`);
 };
-
 export const invalidJson = (data?: string | unknown) => {
   if (data) return new Error(`Invalid JSON: ${data}`);
   return new Error("Invalid JSON");
@@ -100,3 +99,9 @@ export const curveMismatch = (data?: string) => {
 /* -------------RESPONSES------------- */
 export const noEmptyResponses = new Error("Responses cannot be empty");
 export const invalidResponses = new Error("At least one response is not valid");
+
+/* -------------RING------------- */
+export const invalidRing = (data?: string) => {
+  if (data) return new Error(`Invalid ring: ${data}`);
+  return new Error("Invalid ring");
+};

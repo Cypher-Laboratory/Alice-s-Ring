@@ -34,3 +34,4 @@ export declare const differentCurves: (data?: string) => Error;
 export declare const curveMismatch: (data?: string) => Error;
 export declare const noEmptyResponses: Error;
 export declare const invalidResponses: Error;
+export declare const invalidRing: (data?: string) => Error;

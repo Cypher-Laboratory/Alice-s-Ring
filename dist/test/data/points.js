@@ -23,11 +23,11 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.randomResponses = exports.randomC = exports.idPointY_ed25519 = exports.idPointX_ed25519 = exports.idPoint_ed25519 = exports.idPointY_secp256k1 = exports.idPointX_secp256k1 = exports.idPoint_secp256k1 = exports.publicKeys_ed25519 = exports.publicKeys_secp256k1 = exports.zeroPivateKey = exports.privateKey = void 0;
-const src_1 = require("../src");
-const utils_1 = require("../src/utils");
+exports.signerPubKey_ed25519 = exports.signerPubKey_secp256k1 = exports.signerPrivKey = exports.randomResponses = exports.randomC = exports.idPointY_ed25519 = exports.idPointX_ed25519 = exports.idPoint_ed25519 = exports.idPointY_secp256k1 = exports.idPointX_secp256k1 = exports.idPoint_secp256k1 = exports.publicKeys_ed25519 = exports.publicKeys_secp256k1 = exports.zeroPivateKey = exports.privateKey = void 0;
+const src_1 = require("../../src");
+const utils_1 = require("../../src/utils");
 const curves_1 = require("./curves");
-const ed = __importStar(require("../src/utils/noble-libraries/noble-ED25519"));
+const ed = __importStar(require("../../src/utils/noble-libraries/noble-ED25519"));
 const sha512_1 = require("@noble/hashes/sha512");
 ed.etc.sha512Sync = (...m) => (0, sha512_1.sha512)(ed.etc.concatBytes(...m));
 exports.privateKey = [
@@ -79,3 +79,8 @@ exports.randomResponses = [
     74091150300363372893247715377341913096446778788031541336871110197911481146359n,
     29896340703093012145909022712244181911546003092922234877958412520719305671945n,
 ];
+/* -------------SIGNER KEYS------------- */
+exports.signerPrivKey = BigInt("0x" +
+    (0, utils_1.hash)("4705133659738916056634998425092693862103756529453934308865022401716"));
+exports.signerPubKey_secp256k1 = curves_1.SECP256K1.GtoPoint().mult(exports.signerPrivKey);
+exports.signerPubKey_ed25519 = curves_1.ED25519.GtoPoint().mult(ed.utils.getExtendedPublicKey(exports.signerPrivKey.toString(16)).scalar);

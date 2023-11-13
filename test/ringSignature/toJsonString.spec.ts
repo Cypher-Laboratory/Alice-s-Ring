@@ -1,6 +1,6 @@
 import { Curve, CurveName, RingSignature } from "../../src";
-import * as points from "../points";
-import * as message from "../message";
+import * as points from "../data/points";
+import * as message from "../data/message";
 
 const secp256k1 = new Curve(CurveName.SECP256K1);
 /**
