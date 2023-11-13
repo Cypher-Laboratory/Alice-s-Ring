@@ -8,7 +8,7 @@ import { Curve } from "../curves";
  * It is really close to a schnorr signature.
  *
  * @param nonce - the nonce to use
- * @param message - the message to sign
+ * @param message - the message digest to sign
  * @param signerPrivKey - the private key of the signer
  * @param Curve - the curve to use
  *

@@ -1,6 +1,5 @@
 import { Curve, CurveName, RingSignature } from "../../src";
-import * as points from "../data/points";
-import * as message from "../data/message";
+import * as data from "../data";
 
 const secp256k1 = new Curve(CurveName.SECP256K1);
 /**
@@ -13,20 +12,20 @@ const secp256k1 = new Curve(CurveName.SECP256K1);
 describe("Test toJsonString()", () => {
   it("Should return a valid json string", () => {
     const rs = new RingSignature(
-      message.message,
-      points.publicKeys_secp256k1,
-      points.randomC,
-      points.randomResponses,
+      data.message,
+      data.publicKeys_secp256k1,
+      data.randomC,
+      data.randomResponses,
       secp256k1,
     );
     expect(() => JSON.parse(rs.toJsonString())).not.toThrow();
   });
   it("Should return a valid RingSignature", () => {
     const rs = new RingSignature(
-      message.message,
-      points.publicKeys_secp256k1,
-      points.randomC,
-      points.randomResponses,
+      data.message,
+      data.publicKeys_secp256k1,
+      data.randomC,
+      data.randomResponses,
       secp256k1,
     );
     expect(RingSignature.fromJsonString(rs.toJsonString())).toBeInstanceOf(

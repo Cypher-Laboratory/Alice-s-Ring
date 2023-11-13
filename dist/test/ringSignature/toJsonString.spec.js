@@ -24,8 +24,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const src_1 = require("../../src");
-const points = __importStar(require("../data/points"));
-const message = __importStar(require("../data/message"));
+const data = __importStar(require("../data"));
 const secp256k1 = new src_1.Curve(src_1.CurveName.SECP256K1);
 /**
  * Test the RingSignature.fromJsonString() method
@@ -36,11 +35,11 @@ const secp256k1 = new src_1.Curve(src_1.CurveName.SECP256K1);
  */
 describe("Test toJsonString()", () => {
     it("Should return a valid json string", () => {
-        const rs = new src_1.RingSignature(message.message, points.publicKeys_secp256k1, points.randomC, points.randomResponses, secp256k1);
+        const rs = new src_1.RingSignature(data.message, data.publicKeys_secp256k1, data.randomC, data.randomResponses, secp256k1);
         expect(() => JSON.parse(rs.toJsonString())).not.toThrow();
     });
     it("Should return a valid RingSignature", () => {
-        const rs = new src_1.RingSignature(message.message, points.publicKeys_secp256k1, points.randomC, points.randomResponses, secp256k1);
+        const rs = new src_1.RingSignature(data.message, data.publicKeys_secp256k1, data.randomC, data.randomResponses, secp256k1);
         expect(src_1.RingSignature.fromJsonString(rs.toJsonString())).toBeInstanceOf(src_1.RingSignature);
     });
 });

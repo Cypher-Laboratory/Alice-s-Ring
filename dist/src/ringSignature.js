@@ -325,6 +325,20 @@ class RingSignature {
      * @returns An incomplete ring signature
      */
     static signature(curve, ring, signerKey, message, config) {
+        if (message === "")
+            throw err.noEmptyMsg;
+        // check ring and responses validity
+        if (ring.length === 0)
+            throw err.noEmptyRing;
+        if (ring.length !== ring.length)
+            throw err.lengthMismatch("ring", "responses");
+        // check if ring is valid
+        try {
+            checkRing(ring, curve);
+        }
+        catch (e) {
+            throw err.invalidRing(e);
+        }
         let hashFct = hashFunction_1.hashFunction.KECCAK256;
         if (config?.hash)
             hashFct = config.hash;
@@ -334,9 +348,14 @@ class RingSignature {
         const alpha = (0, utils_1.randomBigint)(curve.N);
         let signerPubKey;
         if (typeof signerKey === "bigint") {
+            // check if the signer private key is valid
+            if (signerKey === 0n)
+                throw err.invalidParams("Signer private key cannot be 0");
             signerPubKey = (0, curves_1.derivePubKey)(signerKey, curve);
         }
         else {
+            // check if the signer public key is valid
+            checkPoint(signerKey, curve);
             signerPubKey = signerKey;
         }
         // set the signer position in the ring
