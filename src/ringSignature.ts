@@ -20,13 +20,13 @@ import * as err from "./errors";
  * It can also be used to verify ring signatures.
  */
 export class RingSignature {
-  message: string; // clear message
-  c: bigint;
-  responses: bigint[];
-  ring: Point[];
-  curve: Curve;
-  config?: SignatureConfig;
-  hash: hashFunction;
+  private message: string; // clear message
+  private c: bigint;
+  private responses: bigint[];
+  private ring: Point[];
+  private curve: Curve;
+  private config?: SignatureConfig;
+  private hash: hashFunction;
 
   /**
    * Ring signature class constructor
@@ -85,12 +85,58 @@ export class RingSignature {
   }
 
   /**
-   * Get the message hash
-   *
-   * @returns The message hash
+   * Get the message
+   * 
+   * @returns The message
    */
-  get messageHash(): string {
-    return hash(this.message, this.hash);
+  getRing(): Point[] {
+    return this.ring;
+  }
+
+
+  /**
+   * Get the seed value
+   * 
+   * @returns The seed value
+   */
+  getC(): bigint {
+    return this.c;
+  }
+
+  /**
+   * Get the responses
+   * 
+   * @returns The responses
+   */
+  getResponses(): bigint[] {
+    return this.responses;
+  }
+
+  /**
+   * Get the curve
+   * 
+   * @returns The curve
+   */
+  getCurve(): Curve {
+    return this.curve;
+  }
+
+  /**
+   * Get the config
+   * 
+   * @returns The config
+   */
+  getConfig(): SignatureConfig | undefined {
+    return this.config;
+  }
+
+  /**
+   * Get the message
+   * 
+   * @returns The message
+   */
+  getMessage(): string {
+    return this.message;
   }
 
   /**

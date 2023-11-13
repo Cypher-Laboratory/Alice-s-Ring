@@ -89,10 +89,10 @@ describe("Test sign()", () => {
     // test if the ring signature is a Schnorr signature
     expect(
       verifyPiSignature(
-        data.message,
-        ringSignature.ring[0],
+        ringSignature.getRing()[0],
+        ringSignature.getResponses()[0],
+        modulo(2n * ringSignature.getC() + 1n, ringSignature.curve.N),
         ringSignature.c,
-        ringSignature.responses[0],
         ringSignature.curve,
         ringSignature.config,
       ),
