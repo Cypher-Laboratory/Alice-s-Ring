@@ -84,6 +84,14 @@ class RingSignature {
         this.config = config;
     }
     /**
+     * Get the message hash
+     *
+     * @returns The message hash
+     */
+    get messageHash() {
+        return (0, utils_1.hash)(this.message, this.hash);
+    }
+    /**
      * Create a RingSignature from a json object
      *
      * @remarks
