@@ -3,10 +3,10 @@
   and is exclusively reserved for the use of gemWallet. Any form of commercial use, including but 
   not limited to selling, licensing, or generating revenue from this code, is strictly prohibited.
 */
-import { modulo } from "../utils";
+import { modulo, hash, formatPoint } from "../utils";
 import { Point } from "../point";
 import { Curve } from "../curves";
-
+import { SignatureConfig } from "../interfaces";
 /**
  * Compute the signature from the actual signer
  *
@@ -33,24 +33,33 @@ export function piSignature(
 /**
  * Verify a signature generated with the `piSignature` function
  *
- * @param signerPubKey - The signer public key
- * @param piSignature - The signature
- * @param nonce - The nonce used (= alpha in our ring signature scheme)
  * @param message - The message (as bigint) (= c[pi] in our ring signature scheme)
+ * @param signerPubKey - The signer public key
+ * @param c - The challenge (= c in our ring signature scheme)
+ * @param piSignature - The signature
  * @param curve - The curve to use
+ * @param config - The signature config
  *
  * @returns true if the signature is valid, false otherwise
  */
 export function verifyPiSignature(
+  message: string,
   signerPubKey: Point,
+  c: bigint,
   piSignature: bigint,
-  nonce: bigint,
-  message: bigint,
   curve: Curve,
+  config?: SignatureConfig,
 ): boolean {
   const G: Point = curve.GtoPoint(); // curve generator
-  // G * piSignature === (alpha * G) + c * (k * G)
-  return G.mult(piSignature).equals(
-    G.mult(nonce).add(signerPubKey.mult(message)),
+
+  // compute H(m|[r*G - c*K])
+  const cprime = hash(
+    message +
+      formatPoint(
+        G.mult(piSignature).add(signerPubKey.mult(c).negate()),
+        config,
+      ),
+    config?.hash,
   );
+  return cprime === c.toString(16);
 }
