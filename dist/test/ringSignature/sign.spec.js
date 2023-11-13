@@ -32,7 +32,7 @@ const hashFunction_1 = require("../../src/utils/hashFunction");
 const secp256k1 = new src_1.Curve(src_1.CurveName.SECP256K1);
 const ed25519 = new src_1.Curve(src_1.CurveName.ED25519);
 /**
- * Test the RingSignature.fromJsonString() method
+ * Test the RingSignature.sign() method
  *
  * test if:
  * - the method returns a valid RingSignature object

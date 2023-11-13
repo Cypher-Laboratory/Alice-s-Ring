@@ -4,7 +4,7 @@ import * as message from "../data/message";
 
 const secp256k1 = new Curve(CurveName.SECP256K1);
 /**
- * Test the RingSignature.fromJsonString() method
+ * Test the RingSignature.toJsonString() method
  *
  * test if:
  * - the method returns a valid json string
