@@ -26,9 +26,12 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.jsonRS = void 0;
+exports.base64Regex = exports.jsonRS = void 0;
 const jsonRS = __importStar(require("../data/jsonSignatures.json"));
 exports.jsonRS = jsonRS;
 __exportStar(require("./curves"), exports);
 __exportStar(require("./message"), exports);
 __exportStar(require("./points"), exports);
+exports.base64Regex = 
+// eslint-disable-next-line no-useless-escape
+/^(?:[A-Za-z0-9+\/]{4})*(?:[A-Za-z0-9+\/]{2}==|[A-Za-z0-9+\/]{3}=)?$/;
