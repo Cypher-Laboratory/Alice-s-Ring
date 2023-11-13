@@ -361,7 +361,7 @@ export class RingSignature {
     signerPubKey: Point,
     curve: Curve,
     config?: SignatureConfig,
-  ) {
+  ): PartialSignature {
     if (ring.length === 0) throw err.noEmptyRing;
 
     const rawSignature = RingSignature.signature(
@@ -545,6 +545,20 @@ export class RingSignature {
     signerIndex: number;
     responses: bigint[];
   } {
+    if (message === "") throw err.noEmptyMsg;
+
+    // check ring and responses validity
+    if (ring.length === 0) throw err.noEmptyRing;
+    if (ring.length !== ring.length)
+      throw err.lengthMismatch("ring", "responses");
+
+    // check if ring is valid
+    try {
+      checkRing(ring, curve);
+    } catch (e) {
+      throw err.invalidRing(e as string);
+    }
+
     let hashFct = hashFunction.KECCAK256;
     if (config?.hash) hashFct = config.hash;
 
@@ -556,8 +570,14 @@ export class RingSignature {
 
     let signerPubKey: Point;
     if (typeof signerKey === "bigint") {
+      // check if the signer private key is valid
+      if (signerKey === 0n)
+        throw err.invalidParams("Signer private key cannot be 0");
       signerPubKey = derivePubKey(signerKey, curve);
     } else {
+      // check if the signer public key is valid
+      checkPoint(signerKey, curve);
+
       signerPubKey = signerKey;
     }
     // set the signer position in the ring
