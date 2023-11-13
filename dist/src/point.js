@@ -62,6 +62,7 @@ class Point {
      *
      * @param scalar - the scalar to multiply
      * @param point - the point to multiply
+     *
      * @returns the result of the multiplication
      */
     mult(scalar) {
@@ -70,14 +71,14 @@ class Point {
                 const result = noble_SECP256k1_1.ProjectivePoint.fromAffine({
                     x: this.x,
                     y: this.y,
-                }).mul((0, utils_1.modulo)(scalar, this.curve.N)); // P??
+                }).mul((0, utils_1.modulo)(scalar, this.curve.N));
                 return new Point(this.curve, [result.x, result.y]);
             }
             case curves_1.CurveName.ED25519: {
                 const result = noble_ED25519_1.ExtendedPoint.fromAffine({
                     x: this.x,
                     y: this.y,
-                }).mul((0, utils_1.modulo)(scalar, this.curve.N)); // P??
+                }).mul((0, utils_1.modulo)(scalar, this.curve.N));
                 return new Point(this.curve, [result.x, result.y]);
             }
             default: {

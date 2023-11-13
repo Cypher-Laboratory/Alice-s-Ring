@@ -49,6 +49,7 @@ export class Point {
    *
    * @param scalar - the scalar to multiply
    * @param point - the point to multiply
+   *
    * @returns the result of the multiplication
    */
   mult(scalar: bigint): Point {
@@ -57,7 +58,7 @@ export class Point {
         const result = SECP256K1Point.fromAffine({
           x: this.x,
           y: this.y,
-        }).mul(modulo(scalar, this.curve.N)); // P??
+        }).mul(modulo(scalar, this.curve.N));
 
         return new Point(this.curve, [result.x, result.y]);
       }
@@ -65,7 +66,7 @@ export class Point {
         const result = ED25519Point.fromAffine({
           x: this.x,
           y: this.y,
-        }).mul(modulo(scalar, this.curve.N)); // P??
+        }).mul(modulo(scalar, this.curve.N));
 
         return new Point(this.curve, [result.x, result.y]);
       }

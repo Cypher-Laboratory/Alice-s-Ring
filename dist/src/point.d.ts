@@ -24,6 +24,7 @@ export declare class Point {
      *
      * @param scalar - the scalar to multiply
      * @param point - the point to multiply
+     *
      * @returns the result of the multiplication
      */
     mult(scalar: bigint): Point;
