@@ -718,6 +718,9 @@ export class RingSignature {
    * @returns A partial signature
    */
   static base64ToPartialSig(base64: string): PartialSignature {
+    // check if the base64 string is valid
+    if (!base64Regex.test(base64)) throw err.invalidBase64();
+    
     try {
       const decoded = Buffer.from(base64, "base64").toString("ascii");
       const json = JSON.parse(decoded);
