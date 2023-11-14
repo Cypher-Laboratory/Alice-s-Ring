@@ -60,10 +60,10 @@ class RingSignature {
         // check ring, c and responses validity if config.safeMode is true or if config.safeMode is not set
         if ((config && config.safeMode === true) || !(config && config.safeMode)) {
             checkRing(ring, curve);
-            if (c >= curve.P || c === 0n)
+            if (c === 0n)
                 throw err.invalidParams("c");
             for (const response of responses) {
-                if (response >= curve.P || response === 0n)
+                if (response >= curve.N || response === 0n)
                     throw err.invalidResponses;
             }
         }
@@ -202,11 +202,12 @@ class RingSignature {
              * and return a ring signature with only one response.
              * Note that alpha is computed from c to allow verification.
              */
-            const c = BigInt("0x" + (0, utils_1.hash)(message, config?.hash));
-            const alpha = (0, utils_1.modulo)(2n * c + 1n, curve.N);
+            const alpha = (0, utils_1.randomBigint)(curve.N);
+            const alphaG = curve.GtoPoint().mult(alpha);
+            const c = BigInt("0x" + (0, utils_1.hash)(message + (0, utils_1.formatPoint)(alphaG, config), config?.hash));
             const sig = (0, piSignature_1.piSignature)(alpha, c, signerPrivateKey, curve);
             return new RingSignature(message, [curve.GtoPoint().mult(signerPrivateKey)], // curve's generator point * private key
-            c, [sig], curve);
+            c, [sig], curve, config);
         }
         // check if ring is valid
         try {
@@ -326,7 +327,7 @@ class RingSignature {
                 }, this.config));
         }
         // if ring length = 1 :
-        return (0, piSignature_1.verifyPiSignature)(this.ring[0], this.responses[0], (0, utils_1.modulo)(2n * this.c + 1n, this.curve.N), this.c, this.curve);
+        return (0, piSignature_1.verifyPiSignature)(this.message, this.ring[0], this.c, this.responses[0], this.curve, this.config);
     }
     /**
      * Verify a RingSignature stored as a json string
@@ -485,6 +486,9 @@ class RingSignature {
      * @returns A partial signature
      */
     static base64ToPartialSig(base64) {
+        // check if the base64 string is valid
+        if (!utils_1.base64Regex.test(base64))
+            throw err.invalidBase64();
         try {
             const decoded = Buffer.from(base64, "base64").toString("ascii");
             const json = JSON.parse(decoded);

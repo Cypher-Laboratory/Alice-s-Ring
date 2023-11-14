@@ -1,11 +1,6 @@
-import { Curve, CurveName, RingSignature } from "../../src";
+import { RingSignature } from "../../src";
 import { invalidBase64 } from "../../src/errors";
-import { hash } from "../../src/utils";
-import { hashFunction } from "../../src/utils/hashFunction";
 import * as data from "../data";
-import * as partialSigSample from "./partialSigSample";
-
-const secp256k1 = new Curve(CurveName.SECP256K1);
 
 /**
  * Test the RingSignature.base64ToPartialSig() method
@@ -13,9 +8,10 @@ const secp256k1 = new Curve(CurveName.SECP256K1);
  * test if:
  * - the method returns a valid partialSig object from a valid base64 encoded string
  * - the method throws an error if the input is not a valid base64 encoded string
+ * - the method throws an error if decoded input is not a valid json object
  */
 describe("Test base64ToPartialSig()", () => {
-  it("Should return a PartialSig object", () => {
+  it("Should return a valid PartialSig object", () => {
     const partialSig = RingSignature.base64ToPartialSig(
       data.jsonRS.validBase64PartialSig,
     );
@@ -35,5 +31,11 @@ describe("Test base64ToPartialSig()", () => {
     }).toThrow(invalidBase64());
   });
 
-  it("Should return a valid PartialSig object", () => {
+  it("Should throw an error if the decoded input is not a valid json object", () => {
+    expect(() => {
+      RingSignature.base64ToPartialSig(
+        Buffer.from("Hello World!").toString("base64"),
+      );
+    }).toThrow(invalidBase64());
+  });
 });
