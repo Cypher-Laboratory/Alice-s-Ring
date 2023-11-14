@@ -34,7 +34,7 @@ describe("Test base64ToPartialSig()", () => {
   it("Should throw an error if the decoded input is not a valid json object", () => {
     expect(() => {
       RingSignature.base64ToPartialSig(
-        Buffer.from("Hello World!").toString("base64"),
+        Buffer.from("Not a json object").toString("base64"),
       );
     }).toThrow(invalidBase64());
   });

@@ -52,7 +52,7 @@ describe("Test base64ToPartialSig()", () => {
     });
     it("Should throw an error if the decoded input is not a valid json object", () => {
         expect(() => {
-            src_1.RingSignature.base64ToPartialSig(Buffer.from("Hello World!").toString("base64"));
+            src_1.RingSignature.base64ToPartialSig(Buffer.from("Not a json object").toString("base64"));
         }).toThrow((0, errors_1.invalidBase64)());
     });
 });
