@@ -84,12 +84,52 @@ class RingSignature {
         this.config = config;
     }
     /**
-     * Get the message hash
+     * Get the message
      *
-     * @returns The message hash
+     * @returns The message
      */
-    get messageHash() {
-        return (0, utils_1.hash)(this.message, this.hash);
+    getRing() {
+        return this.ring;
+    }
+    /**
+     * Get the seed value
+     *
+     * @returns The seed value
+     */
+    getC() {
+        return this.c;
+    }
+    /**
+     * Get the responses
+     *
+     * @returns The responses
+     */
+    getResponses() {
+        return this.responses;
+    }
+    /**
+     * Get the curve
+     *
+     * @returns The curve
+     */
+    getCurve() {
+        return this.curve;
+    }
+    /**
+     * Get the config
+     *
+     * @returns The config
+     */
+    getConfig() {
+        return this.config;
+    }
+    /**
+     * Get the message
+     *
+     * @returns The message
+     */
+    getMessage() {
+        return this.message;
     }
     /**
      * Create a RingSignature from a json object
@@ -352,6 +392,20 @@ class RingSignature {
      * @returns An incomplete ring signature
      */
     static signature(curve, ring, signerKey, message, config) {
+        if (message === "")
+            throw err.noEmptyMsg;
+        // check ring and responses validity
+        if (ring.length === 0)
+            throw err.noEmptyRing;
+        if (ring.length !== ring.length)
+            throw err.lengthMismatch("ring", "responses");
+        // check if ring is valid
+        try {
+            checkRing(ring, curve);
+        }
+        catch (e) {
+            throw err.invalidRing(e);
+        }
         let hashFct = hashFunction_1.hashFunction.KECCAK256;
         if (config?.hash)
             hashFct = config.hash;
@@ -361,9 +415,14 @@ class RingSignature {
         const alpha = (0, utils_1.randomBigint)(curve.N);
         let signerPubKey;
         if (typeof signerKey === "bigint") {
+            // check if the signer private key is valid
+            if (signerKey === 0n)
+                throw err.invalidParams("Signer private key cannot be 0");
             signerPubKey = (0, curves_1.derivePubKey)(signerKey, curve);
         }
         else {
+            // check if the signer public key is valid
+            checkPoint(signerKey, curve);
             signerPubKey = signerKey;
         }
         // set the signer position in the ring
