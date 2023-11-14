@@ -456,7 +456,7 @@ export class RingSignature {
         G,
         this.curve.N,
         {
-          r: this.responses[0],
+          previousR: this.responses[0],
           previousC: this.c,
           previousPubKey: this.ring[0],
         },
@@ -471,7 +471,7 @@ export class RingSignature {
           G,
           this.curve.N,
           {
-            r: this.responses[i - 1],
+            previousR: this.responses[i - 1],
             previousC: lastComputedCp,
             previousPubKey: this.ring[i - 1],
           },
@@ -488,7 +488,7 @@ export class RingSignature {
           G,
           this.curve.N,
           {
-            r: this.responses[this.responses.length - 1],
+            previousR: this.responses[this.responses.length - 1],
             previousC: lastComputedCp,
             previousPubKey: this.ring[this.ring.length - 1],
           },
@@ -577,7 +577,6 @@ export class RingSignature {
     } else {
       // check if the signer public key is valid
       checkPoint(signerKey, curve);
-
       signerPubKey = signerKey;
     }
     // set the signer position in the ring
@@ -597,76 +596,39 @@ export class RingSignature {
       responses.push(randomBigint(curve.N));
     }
 
-    // contains all the cees from pi+1 to n (pi+1, pi+2, ..., n)(n = ring.length - 1)
-    const cValuesPI1N: bigint[] = [];
+    // contains all the cees from 0 to ring.length - 1 (0, 1, ..., pi, ..., ring.length - 1)
+    const cees: bigint[] = ring.map(() => 0n);
 
-    // compute C pi+1
-    cValuesPI1N.push(
-      RingSignature.computeC(
+    for (let i = pi + 1; i < ring.length + pi + 1; i++) {
+      /* 
+      Convert i to obtain a numbers between 0 and ring.length - 1, 
+      starting at pi + 1, going to ring.length and then going from 0 to pi (included)
+      */
+      const index = i % ring.length;
+      const indexMinusOne =
+        index - 1 >= 0n ? index - 1 : index - 1 + ring.length;
+
+      // use the right params depending on the index
+      let params = {};
+      if (index === (pi + 1) % ring.length) params = { alpha: alpha };
+      else {
+        params = {
+          previousR: responses[indexMinusOne],
+          previousC: cees[indexMinusOne],
+          previousPubKey: ring[indexMinusOne],
+        };
+      }
+
+      // compute the c value
+      cees[index] = RingSignature.computeC(
         ring,
         messageDigest,
         curve.GtoPoint(),
         curve.N,
-        { alpha: alpha },
-        config,
-      ),
-    );
-
-    // compute Cpi+2 to Cn
-    for (let i = pi + 2; i < ring.length; i++) {
-      cValuesPI1N.push(
-        RingSignature.computeC(
-          ring,
-          messageDigest,
-          curve.GtoPoint(),
-          curve.N,
-          {
-            r: responses[i - 1],
-            previousC: cValuesPI1N[i - pi - 2],
-            previousPubKey: ring[i - 1],
-          },
-          config,
-        ),
-      );
-    }
-
-    // contains all the c from 0 to pi
-    const cValues0PI: bigint[] = [];
-
-    // compute c0 using cn
-    cValues0PI.push(
-      RingSignature.computeC(
-        ring,
-        messageDigest,
-        curve.GtoPoint(),
-        curve.N,
-        {
-          r: responses[responses.length - 1],
-          previousC: cValuesPI1N[cValuesPI1N.length - 1],
-          previousPubKey: ring[ring.length - 1],
-        },
-        config,
-      ),
-    );
-
-    // compute C0 to C pi -1
-    for (let i = 1; i < pi + 1; i++) {
-      cValues0PI[i] = RingSignature.computeC(
-        ring,
-        messageDigest,
-        curve.GtoPoint(),
-        curve.N,
-        {
-          r: responses[i - 1],
-          previousC: cValues0PI[i - 1],
-          previousPubKey: ring[i - 1],
-        },
+        params,
         config,
       );
     }
-
-    // concatenate CValues0PI, cpi and CValuesPI1N to get all the c values
-    const cees: bigint[] = cValues0PI.concat(cValuesPI1N);
 
     return {
       ring: ring,
@@ -677,24 +639,26 @@ export class RingSignature {
     };
   }
 
-  /** // TODO: update doc according to function signature
+  /**
    * Compute a c value
    *
    * @remarks
    * This function is used to compute the c value of a partial signature.
-   * Either 'alpha' or all the other parameters of 'params' must be set.
+   * Either 'alpha' or all the other keys of 'params' must be set.
    *
    * @param ring - Ring of public keys
    * @param message - Message digest
    * @param G - Curve generator point
    * @param N - Curve order
-   * @param r - The response which will be used to compute the c value
-   * @param previousC - The previous c value
-   * @param previousPubKey - The previous public key
+   * @param params - The params to use
    * @param config - The config params to use
-   * @param piPlus1 - If set, the c value will be computed as if it was the pi+1 signer
    *
-   * @returns A c value
+   * @see params.previousR - The previous response which will be used to compute the new c value
+   * @see params.previousC - The previous c value which will be used to compute the new c value
+   * @see params.previousPubKey - The previous public key which will be used to compute the new c value
+   * @see params.alpha - The alpha value which will be used to compute the new c value
+   *
+   * @returns A new c value
    */
   private static computeC(
     ring: Point[],
@@ -702,7 +666,7 @@ export class RingSignature {
     G: Point,
     N: bigint,
     params: {
-      r?: bigint;
+      previousR?: bigint;
       previousC?: bigint;
       previousPubKey?: Point;
       alpha?: bigint;
@@ -726,7 +690,7 @@ export class RingSignature {
         N,
       );
     }
-    if (params.r && params.previousC && params.previousPubKey) {
+    if (params.previousR && params.previousC && params.previousPubKey) {
       return modulo(
         BigInt(
           "0x" +
@@ -734,7 +698,7 @@ export class RingSignature {
               formatRing(ring, config) +
                 message +
                 formatPoint(
-                  G.mult(params.r).add(
+                  G.mult(params.previousR).add(
                     params.previousPubKey.mult(params.previousC).negate(),
                   ),
                   config,

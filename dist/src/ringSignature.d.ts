@@ -150,24 +150,26 @@ export declare class RingSignature {
      * @returns An incomplete ring signature
      */
     private static signature;
-    /** // TODO: update doc according to function signature
+    /**
      * Compute a c value
      *
      * @remarks
      * This function is used to compute the c value of a partial signature.
-     * Either 'alpha' or all the other parameters of 'params' must be set.
+     * Either 'alpha' or all the other keys of 'params' must be set.
      *
      * @param ring - Ring of public keys
      * @param message - Message digest
      * @param G - Curve generator point
      * @param N - Curve order
-     * @param r - The response which will be used to compute the c value
-     * @param previousC - The previous c value
-     * @param previousPubKey - The previous public key
+     * @param params - The params to use
      * @param config - The config params to use
-     * @param piPlus1 - If set, the c value will be computed as if it was the pi+1 signer
      *
-     * @returns A c value
+     * @see params.previousR - The previous response which will be used to compute the new c value
+     * @see params.previousC - The previous c value which will be used to compute the new c value
+     * @see params.previousPubKey - The previous public key which will be used to compute the new c value
+     * @see params.alpha - The alpha value which will be used to compute the new c value
+     *
+     * @returns A new c value
      */
     private static computeC;
     /**
