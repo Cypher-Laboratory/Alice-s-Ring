@@ -4,8 +4,7 @@ import { Point } from "./point";
  */
 export declare enum CurveName {
     SECP256K1 = "SECP256K1",
-    ED25519 = "ED25519",
-    CUSTOM = "CUSTOM"
+    ED25519 = "ED25519"
 }
 export declare class Curve {
     name: CurveName;
@@ -18,11 +17,7 @@ export declare class Curve {
      * @param curve - The curve name
      * @param params - The curve parameters (optional if curve is SECP256K1 or ED25519)
      */
-    constructor(curve: CurveName, params?: {
-        P: bigint;
-        G: [bigint, bigint];
-        N: bigint;
-    });
+    constructor(curve: CurveName);
     /**
      * Returns the generator point as a Point instance.
      *

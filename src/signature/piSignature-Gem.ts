@@ -281,7 +281,6 @@ class Point {
 enum CurveName {
   SECP256K1 = "SECP256K1",
   ED25519 = "ED25519",
-  CUSTOM = "CUSTOM",
 }
 
 class Curve {

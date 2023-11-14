@@ -6,6 +6,7 @@ import {
   noEmptyMsg,
   noEmptyRing,
   notOnCurve,
+  unknownCurve,
 } from "../../src/errors";
 import { hashFunction } from "../../src/utils/hashFunction";
 import * as data from "../data";
@@ -223,9 +224,9 @@ describe("Test Constructor", () => {
             data.publicKeys_ed25519,
             data.randomC,
             data.randomResponses,
-            new Curve(CurveName.CUSTOM),
+            new Curve("invalid name" as CurveName),
           ),
-      ).toThrow(invalidParams("Curve parameters are missing"));
+      ).toThrow(unknownCurve("invalid name"));
     });
 
     /* -------------TEST CONFIG.EVMCOMPATIBILITY------------- */
