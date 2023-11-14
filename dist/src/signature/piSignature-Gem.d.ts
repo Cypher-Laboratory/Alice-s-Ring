@@ -84,8 +84,7 @@ declare class Point {
  */
 declare enum CurveName {
     SECP256K1 = "SECP256K1",
-    ED25519 = "ED25519",
-    CUSTOM = "CUSTOM"
+    ED25519 = "ED25519"
 }
 declare class Curve {
     name: CurveName;

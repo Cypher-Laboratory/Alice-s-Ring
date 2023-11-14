@@ -32,7 +32,6 @@ const ED25519 = {
 export enum CurveName {
   SECP256K1 = "SECP256K1",
   ED25519 = "ED25519",
-  CUSTOM = "CUSTOM",
 }
 
 export class Curve {
@@ -47,30 +46,8 @@ export class Curve {
    * @param curve - The curve name
    * @param params - The curve parameters (optional if curve is SECP256K1 or ED25519)
    */
-  constructor(
-    curve: CurveName,
-    params?: { P: bigint; G: [bigint, bigint]; N: bigint },
-  ) {
+  constructor(curve: CurveName) {
     this.name = curve;
-
-    if (curve === CurveName.CUSTOM && !params) {
-      throw invalidParams("Curve parameters are missing");
-    }
-
-    if (params) {
-      this.G = params.G;
-      this.N = params.N;
-      this.P = params.P;
-      // check if G is on curve
-      try {
-        if (!this.isOnCurve(this.G)) {
-          throw invalidParams("Generator point is not on curve");
-        }
-      } catch (e) {
-        throw invalidParams("Generator point is not on curve");
-      }
-      return;
-    }
 
     switch (this.name) {
       case CurveName.SECP256K1:
@@ -120,15 +97,8 @@ export class Curve {
   static fromString(curveData: string): Curve {
     const data = JSON.parse(curveData) as {
       curve: CurveName;
-      Gx: string;
-      Gy: string;
-      N: string;
-      P: string;
     };
-    const G = [BigInt(data.Gx), BigInt(data.Gy)] as [bigint, bigint];
-    const N = BigInt(data.N);
-    const P = BigInt(data.P);
-    return new Curve(data.curve, { P, G, N });
+    return new Curve(data.curve);
   }
 
   /**

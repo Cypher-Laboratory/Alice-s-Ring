@@ -244,7 +244,6 @@ var CurveName;
 (function (CurveName) {
     CurveName["SECP256K1"] = "SECP256K1";
     CurveName["ED25519"] = "ED25519";
-    CurveName["CUSTOM"] = "CUSTOM";
 })(CurveName || (CurveName = {}));
 class Curve {
     /**

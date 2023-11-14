@@ -95,7 +95,7 @@ describe("Test Constructor", () => {
         });
         /* -------------TEST UNKNOWN CURVE------------- */
         it("Should throw if curve is invalid", () => {
-            expect(() => new src_1.RingSignature(data.message, data.publicKeys_ed25519, data.randomC, data.randomResponses, new src_1.Curve(src_1.CurveName.CUSTOM))).toThrow((0, errors_1.invalidParams)("Curve parameters are missing"));
+            expect(() => new src_1.RingSignature(data.message, data.publicKeys_ed25519, data.randomC, data.randomResponses, new src_1.Curve("invalid name"))).toThrow((0, errors_1.unknownCurve)("invalid name"));
         });
         /* -------------TEST CONFIG.EVMCOMPATIBILITY------------- */
         it("Should pass if config.evmCompatibility is true", () => {

@@ -28,7 +28,6 @@ var CurveName;
 (function (CurveName) {
     CurveName["SECP256K1"] = "SECP256K1";
     CurveName["ED25519"] = "ED25519";
-    CurveName["CUSTOM"] = "CUSTOM";
 })(CurveName || (exports.CurveName = CurveName = {}));
 class Curve {
     /**
@@ -37,26 +36,8 @@ class Curve {
      * @param curve - The curve name
      * @param params - The curve parameters (optional if curve is SECP256K1 or ED25519)
      */
-    constructor(curve, params) {
+    constructor(curve) {
         this.name = curve;
-        if (curve === CurveName.CUSTOM && !params) {
-            throw (0, errors_1.invalidParams)("Curve parameters are missing");
-        }
-        if (params) {
-            this.G = params.G;
-            this.N = params.N;
-            this.P = params.P;
-            // check if G is on curve
-            try {
-                if (!this.isOnCurve(this.G)) {
-                    throw (0, errors_1.invalidParams)("Generator point is not on curve");
-                }
-            }
-            catch (e) {
-                throw (0, errors_1.invalidParams)("Generator point is not on curve");
-            }
-            return;
-        }
         switch (this.name) {
             case CurveName.SECP256K1:
                 this.G = SECP256K1.G;
@@ -101,10 +82,7 @@ class Curve {
      */
     static fromString(curveData) {
         const data = JSON.parse(curveData);
-        const G = [BigInt(data.Gx), BigInt(data.Gy)];
-        const N = BigInt(data.N);
-        const P = BigInt(data.P);
-        return new Curve(data.curve, { P, G, N });
+        return new Curve(data.curve);
     }
     /**
      * Checks if a point is on the curve.

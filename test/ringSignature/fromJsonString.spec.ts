@@ -49,9 +49,7 @@ describe("Test fromJsonString()", () => {
   it("Should throw if the curve is not valid (invalid G)", () => {
     expect(() => {
       RingSignature.fromJsonString(data.jsonRS.invalidCurve);
-    }).toThrow(
-      invalidJson("Error: Invalid param: Generator point is not on curve"),
-    );
+    }).toThrow(invalidJson("Error: Unknown curve: invalid curve"));
   });
 
   it("Should throw if the message is empty", () => {
