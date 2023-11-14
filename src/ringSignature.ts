@@ -596,7 +596,7 @@ export class RingSignature {
       responses.push(randomBigint(curve.N));
     }
 
-    // contains all the cees from 0 to pi (0, 1, ..., pi)
+    // contains all the cees from 0 to ring.length - 1 (0, 1, ..., pi, ..., ring.length - 1)
     const cees: bigint[] = ring.map(() => 0n);
 
     for (let i = pi + 1; i < ring.length + pi + 1; i++) {
