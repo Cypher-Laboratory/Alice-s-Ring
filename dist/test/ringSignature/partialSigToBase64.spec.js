@@ -24,6 +24,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const src_1 = require("../../src");
+const errors_1 = require("../../src/errors");
 const data = __importStar(require("../data"));
 const secp256k1 = new src_1.Curve(src_1.CurveName.SECP256K1);
 const ed25519 = new src_1.Curve(src_1.CurveName.ED25519);
@@ -33,6 +34,7 @@ const ed25519 = new src_1.Curve(src_1.CurveName.ED25519);
  * test if:
  * - the method returns a valid base64 encoded string
  * - the method's output can be used to create a valid PartialSignature
+ * - the method throws an error if the input is not a valid base64 encoded string
  */
 describe("Test partialSigToBase64()", () => {
     it("Should return a valid base64 encoded string", () => {
@@ -59,6 +61,7 @@ describe("Test partialSigToBase64()", () => {
     it("Should return a valid PartialSignature object - ed25519", () => {
         const ps = src_1.RingSignature.partialSigToBase64(src_1.RingSignature.partialSign(data.publicKeys_ed25519, data.message, data.signerPubKey_ed25519, ed25519));
         const rs = src_1.RingSignature.base64ToPartialSig(ps);
+        // check properties
         expect(rs).toBeDefined();
         expect(rs.ring).toBeDefined();
         expect(rs.ring.length).toBe(data.publicKeys_ed25519.length + 1); // +1 for the signerPubKey
@@ -70,5 +73,8 @@ describe("Test partialSigToBase64()", () => {
         expect(rs.curve).toBeDefined();
         expect(rs.curve.name).toBe(src_1.CurveName.ED25519);
         expect(rs.config).not.toBeDefined();
+    });
+    it("Should throw an error if the input is not a valid base64 encoded string", () => {
+        expect(() => src_1.RingSignature.base64ToPartialSig("not a valid base64 string")).toThrow((0, errors_1.invalidBase64)());
     });
 });
