@@ -1,4 +1,4 @@
-import { Curve, CurveName, Point } from "../../src";
+import { Point } from "../../src";
 import {
   valid_string_point_ed25519,
   valid_string_point_secp256k1,
@@ -6,7 +6,6 @@ import {
   invalid_string_point_secp256k1,
 } from "../data";
 describe("Point class fromString()", () => {
-  
   it("should return a point from a string representation of the point, ed25519", () => {
     const point = Point.fromString(valid_string_point_ed25519);
     expect(point).toBeInstanceOf(Point);
@@ -27,5 +26,5 @@ describe("Point class fromString()", () => {
 
   it("should throw an error if the string is void", () => {
     expect(() => Point.fromString("")).toThrow();
-    }); 
+  });
 });
