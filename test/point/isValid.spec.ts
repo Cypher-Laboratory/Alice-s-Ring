@@ -2,8 +2,8 @@ import { Curve, CurveName, Point } from "../../src";
 import {
   valid_coordinates_ed25519,
   valid_coordinates_secp256k1,
-  idPointX_ed25519, 
-  idPointX_secp256k1
+  idPointX_ed25519,
+  idPointX_secp256k1,
 } from "../data";
 describe("Point class isValid()", () => {
   let mockED25519: Curve;
@@ -31,6 +31,4 @@ describe("Point class isValid()", () => {
   it("should return false if the point is invalid, SECP256K1", () => {
     expect(idPointX_secp256k1.isValid()).toBeFalsy();
   });
-
 });
-
