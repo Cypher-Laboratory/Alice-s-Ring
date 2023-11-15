@@ -84,7 +84,7 @@ describe("Test sign()", () => {
 
     expect(ringSignature).toBeInstanceOf(RingSignature);
     // test if the ring signature is valid
-    expect(ringSignature.verify()).toBe(true);
+    expect(ringSignature.verify()).toBeTruthy();
   });
 
   it("Should return a valid signature if the ring is empty - ed25519", () => {
