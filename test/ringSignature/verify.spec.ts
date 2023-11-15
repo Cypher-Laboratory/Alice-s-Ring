@@ -83,7 +83,8 @@ describe("Test verify()", () => {
       data.message,
       ed25519,
     );
+    const verified: boolean = signature.verify();
 
-    expect(signature.verify()).toBeTruthy();
+    expect(verified).toBeTruthy();
   });
 });
