@@ -87,6 +87,7 @@ export const valid_coordinates_secp256k1: [bigint, bigint] = [
   30558939714202291090863029727820829993227403204286654734430544819396481281155n,
   46835398937525857424678912804713110217248423408711238708095319128726301404767n,
 ];
+
 // invalid points
 export const idPoint_secp256k1 = new Point(SECP256K1, [0n, 0n], false);
 export const idPointX_secp256k1 = new Point(SECP256K1, [0n, 1n], false);
