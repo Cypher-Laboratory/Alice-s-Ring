@@ -192,12 +192,13 @@ export declare class RingSignature {
  *
  * @param ring - The ring to check
  * @param ref - The curve to use as a reference (optional, if not set, the first point's curve will be used)
+ * @param emptyRing - If true, the ring can be empty
  *
  * @throws Error if the ring is empty
  * @throws Error if the ring contains duplicates
  * @throws Error if at least one of the points is invalid
  */
-export declare function checkRing(ring: Point[], ref?: Curve): void;
+export declare function checkRing(ring: Point[], ref?: Curve, emptyRing?: boolean): void;
 /**
  * Check if a point is valid
  *

@@ -34,8 +34,7 @@ const ed25519 = new src_1.Curve(src_1.CurveName.ED25519);
  *
  * test if:
  * - the method returns a valid PartialSignature object
- * - the method throw if ringSize = 0
- * - the method throw if ringSize  publicKeys.length
+ * - the method pass if ringSize = 0
  * - the method throw if signerPubKey is not on curve
  * - the method throw if message is empty
  * - the method pass if config.evmCompatibility = true
@@ -56,10 +55,10 @@ describe("Test partialSign()", () => {
         expect(rs.curve.name).toBe(src_1.CurveName.SECP256K1);
         expect(rs.config).not.toBeDefined();
     });
-    it("Should throw if ringSize = 0 - secp256k1", () => {
+    it("Should pass if ringSize = 0 - secp256k1", () => {
         expect(() => {
             src_1.RingSignature.partialSign([], data.message, data.signerPubKey_secp256k1, secp256k1);
-        }).toThrow("Ring cannot be empty");
+        }).not.toThrow();
     });
     it("Should throw if ring is invalid - secp256k1", () => {
         expect(() => {
@@ -124,10 +123,10 @@ describe("Test partialSign()", () => {
         expect(rs.curve.name).toBe(src_1.CurveName.ED25519);
         expect(rs.config).not.toBeDefined();
     });
-    it("Should throw if ringSize = 0 - ed25519", () => {
+    it("Should pass if ringSize = 0 - ed25519", () => {
         expect(() => {
             src_1.RingSignature.partialSign([], data.message, data.signerPubKey_ed25519, ed25519);
-        }).toThrow("Ring cannot be empty");
+        }).not.toThrow();
     });
     it("Should throw if ring is invalid - ed25519", () => {
         expect(() => {
