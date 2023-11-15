@@ -53,6 +53,7 @@ export class Point {
    * @returns the result of the multiplication
    */
   mult(scalar: bigint): Point {
+    if (scalar === BigInt(0)) throw computationError("invalid scalar");
     switch (this.curve.name) {
       case CurveName.SECP256K1: {
         const result = SECP256K1Point.fromAffine({
@@ -101,7 +102,6 @@ export class Point {
         return new Point(this.curve, [result.x, result.y]);
       }
       case CurveName.ED25519: {
-        // does not work
         const result = ED25519Point.fromAffine({
           x: this.x,
           y: this.y,
