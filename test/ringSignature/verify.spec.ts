@@ -73,7 +73,7 @@ describe("Test verify()", () => {
       secp256k1,
     );
 
-    expect(signature.verify()).toBe(true);
+    expect(signature.verify()).toBeTruthy();
   });
 
   it("Should return true if the signature is valid and ringSize = 1 - ed25519", () => {
