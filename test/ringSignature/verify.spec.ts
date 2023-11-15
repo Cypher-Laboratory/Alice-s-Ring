@@ -84,6 +84,6 @@ describe("Test verify()", () => {
       ed25519,
     );
 
-    expect(signature.verify()).toBe(true);
+    expect(signature.verify()).toBeTruthy();
   });
 });

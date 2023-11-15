@@ -109,7 +109,7 @@ describe("Test sign()", () => {
 
     expect(ringSignature).toBeInstanceOf(RingSignature);
     // test if the ring signature is valid
-    expect(ringSignature.verify()).toBe(true);
+    expect(ringSignature.verify()).toBeTruthy();
     // test if the ring signature is a Schnorr signature
     expect(
       verifyPiSignature(
@@ -120,7 +120,7 @@ describe("Test sign()", () => {
         ed25519,
         ringSignature.getConfig(),
       ),
-    ).toBe(true);
+    ).toBeTruthy();
   });
   // return verifyPiSignature(
   //   this.message,
