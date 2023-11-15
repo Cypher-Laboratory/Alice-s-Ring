@@ -44,7 +44,7 @@ describe("Point class mult operation tests", () => {
     const point = new Point(mockED25519, valid_coordinates_ed25519);
     const scalar = BigInt(0);
     expect(() => point.mult(scalar)).toThrow(
-      `Computation error: invalid scalar`,
+      "Invalid param: invalid scalar : 0",
     );
   });
 
@@ -52,7 +52,7 @@ describe("Point class mult operation tests", () => {
     const point = new Point(mockSECP256K1, valid_coordinates_secp256k1);
     const scalar = BigInt(0);
     expect(() => point.mult(scalar)).toThrow(
-      `Computation error: invalid scalar`,
+      "Invalid param: invalid scalar : 0",
     );
   });
 });

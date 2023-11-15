@@ -7,6 +7,7 @@ import { checkPoint } from "./ringSignature";
 import {
   computationError,
   differentCurves,
+  invalidParams,
   notOnCurve,
   unknownCurve,
 } from "./errors";
@@ -53,7 +54,7 @@ export class Point {
    * @returns the result of the multiplication
    */
   mult(scalar: bigint): Point {
-    if (scalar === BigInt(0)) throw computationError("invalid scalar");
+    if (scalar === BigInt(0)) throw invalidParams("invalid scalar : 0");
     switch (this.curve.name) {
       case CurveName.SECP256K1: {
         const result = SECP256K1Point.fromAffine({
