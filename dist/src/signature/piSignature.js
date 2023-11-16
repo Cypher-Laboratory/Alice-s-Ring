@@ -7,6 +7,7 @@ exports.verifyPiSignature = exports.piSignature = void 0;
   not limited to selling, licensing, or generating revenue from this code, is strictly prohibited.
 */
 const utils_1 = require("../utils");
+const errors_1 = require("../errors");
 /**
  * Compute the signature from the actual signer
  *
@@ -14,17 +15,20 @@ const utils_1 = require("../utils");
  * This function is used to compute the signature of the actual signer in a ring signature scheme.
  * It is really close to a schnorr signature.
  *
- * @param nonce - the nonce to use
- * @param message - the message digest to sign
+ * @param alpha - the alpha value
+ * @param c - the seed
  * @param signerPrivKey - the private key of the signer
  * @param Curve - the curve to use
  *
  * @returns the signer response as a point on the curve
  */
-function piSignature(nonce, // = alpha in our ring signature scheme
-message, // = c in our ring signature scheme
-signerPrivKey, curve) {
-    return (0, utils_1.modulo)(nonce + message * signerPrivKey, curve.N);
+function piSignature(alpha, c, signerPrivKey, curve) {
+    if (alpha === BigInt(0) ||
+        c === BigInt(0) ||
+        signerPrivKey === BigInt(0) ||
+        curve.N === BigInt(0))
+        throw (0, errors_1.invalidParams)();
+    return (0, utils_1.modulo)(alpha + c * signerPrivKey, curve.N);
 }
 exports.piSignature = piSignature;
 /**
