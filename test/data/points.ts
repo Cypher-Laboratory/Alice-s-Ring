@@ -107,7 +107,6 @@ export const invalid_string_point_ed25519 =
   valid_string_point_ed25519.slice(0, valid_coordinates_ed25519.length - 3) +
   valid_string_point_ed25519.slice(valid_coordinates_ed25519.length - 2);
 
-
 // invalid points
 export const idPoint_secp256k1 = new Point(SECP256K1, [0n, 0n], false);
 export const idPointX_secp256k1 = new Point(SECP256K1, [0n, 1n], false);
