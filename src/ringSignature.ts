@@ -7,7 +7,7 @@ import {
   hash,
   base64Regex,
 } from "./utils";
-import { piSignature, verifyPiSignature } from "./signature/piSignature";
+import { piSignature } from "./signature/piSignature";
 import { derivePubKey } from "./curves";
 import { Curve, PartialSignature, Point } from ".";
 import { SignatureConfig } from "./interfaces";
@@ -59,13 +59,12 @@ export class RingSignature {
       throw err.invalidParams("Config must be an object");
 
     // check ring, c and responses validity if config.safeMode is true or if config.safeMode is not set
-    if ((config && config.safeMode === true) || !(config && config.safeMode)) {
-      checkRing(ring, curve);
 
-      if (c === 0n) throw err.invalidParams("c");
-      for (const response of responses) {
-        if (response >= curve.N || response === 0n) throw err.invalidResponses;
-      }
+    checkRing(ring, curve, true);
+
+    if (c === 0n) throw err.invalidParams("c");
+    for (const response of responses) {
+      if (response >= curve.N || response === 0n) throw err.invalidResponses;
     }
 
     // check params
@@ -284,31 +283,9 @@ export class RingSignature {
     if (signerPrivateKey === 0n)
       throw err.invalidParams("Signer private key cannot be 0");
 
-    if (ring.length === 0) {
-      /* If the ring is empty, we just sign the message using our schnorr-like signature scheme
-       * and return a ring signature with only one response.
-       * Note that alpha is computed from c to allow verification.
-       */
-      const alpha = randomBigint(curve.N);
-      const alphaG = curve.GtoPoint().mult(alpha);
-
-      const c = BigInt(
-        "0x" + hash(message + formatPoint(alphaG, config), config?.hash),
-      );
-      const sig = piSignature(alpha, c, signerPrivateKey, curve);
-      return new RingSignature(
-        message,
-        [curve.GtoPoint().mult(signerPrivateKey)], // curve's generator point * private key
-        c,
-        [sig],
-        curve,
-        config,
-      );
-    }
-
     // check if ring is valid
     try {
-      checkRing(ring, curve);
+      checkRing(ring, curve, true);
     } catch (e) {
       throw err.invalidRing(e as string);
     }
@@ -362,8 +339,6 @@ export class RingSignature {
     curve: Curve,
     config?: SignatureConfig,
   ): PartialSignature {
-    if (ring.length === 0) throw err.noEmptyRing;
-
     const rawSignature = RingSignature.signature(
       curve,
       ring,
@@ -444,67 +419,55 @@ export class RingSignature {
     // set curve generator point
     const G: Point = this.curve.GtoPoint();
 
-    if (this.ring.length > 1) {
-      // hash the message
-      const messageDigest: string = hash(this.message, this.hash);
+    // hash the message
+    const messageDigest: string = hash(this.message, this.hash);
 
-      // computes the cees
-      let lastComputedCp = RingSignature.computeC(
-        // c1'
+    // computes the cees
+    let lastComputedCp = RingSignature.computeC(
+      // c1'
+      this.ring,
+      messageDigest,
+      G,
+      this.curve.N,
+      {
+        previousR: this.responses[0],
+        previousC: this.c,
+        previousPubKey: this.ring[0],
+      },
+      this.config,
+    );
+
+    for (let i = 2; i < this.ring.length; i++) {
+      // c2' -> cn'
+      lastComputedCp = RingSignature.computeC(
         this.ring,
         messageDigest,
         G,
         this.curve.N,
         {
-          previousR: this.responses[0],
-          previousC: this.c,
-          previousPubKey: this.ring[0],
+          previousR: this.responses[i - 1],
+          previousC: lastComputedCp,
+          previousPubKey: this.ring[i - 1],
         },
         this.config,
       );
-
-      for (let i = 2; i < this.ring.length; i++) {
-        // c2' -> cn'
-        lastComputedCp = RingSignature.computeC(
-          this.ring,
-          messageDigest,
-          G,
-          this.curve.N,
-          {
-            previousR: this.responses[i - 1],
-            previousC: lastComputedCp,
-            previousPubKey: this.ring[i - 1],
-          },
-          this.config,
-        );
-      }
-
-      // return true if c0 === c0'
-      return (
-        this.c ===
-        RingSignature.computeC(
-          this.ring,
-          messageDigest,
-          G,
-          this.curve.N,
-          {
-            previousR: this.responses[this.responses.length - 1],
-            previousC: lastComputedCp,
-            previousPubKey: this.ring[this.ring.length - 1],
-          },
-          this.config,
-        )
-      );
     }
 
-    // if ring length = 1 :
-    return verifyPiSignature(
-      this.message,
-      this.ring[0],
-      this.c,
-      this.responses[0],
-      this.curve,
-      this.config,
+    // return true if c0 === c0'
+    return (
+      this.c ===
+      RingSignature.computeC(
+        this.ring,
+        messageDigest,
+        G,
+        this.curve.N,
+        {
+          previousR: this.responses[this.responses.length - 1],
+          previousC: lastComputedCp,
+          previousPubKey: this.ring[this.ring.length - 1],
+        },
+        this.config,
+      )
     );
   }
 
@@ -548,13 +511,12 @@ export class RingSignature {
     if (message === "") throw err.noEmptyMsg;
 
     // check ring and responses validity
-    if (ring.length === 0) throw err.noEmptyRing;
     if (ring.length !== ring.length)
       throw err.lengthMismatch("ring", "responses");
 
     // check if ring is valid
     try {
-      checkRing(ring, curve);
+      checkRing(ring, curve, true);
     } catch (e) {
       throw err.invalidRing(e as string);
     }
@@ -580,7 +542,8 @@ export class RingSignature {
       signerPubKey = signerKey;
     }
     // set the signer position in the ring
-    const pi = getRandomSecuredNumber(0, ring.length - 1); // signer index
+    const pi =
+      ring.length === 0 ? 0 : getRandomSecuredNumber(0, ring.length - 1); // signer index
     // add the signer public key to the ring
     ring = ring.slice(0, pi).concat([signerPubKey], ring.slice(pi)) as Point[];
 
@@ -778,16 +741,17 @@ export class RingSignature {
  *
  * @param ring - The ring to check
  * @param ref - The curve to use as a reference (optional, if not set, the first point's curve will be used)
+ * @param emptyRing - If true, the ring can be empty
  *
  * @throws Error if the ring is empty
  * @throws Error if the ring contains duplicates
  * @throws Error if at least one of the points is invalid
  */
-export function checkRing(ring: Point[], ref?: Curve): void {
+export function checkRing(ring: Point[], ref?: Curve, emptyRing = false): void {
   if (!ref) ref = ring[0].curve;
 
   // check if the ring is empty
-  if (ring.length === 0) throw err.noEmptyRing;
+  if (ring.length === 0 && !emptyRing) throw err.noEmptyRing;
 
   // check for duplicates using a set
   if (new Set(ring).size !== ring.length) throw err.noDuplicates("ring");
