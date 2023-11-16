@@ -1,8 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.RingSignature = exports.uint8ArrayToHex = exports.getRandomSecuredNumber = exports.randomBigint = exports.CurveName = exports.Curve = exports.Point = exports.piSignature = void 0;
+exports.RingSignature = exports.uint8ArrayToHex = exports.getRandomSecuredNumber = exports.randomBigint = exports.CurveName = exports.Curve = exports.Point = exports.verifyPiSignature = exports.piSignature = exports.verifySchnorrSignature = exports.schnorrSignature = void 0;
+var schnorrSignature_1 = require("./signature/schnorrSignature");
+Object.defineProperty(exports, "schnorrSignature", { enumerable: true, get: function () { return schnorrSignature_1.schnorrSignature; } });
+Object.defineProperty(exports, "verifySchnorrSignature", { enumerable: true, get: function () { return schnorrSignature_1.verifySchnorrSignature; } });
 var piSignature_1 = require("./signature/piSignature");
 Object.defineProperty(exports, "piSignature", { enumerable: true, get: function () { return piSignature_1.piSignature; } });
+Object.defineProperty(exports, "verifyPiSignature", { enumerable: true, get: function () { return piSignature_1.verifyPiSignature; } });
 var point_1 = require("./point");
 Object.defineProperty(exports, "Point", { enumerable: true, get: function () { return point_1.Point; } });
 var curves_1 = require("./curves");

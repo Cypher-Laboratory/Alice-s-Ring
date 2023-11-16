@@ -1,4 +1,8 @@
-export { piSignature } from "./signature/piSignature";
+export {
+  schnorrSignature,
+  verifySchnorrSignature,
+} from "./signature/schnorrSignature";
+export { piSignature, verifyPiSignature } from "./signature/piSignature";
 
 export { Point } from "./point";
 export { Curve, CurveName } from "./curves";

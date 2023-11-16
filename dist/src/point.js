@@ -66,6 +66,8 @@ class Point {
      * @returns the result of the multiplication
      */
     mult(scalar) {
+        if (scalar === BigInt(0))
+            throw (0, errors_1.invalidParams)("invalid scalar : 0");
         switch (this.curve.name) {
             case curves_1.CurveName.SECP256K1: {
                 const result = noble_SECP256k1_1.ProjectivePoint.fromAffine({
@@ -107,7 +109,6 @@ class Point {
                 return new Point(this.curve, [result.x, result.y]);
             }
             case curves_1.CurveName.ED25519: {
-                // does not work
                 const result = noble_ED25519_1.ExtendedPoint.fromAffine({
                     x: this.x,
                     y: this.y,

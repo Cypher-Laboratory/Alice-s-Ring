@@ -7,6 +7,7 @@ import { modulo, hash, formatPoint } from "../utils";
 import { Point } from "../point";
 import { Curve } from "../curves";
 import { SignatureConfig } from "../interfaces";
+import { invalidParams } from "../errors";
 /**
  * Compute the signature from the actual signer
  *
@@ -14,20 +15,27 @@ import { SignatureConfig } from "../interfaces";
  * This function is used to compute the signature of the actual signer in a ring signature scheme.
  * It is really close to a schnorr signature.
  *
- * @param nonce - the nonce to use
- * @param message - the message digest to sign
+ * @param alpha - the alpha value
+ * @param c - the seed
  * @param signerPrivKey - the private key of the signer
  * @param Curve - the curve to use
  *
  * @returns the signer response as a point on the curve
  */
 export function piSignature(
-  nonce: bigint, // = alpha in our ring signature scheme
-  message: bigint, // = c in our ring signature scheme
+  alpha: bigint,
+  c: bigint,
   signerPrivKey: bigint,
   curve: Curve,
 ): bigint {
-  return modulo(nonce + message * signerPrivKey, curve.N);
+  if (
+    alpha === BigInt(0) ||
+    c === BigInt(0) ||
+    signerPrivKey === BigInt(0) ||
+    curve.N === BigInt(0)
+  )
+    throw invalidParams();
+  return modulo(alpha + c * signerPrivKey, curve.N);
 }
 
 /**
