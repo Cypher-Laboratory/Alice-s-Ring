@@ -87,6 +87,7 @@ export const valid_coordinates_secp256k1: [bigint, bigint] = [
   30558939714202291090863029727820829993227403204286654734430544819396481281155n,
   46835398937525857424678912804713110217248423408711238708095319128726301404767n,
 ];
+
 export const valid_string_point_ed25519 = new Point(
   ED25519,
   valid_coordinates_ed25519,
@@ -105,6 +106,7 @@ export const invalid_string_point_secp256k1 =
 export const invalid_string_point_ed25519 =
   valid_string_point_ed25519.slice(0, valid_coordinates_ed25519.length - 3) +
   valid_string_point_ed25519.slice(valid_coordinates_ed25519.length - 2);
+
 
 // invalid points
 export const idPoint_secp256k1 = new Point(SECP256K1, [0n, 0n], false);
