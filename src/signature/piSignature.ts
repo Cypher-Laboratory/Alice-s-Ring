@@ -7,7 +7,7 @@ import { modulo, hash, formatPoint } from "../utils";
 import { Point } from "../point";
 import { Curve } from "../curves";
 import { SignatureConfig } from "../interfaces";
-import { invalidParams } from "../errors";
+import { invalidParams, noEmptyMsg } from "../errors";
 /**
  * Compute the signature from the actual signer
  *
@@ -58,15 +58,30 @@ export function verifyPiSignature(
   curve: Curve,
   config?: SignatureConfig,
 ): boolean {
+
+  // checks
+  if (message === '') {
+    throw noEmptyMsg;
+  }
+  if (
+    !curve.isOnCurve(signerPubKey) ||
+    c === BigInt(0) ||
+    piSignature === BigInt(0) ||
+    piSignature >= curve.N ||
+    piSignature === BigInt(0)
+  ) {
+    throw invalidParams();
+  }
+
   const G: Point = curve.GtoPoint(); // curve generator
 
   // compute H(m|[r*G - c*K])
   const cprime = hash(
     message +
-      formatPoint(
-        G.mult(piSignature).add(signerPubKey.mult(c).negate()),
-        config,
-      ),
+    formatPoint(
+      G.mult(piSignature).add(signerPubKey.mult(c).negate()),
+      config,
+    ),
     config?.hash,
   );
   return cprime === c.toString(16);
