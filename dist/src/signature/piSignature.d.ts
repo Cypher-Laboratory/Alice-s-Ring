@@ -8,16 +8,14 @@ import { SignatureConfig } from "../interfaces";
  * This function is used to compute the signature of the actual signer in a ring signature scheme.
  * It is really close to a schnorr signature.
  *
- * @param nonce - the nonce to use
- * @param message - the message digest to sign
+ * @param alpha - the alpha value
+ * @param c - the seed
  * @param signerPrivKey - the private key of the signer
  * @param Curve - the curve to use
  *
  * @returns the signer response as a point on the curve
  */
-export declare function piSignature(nonce: bigint, // = alpha in our ring signature scheme
-message: bigint, // = c in our ring signature scheme
-signerPrivKey: bigint, curve: Curve): bigint;
+export declare function piSignature(alpha: bigint, c: bigint, signerPrivKey: bigint, curve: Curve): bigint;
 /**
  * Verify a signature generated with the `piSignature` function
  *
