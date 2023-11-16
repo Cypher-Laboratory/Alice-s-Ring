@@ -3,6 +3,8 @@ export declare const privateKey: bigint[];
 export declare const zeroPivateKey = 0n;
 export declare const publicKeys_secp256k1: Point[];
 export declare const publicKeys_ed25519: Point[];
+export declare const valid_coordinates_ed25519: [bigint, bigint];
+export declare const valid_coordinates_secp256k1: [bigint, bigint];
 export declare const idPoint_secp256k1: Point;
 export declare const idPointX_secp256k1: Point;
 export declare const idPointY_secp256k1: Point;

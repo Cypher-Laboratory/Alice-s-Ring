@@ -23,7 +23,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.signerPubKey_ed25519 = exports.signerPubKey_secp256k1 = exports.signerPrivKey = exports.randomResponses = exports.randomC = exports.idPointY_ed25519 = exports.idPointX_ed25519 = exports.idPoint_ed25519 = exports.idPointY_secp256k1 = exports.idPointX_secp256k1 = exports.idPoint_secp256k1 = exports.publicKeys_ed25519 = exports.publicKeys_secp256k1 = exports.zeroPivateKey = exports.privateKey = void 0;
+exports.signerPubKey_ed25519 = exports.signerPubKey_secp256k1 = exports.signerPrivKey = exports.randomResponses = exports.randomC = exports.idPointY_ed25519 = exports.idPointX_ed25519 = exports.idPoint_ed25519 = exports.idPointY_secp256k1 = exports.idPointX_secp256k1 = exports.idPoint_secp256k1 = exports.valid_coordinates_secp256k1 = exports.valid_coordinates_ed25519 = exports.publicKeys_ed25519 = exports.publicKeys_secp256k1 = exports.zeroPivateKey = exports.privateKey = void 0;
 const src_1 = require("../../src");
 const utils_1 = require("../../src/utils");
 const curves_1 = require("./curves");
@@ -58,6 +58,14 @@ exports.publicKeys_secp256k1 = exports.privateKey.map((privKey) => curves_1.SECP
 exports.publicKeys_ed25519 = exports.privateKey.map((key) => {
     return curves_1.ED25519.GtoPoint().mult(ed.utils.getExtendedPublicKey(key.toString(16)).scalar);
 });
+exports.valid_coordinates_ed25519 = [
+    18692818425924056284077361575286289503472634786144083983260241244353871635402n,
+    25130982270725351492078080917244946694662105954296899228585440574429183004137n,
+];
+exports.valid_coordinates_secp256k1 = [
+    30558939714202291090863029727820829993227403204286654734430544819396481281155n,
+    46835398937525857424678912804713110217248423408711238708095319128726301404767n,
+];
 // invalid points
 exports.idPoint_secp256k1 = new src_1.Point(curves_1.SECP256K1, [0n, 0n], false);
 exports.idPointX_secp256k1 = new src_1.Point(curves_1.SECP256K1, [0n, 1n], false);

@@ -22,18 +22,25 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
-var __exportStar = (this && this.__exportStar) || function(m, exports) {
-    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.base64Regex = exports.base64Point = exports.jsonRS = void 0;
-const jsonRS = __importStar(require("../data/jsonSignatures.json"));
-exports.jsonRS = jsonRS;
-const base64Point = __importStar(require("../data/jsonPoint.json"));
-exports.base64Point = base64Point;
-__exportStar(require("./curves"), exports);
-__exportStar(require("./message"), exports);
-__exportStar(require("./points"), exports);
-exports.base64Regex = 
-// eslint-disable-next-line no-useless-escape
-/^(?:[A-Za-z0-9+\/]{4})*(?:[A-Za-z0-9+\/]{2}==|[A-Za-z0-9+\/]{3}=)?$/;
+const src_1 = require("../../src");
+const data = __importStar(require("../data"));
+describe("Point class mult operation tests", () => {
+    it("Should return a valid Point from it's base64 representation, ed25519", () => {
+        const point = src_1.Point.fromBase64(data.base64Point.valid_point_ed25519);
+        expect(point).toBeInstanceOf(src_1.Point);
+    });
+    it("Should return a valid Point from it's base64 representation, secp256k1", () => {
+        const point = src_1.Point.fromBase64(data.base64Point.valid_point_secp256k1);
+        expect(point).toBeInstanceOf(src_1.Point);
+    });
+    it("should throw an error if the base64 string is not valid, ed25519", () => {
+        expect(() => src_1.Point.fromBase64(data.base64Point.invalid_point_ed25519)).toThrow();
+    });
+    it("should throw an error if the base64 string is not valid, secp256k1", () => {
+        expect(() => src_1.Point.fromBase64(data.base64Point.invalid_point_secp256k1)).toThrow();
+    });
+    it("should throw if the string is void", () => {
+        expect(() => src_1.Point.fromBase64("")).toThrow();
+    });
+});
