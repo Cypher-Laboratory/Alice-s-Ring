@@ -34,7 +34,7 @@ exports.piSignature = piSignature;
 /**
  * Verify a signature generated with the `piSignature` function
  *
- * @param message - The message (as bigint) (= c[pi] in our ring signature scheme)
+ * @param alpha - The alpha value
  * @param signerPubKey - The signer public key
  * @param c - The challenge (= c in our ring signature scheme)
  * @param piSignature - The signature
@@ -43,11 +43,18 @@ exports.piSignature = piSignature;
  *
  * @returns true if the signature is valid, false otherwise
  */
-function verifyPiSignature(message, signerPubKey, c, piSignature, curve, config) {
+function verifyPiSignature(alpha, signerPubKey, c, piSignature, curve) {
+    // checks
+    if (!curve.isOnCurve(signerPubKey) ||
+        alpha === BigInt(0) ||
+        c === BigInt(0) ||
+        piSignature === BigInt(0) ||
+        piSignature >= curve.N ||
+        piSignature === BigInt(0)) {
+        throw (0, errors_1.invalidParams)();
+    }
     const G = curve.GtoPoint(); // curve generator
-    // compute H(m|[r*G - c*K])
-    const cprime = (0, utils_1.hash)(message +
-        (0, utils_1.formatPoint)(G.mult(piSignature).add(signerPubKey.mult(c).negate()), config), config?.hash);
-    return cprime === c.toString(16);
+    return (G.mult(piSignature).x === G.mult(c).add(signerPubKey.mult(alpha)).x &&
+        G.mult(piSignature).y === G.mult(c).add(signerPubKey.mult(alpha)).y);
 }
 exports.verifyPiSignature = verifyPiSignature;

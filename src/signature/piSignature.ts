@@ -3,11 +3,10 @@
   and is exclusively reserved for the use of gemWallet. Any form of commercial use, including but 
   not limited to selling, licensing, or generating revenue from this code, is strictly prohibited.
 */
-import { modulo, hash, formatPoint } from "../utils";
+import { modulo } from "../utils";
 import { Point } from "../point";
 import { Curve } from "../curves";
-import { SignatureConfig } from "../interfaces";
-import { invalidParams, noEmptyMsg } from "../errors";
+import { invalidParams } from "../errors";
 /**
  * Compute the signature from the actual signer
  *
@@ -35,13 +34,14 @@ export function piSignature(
     curve.N === BigInt(0)
   )
     throw invalidParams();
+
   return modulo(alpha + c * signerPrivKey, curve.N);
 }
 
 /**
  * Verify a signature generated with the `piSignature` function
  *
- * @param message - The message (as bigint) (= c[pi] in our ring signature scheme)
+ * @param alpha - The alpha value
  * @param signerPubKey - The signer public key
  * @param c - The challenge (= c in our ring signature scheme)
  * @param piSignature - The signature
@@ -51,20 +51,16 @@ export function piSignature(
  * @returns true if the signature is valid, false otherwise
  */
 export function verifyPiSignature(
-  message: string,
+  alpha: bigint,
   signerPubKey: Point,
   c: bigint,
   piSignature: bigint,
   curve: Curve,
-  config?: SignatureConfig,
 ): boolean {
-
   // checks
-  if (message === '') {
-    throw noEmptyMsg;
-  }
   if (
     !curve.isOnCurve(signerPubKey) ||
+    alpha === BigInt(0) ||
     c === BigInt(0) ||
     piSignature === BigInt(0) ||
     piSignature >= curve.N ||
@@ -75,14 +71,8 @@ export function verifyPiSignature(
 
   const G: Point = curve.GtoPoint(); // curve generator
 
-  // compute H(m|[r*G - c*K])
-  const cprime = hash(
-    message +
-    formatPoint(
-      G.mult(piSignature).add(signerPubKey.mult(c).negate()),
-      config,
-    ),
-    config?.hash,
+  return (
+    G.mult(piSignature).x === G.mult(c).add(signerPubKey.mult(alpha)).x &&
+    G.mult(piSignature).y === G.mult(c).add(signerPubKey.mult(alpha)).y
   );
-  return cprime === c.toString(16);
 }

@@ -65,6 +65,7 @@ describe("Test verify()", () => {
     });
     it("Should return true if the signature is valid and ringSize = 1 - ed25519", () => {
         const signature = src_1.RingSignature.sign([], data.signerPrivKey, data.message, ed25519);
-        expect(signature.verify()).toBeTruthy();
+        const verified = signature.verify();
+        expect(verified).toBeTruthy();
     });
 });
