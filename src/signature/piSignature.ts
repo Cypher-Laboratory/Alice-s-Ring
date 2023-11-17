@@ -71,8 +71,5 @@ export function verifyPiSignature(
 
   const G: Point = curve.GtoPoint(); // curve generator
 
-  return (
-    G.mult(piSignature).x === G.mult(c).add(signerPubKey.mult(alpha)).x &&
-    G.mult(piSignature).y === G.mult(c).add(signerPubKey.mult(alpha)).y
-  );
+  return G.mult(piSignature).equals(G.mult(c).add(signerPubKey.mult(alpha)));
 }

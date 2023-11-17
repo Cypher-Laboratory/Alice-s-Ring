@@ -54,7 +54,6 @@ function verifyPiSignature(alpha, signerPubKey, c, piSignature, curve) {
         throw (0, errors_1.invalidParams)();
     }
     const G = curve.GtoPoint(); // curve generator
-    return (G.mult(piSignature).x === G.mult(c).add(signerPubKey.mult(alpha)).x &&
-        G.mult(piSignature).y === G.mult(c).add(signerPubKey.mult(alpha)).y);
+    return G.mult(piSignature).equals(G.mult(c).add(signerPubKey.mult(alpha)));
 }
 exports.verifyPiSignature = verifyPiSignature;
