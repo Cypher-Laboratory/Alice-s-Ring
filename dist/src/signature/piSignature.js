@@ -36,7 +36,7 @@ exports.piSignature = piSignature;
  *
  * @param alpha - The alpha value
  * @param signerPubKey - The signer public key
- * @param c - The challenge (= c in our ring signature scheme)
+ * @param c - The challenge
  * @param piSignature - The signature
  * @param curve - The curve to use
  * @param config - The signature config
