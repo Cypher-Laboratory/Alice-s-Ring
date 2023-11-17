@@ -65,6 +65,19 @@ describe("Test verify()", () => {
     });
     it("Should return true if the signature is valid and ringSize = 1 - ed25519", () => {
         const signature = src_1.RingSignature.sign([], data.signerPrivKey, data.message, ed25519);
-        expect(signature.verify()).toBeTruthy();
+        const verified = signature.verify();
+        expect(verified).toBeTruthy();
+    });
+    it("Should return true if the base64 signature is valid", () => {
+        const signature = src_1.RingSignature.sign(data.publicKeys_secp256k1, data.signerPrivKey, data.message, secp256k1).toBase64();
+        expect(src_1.RingSignature.verify(signature)).toBeTruthy();
+    });
+    it("Should return false if the base64 signature is invalid", () => {
+        const signature = data.jsonRS.validBase64Sig;
+        expect(src_1.RingSignature.verify(signature)).toBeFalsy();
+    });
+    it("Should return true if the JSON signature is valid", () => {
+        const signature = src_1.RingSignature.sign(data.publicKeys_secp256k1, data.signerPrivKey, data.message, secp256k1).toJsonString();
+        expect(src_1.RingSignature.verify(signature)).toBeTruthy();
     });
 });
