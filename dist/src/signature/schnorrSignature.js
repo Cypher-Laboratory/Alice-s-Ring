@@ -15,22 +15,24 @@ const utils_1 = require("../utils");
  * @param curve - The curve to use
  * @param alpha - The alpha value (optional)
  * @param config - The signature config (optional)
+ * @param ring - The ring used for signing (only needed in case of ring signature context)(optional)
  * @param keyPrefixing - Whether to prefix the hashed data with the public key (default: true)
  *
- * @returns { c: bigint, r: bigint } - The signature { c, r }
+ * @returns { messageDigest: bigint, c: bigint, r: bigint,  ring?: Point[] } - The signature { messageDigest, c, r, ring? }
  */
 function schnorrSignature(message, // = c in our ring signature scheme
-signerPrivKey, curve, alpha, config, keyPrefixing = true) {
+signerPrivKey, curve, alpha, config, ring, keyPrefixing = true) {
     if (!alpha)
         alpha = (0, utils_1.randomBigint)(curve.N);
-    const c = BigInt("0x" +
-        (0, utils_1.hash)((keyPrefixing
-            ? (0, utils_1.formatPoint)(curve.GtoPoint().mult(alpha), config)
+    const c = (0, utils_1.modulo)(BigInt("0x" +
+        (0, utils_1.hash)((keyPrefixing && !ring
+            ? (0, utils_1.formatPoint)(curve.GtoPoint().mult(alpha))
             : "") +
+            (ring ? (0, utils_1.formatRing)(ring) : "") +
             message +
-            (0, utils_1.formatPoint)(curve.GtoPoint().mult(alpha), config), config?.hash));
+            (0, utils_1.formatPoint)(curve.GtoPoint().mult(alpha)), config?.hash)), curve.N);
     const r = (0, utils_1.modulo)(alpha + c * signerPrivKey, curve.N);
-    return { c, r };
+    return { messageDigest: message, c, r, ring: ring };
 }
 exports.schnorrSignature = schnorrSignature;
 /**
@@ -47,9 +49,16 @@ exports.schnorrSignature = schnorrSignature;
  */
 function verifySchnorrSignature(message, signerPubKey, signature, curve, config, keyPrefixing = true) {
     const G = curve.GtoPoint(); // curve generator
-    // compute H(m|[r*G - c*K]). Return true if the result is equal to c
-    return ((0, utils_1.hash)((keyPrefixing ? (0, utils_1.formatPoint)(signerPubKey, config) : "") +
+    // compute H(R|m|[r*G - c*K]) (R is empty, signerPubkey or the ring used for signing). Return true if the result is equal to c
+    console.log("schnorr verify: ");
+    console.log("c: ", signature.c);
+    console.log("r: ", signature.r);
+    console.log("point: ", G.mult(signature.r).add(signerPubKey.mult(signature.c).negate()).x);
+    console.log("signerPubKey: ", keyPrefixing && !signature.ring ? (0, utils_1.formatPoint)(signerPubKey) : "none");
+    console.log("ring: ", signature.ring ? (0, utils_1.formatRing)(signature.ring) : "none");
+    return ((0, utils_1.hash)((keyPrefixing && !signature.ring ? (0, utils_1.formatPoint)(signerPubKey) : "") +
+        (signature.ring ? (0, utils_1.formatRing)(signature.ring) : "") +
         message +
-        (0, utils_1.formatPoint)(G.mult(signature.r).add(signerPubKey.mult(signature.c).negate()), config), config?.hash) === signature.c.toString(16));
+        (0, utils_1.formatPoint)(G.mult(signature.r).add(signerPubKey.mult(signature.c).negate())), config?.hash) === signature.c.toString(16));
 }
 exports.verifySchnorrSignature = verifySchnorrSignature;

@@ -8,12 +8,9 @@ exports.formatRing = void 0;
  * @param config - the config to use
  * @returns the formatted ring
  */
-function formatRing(ring, config) {
-    if (config?.evmCompatibility) {
-        return ring
-            .map((point) => point.x.toString() + point.y.toString())
-            .join("");
-    }
-    return ring;
+function formatRing(ring) {
+    return ring
+        .map((point) => point.x.toString() + point.y.toString())
+        .join("");
 }
 exports.formatRing = formatRing;

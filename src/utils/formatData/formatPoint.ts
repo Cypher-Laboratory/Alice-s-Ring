@@ -1,4 +1,3 @@
-import { SignatureConfig } from "../../ringSignature";
 import { Point } from "../../point";
 
 /**
@@ -12,12 +11,6 @@ import { Point } from "../../point";
  *
  * @returns the formatted point
  */
-export function formatPoint(
-  point: Point,
-  config: SignatureConfig | undefined,
-): string {
-  if (config?.evmCompatibility) {
-    return point.x.toString() + point.y.toString();
-  }
-  return point.toString();
+export function formatPoint(point: Point): string {
+  return point.x.toString() + point.y.toString();
 }
