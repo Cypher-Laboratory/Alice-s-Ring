@@ -6,10 +6,11 @@ import {
   formatPoint,
   hash,
   base64Regex,
+  computeC1,
 } from "./utils";
 import { piSignature } from "./signature/piSignature";
 import { derivePubKey } from "./curves";
-import { Curve, PartialSignature, Point, schnorrSignature } from ".";
+import { Curve, PartialSignature, Point } from ".";
 import { SignatureConfig } from "./interfaces";
 import { hashFunction } from "./utils/hashFunction";
 import * as err from "./errors";
@@ -317,20 +318,11 @@ export class RingSignature {
       .slice(0, signerIndex)
       .concat([signerPubKey], ring.slice(signerIndex)) as Point[];
 
-    const schnorrSig = schnorrSignature(
-      messageDigest,
-      signerPrivateKey,
-      curve,
-      alpha,
-      config,
-      ring,
-      true,
-    );
-
+    const c1 = computeC1(messageDigest, curve, alpha, config, ring);
     const rawSignature = RingSignature.signature(
       curve,
       ring,
-      schnorrSig.c,
+      c1,
       signerIndex,
       signerPrivateKey,
       messageDigest,
@@ -344,16 +336,6 @@ export class RingSignature {
       signerPrivateKey,
       curve,
     );
-    console.log(
-      "signerResponse: ",
-      rawSignature.responses
-        .slice(0, rawSignature.signerIndex)
-        .concat(
-          [signerResponse],
-          rawSignature.responses.slice(rawSignature.signerIndex + 1),
-        ),
-    );
-    console.log("c: ", rawSignature.cees);
     return new RingSignature(
       message,
       rawSignature.ring,
@@ -512,8 +494,7 @@ export class RingSignature {
       this.curve,
       this.config,
     );
-    console.log("verify:");
-    console.log("lastComputedCp: ", lastComputedCp);
+
     for (let i = 2; i < this.ring.length; i++) {
       // c2' -> cn'
       lastComputedCp = RingSignature.computeC(
@@ -704,15 +685,6 @@ export class RingSignature {
       );
     }
     if (params.previousR && params.previousC && params.previousPubKey) {
-      console.log("params.previousR: ", params.previousR);
-      console.log("params.previousC: ", params.previousC);
-      console.log("ring: ", formatRing(ring));
-      console.log(
-        "point: ",
-        G.mult(params.previousR).add(
-          params.previousPubKey.mult(params.previousC).negate(),
-        ).x,
-      );
       return modulo(
         BigInt(
           "0x" +

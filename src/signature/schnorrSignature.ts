@@ -31,6 +31,15 @@ export function schnorrSignature(
   keyPrefixing = true,
 ): { messageDigest: bigint; c: bigint; r: bigint; ring?: Point[] } {
   if (!alpha) alpha = randomBigint(curve.N);
+  // console.log("schnorr sign: ");
+  // console.log("alpha: ", alpha);
+  // console.log("signerPrivKey: ", signerPrivKey);
+  // console.log("message: ", message);
+  // console.log("point: ", curve.GtoPoint().mult(alpha).x);
+  // console.log("ring: ", ring ? formatRing(ring) : "none");
+  // console.log("keyPrefixing: ", (keyPrefixing && !ring
+  //   ? formatPoint(derivePubKey(signerPrivKey, curve))
+  //   : "none"));
 
   const c = modulo(
     BigInt(
@@ -79,16 +88,25 @@ export function verifySchnorrSignature(
     signerPubKey.mult(signature.c).negate(),
   );
 
-  const h = BigInt(
-    "0x" +
-      hash(
-        (keyPrefixing && !signature.ring ? formatPoint(signerPubKey) : "") +
-          (signature.ring ? formatRing(signature.ring) : "") +
-          message +
-          formatPoint(point),
-        config?.hash,
-      ),
-  );
+  // console.log("schnorr verify: ");
+  // console.log("point: ", point.x);
+  // console.log("ring: ", signature.ring ? formatRing(signature.ring) : "none");
+  // console.log("keyPrefixing: ", (keyPrefixing && !signature.ring ? formatPoint(signerPubKey) : "none"));
+  // console.log("message: ", message);
+
+  const h = modulo(
+    BigInt(
+      "0x" +
+        hash(
+          (keyPrefixing && !signature.ring ? formatPoint(signerPubKey) : "") +
+            (signature.ring ? formatRing(signature.ring) : "") +
+            message +
+            formatPoint(point),
+          config?.hash,
+        ),
+    ),
+    curve.N,
+  ); // il manque un modulo N ici mais c'est voulu pour l'exemple
 
   return h === signature.c;
 }
