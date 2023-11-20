@@ -344,16 +344,7 @@ export class RingSignature {
       signerPrivateKey,
       curve,
     );
-    console.log(
-      "signerResponse: ",
-      rawSignature.responses
-        .slice(0, rawSignature.signerIndex)
-        .concat(
-          [signerResponse],
-          rawSignature.responses.slice(rawSignature.signerIndex + 1),
-        ),
-    );
-    console.log("c: ", rawSignature.cees);
+
     return new RingSignature(
       message,
       rawSignature.ring,
@@ -512,8 +503,7 @@ export class RingSignature {
       this.curve,
       this.config,
     );
-    console.log("verify:");
-    console.log("lastComputedCp: ", lastComputedCp);
+
     for (let i = 2; i < this.ring.length; i++) {
       // c2' -> cn'
       lastComputedCp = RingSignature.computeC(
@@ -704,15 +694,6 @@ export class RingSignature {
       );
     }
     if (params.previousR && params.previousC && params.previousPubKey) {
-      console.log("params.previousR: ", params.previousR);
-      console.log("params.previousC: ", params.previousC);
-      console.log("ring: ", formatRing(ring));
-      console.log(
-        "point: ",
-        G.mult(params.previousR).add(
-          params.previousPubKey.mult(params.previousC).negate(),
-        ).x,
-      );
       return modulo(
         BigInt(
           "0x" +

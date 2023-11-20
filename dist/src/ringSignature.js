@@ -267,10 +267,6 @@ class RingSignature {
         const rawSignature = RingSignature.signature(curve, ring, schnorrSig.c, signerIndex, signerPrivateKey, messageDigest, config);
         // compute the signer response
         const signerResponse = (0, piSignature_1.piSignature)(alpha, rawSignature.cees[rawSignature.signerIndex], signerPrivateKey, curve);
-        console.log("signerResponse: ", rawSignature.responses
-            .slice(0, rawSignature.signerIndex)
-            .concat([signerResponse], rawSignature.responses.slice(rawSignature.signerIndex + 1)));
-        console.log("c: ", rawSignature.cees);
         return new RingSignature(message, rawSignature.ring, rawSignature.cees[0], 
         // insert the signer response
         rawSignature.responses
@@ -377,8 +373,6 @@ class RingSignature {
             previousC: this.c,
             previousPubKey: this.ring[0],
         }, this.curve, this.config);
-        console.log("verify:");
-        console.log("lastComputedCp: ", lastComputedCp);
         for (let i = 2; i < this.ring.length; i++) {
             // c2' -> cn'
             lastComputedCp = RingSignature.computeC(this.ring, messageDigest, {
@@ -502,10 +496,6 @@ class RingSignature {
                     (0, utils_1.formatPoint)(G.mult(params.alpha)), hashFct)), N);
         }
         if (params.previousR && params.previousC && params.previousPubKey) {
-            console.log("params.previousR: ", params.previousR);
-            console.log("params.previousC: ", params.previousC);
-            console.log("ring: ", (0, utils_1.formatRing)(ring));
-            console.log("point: ", G.mult(params.previousR).add(params.previousPubKey.mult(params.previousC).negate()).x);
             return (0, utils_1.modulo)(BigInt("0x" +
                 (0, utils_1.hash)((0, utils_1.formatRing)(ring) +
                     messageDigest +

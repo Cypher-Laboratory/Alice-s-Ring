@@ -79,15 +79,18 @@ export function verifySchnorrSignature(
     signerPubKey.mult(signature.c).negate(),
   );
 
-  const h = BigInt(
-    "0x" +
-      hash(
-        (keyPrefixing && !signature.ring ? formatPoint(signerPubKey) : "") +
-          (signature.ring ? formatRing(signature.ring) : "") +
-          message +
-          formatPoint(point),
-        config?.hash,
-      ),
+  const h = modulo(
+    BigInt(
+      "0x" +
+        hash(
+          (keyPrefixing && !signature.ring ? formatPoint(signerPubKey) : "") +
+            (signature.ring ? formatRing(signature.ring) : "") +
+            message +
+            formatPoint(point),
+          config?.hash,
+        ),
+    ),
+    curve.N,
   );
 
   return h === signature.c;
