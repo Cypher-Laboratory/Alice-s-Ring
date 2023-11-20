@@ -133,7 +133,7 @@ export declare class RingSignature {
     /**
      * Verify a RingSignature stored as a json string
      *
-     * @param signature - The json signature to verify
+     * @param signature - The json or base64 encoded signature to verify
      * @returns True if the signature is valid, false otherwise
      */
     static verify(signature: string): boolean;

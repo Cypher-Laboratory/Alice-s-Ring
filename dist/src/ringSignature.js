@@ -352,10 +352,14 @@ class RingSignature {
     /**
      * Verify a RingSignature stored as a json string
      *
-     * @param signature - The json signature to verify
+     * @param signature - The json or base64 encoded signature to verify
      * @returns True if the signature is valid, false otherwise
      */
     static verify(signature) {
+        // check if the signature is a json or a base64 string
+        if (utils_1.base64Regex.test(signature)) {
+            signature = Buffer.from(signature, "base64").toString("ascii");
+        }
         const ringSignature = RingSignature.fromJsonString(signature);
         return ringSignature.verify();
     }
