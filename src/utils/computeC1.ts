@@ -12,7 +12,7 @@ import { Curve } from "../curves";
  * @param ring the ring involved in the ring signature
  * @returns the value of c1
  */
-export function computeC1(
+export function computeCPI1(
   message: bigint, // = c in our ring signature scheme
   curve: Curve,
   alpha?: bigint,

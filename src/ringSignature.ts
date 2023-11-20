@@ -6,7 +6,7 @@ import {
   formatPoint,
   hash,
   base64Regex,
-  computeC1,
+  computeCPI1,
 } from "./utils";
 import { piSignature } from "./signature/piSignature";
 import { derivePubKey } from "./curves";
@@ -318,11 +318,11 @@ export class RingSignature {
       .slice(0, signerIndex)
       .concat([signerPubKey], ring.slice(signerIndex)) as Point[];
 
-    const c1 = computeC1(messageDigest, curve, alpha, config, ring);
+    const cpi1 = computeCPI1(messageDigest, curve, alpha, config, ring);
     const rawSignature = RingSignature.signature(
       curve,
       ring,
-      c1,
+      cpi1,
       signerIndex,
       signerPrivateKey,
       messageDigest,
