@@ -29,6 +29,7 @@ const utils_1 = require("../../src/utils");
 const curves_1 = require("./curves");
 const ed = __importStar(require("../../src/utils/noble-libraries/noble-ED25519"));
 const sha512_1 = require("@noble/hashes/sha512");
+const curves_2 = require("../../src/curves");
 ed.etc.sha512Sync = (...m) => (0, sha512_1.sha512)(ed.etc.concatBytes(...m));
 exports.privateKey = [
     // len = 10
@@ -96,5 +97,5 @@ exports.randomResponses = [
 /* -------------SIGNER KEYS------------- */
 exports.signerPrivKey = ed.utils.getExtendedPublicKey(BigInt("0x" +
     (0, utils_1.hash)("4705133659738916056634998425092693862103756529453934308865022401716")).toString(16)).scalar;
-exports.signerPubKey_secp256k1 = curves_1.SECP256K1.GtoPoint().mult(exports.signerPrivKey);
-exports.signerPubKey_ed25519 = curves_1.ED25519.GtoPoint().mult(exports.signerPrivKey);
+exports.signerPubKey_secp256k1 = (0, curves_2.derivePubKey)(exports.signerPrivKey, curves_1.SECP256K1);
+exports.signerPubKey_ed25519 = (0, curves_2.derivePubKey)(exports.signerPrivKey, curves_1.ED25519);

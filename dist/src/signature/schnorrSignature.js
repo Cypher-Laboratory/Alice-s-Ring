@@ -7,6 +7,7 @@ exports.verifySchnorrSignature = exports.schnorrSignature = void 0;
   not limited to selling, licensing, or generating revenue from this code, is strictly prohibited.
 */
 const utils_1 = require("../utils");
+const curves_1 = require("../curves");
 /**
  * Compute a Schnorr signature
  *
@@ -26,7 +27,7 @@ signerPrivKey, curve, alpha, config, ring, keyPrefixing = true) {
         alpha = (0, utils_1.randomBigint)(curve.N);
     const c = (0, utils_1.modulo)(BigInt("0x" +
         (0, utils_1.hash)((keyPrefixing && !ring
-            ? (0, utils_1.formatPoint)(curve.GtoPoint().mult(alpha))
+            ? (0, utils_1.formatPoint)((0, curves_1.derivePubKey)(signerPrivKey, curve))
             : "") +
             (ring ? (0, utils_1.formatRing)(ring) : "") +
             message +
@@ -50,15 +51,12 @@ exports.schnorrSignature = schnorrSignature;
 function verifySchnorrSignature(message, signerPubKey, signature, curve, config, keyPrefixing = true) {
     const G = curve.GtoPoint(); // curve generator
     // compute H(R|m|[r*G - c*K]) (R is empty, signerPubkey or the ring used for signing). Return true if the result is equal to c
-    console.log("schnorr verify: ");
-    console.log("c: ", signature.c);
-    console.log("r: ", signature.r);
-    console.log("point: ", G.mult(signature.r).add(signerPubKey.mult(signature.c).negate()).x);
-    console.log("signerPubKey: ", keyPrefixing && !signature.ring ? (0, utils_1.formatPoint)(signerPubKey) : "none");
-    console.log("ring: ", signature.ring ? (0, utils_1.formatRing)(signature.ring) : "none");
-    return ((0, utils_1.hash)((keyPrefixing && !signature.ring ? (0, utils_1.formatPoint)(signerPubKey) : "") +
-        (signature.ring ? (0, utils_1.formatRing)(signature.ring) : "") +
-        message +
-        (0, utils_1.formatPoint)(G.mult(signature.r).add(signerPubKey.mult(signature.c).negate())), config?.hash) === signature.c.toString(16));
+    const point = G.mult(signature.r).add(signerPubKey.mult(signature.c).negate());
+    const h = BigInt("0x" +
+        (0, utils_1.hash)((keyPrefixing && !signature.ring ? (0, utils_1.formatPoint)(signerPubKey) : "") +
+            (signature.ring ? (0, utils_1.formatRing)(signature.ring) : "") +
+            message +
+            (0, utils_1.formatPoint)(point), config?.hash));
+    return h === signature.c;
 }
 exports.verifySchnorrSignature = verifySchnorrSignature;

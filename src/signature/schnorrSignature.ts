@@ -5,7 +5,7 @@
 */
 import { modulo, hash, formatPoint, randomBigint, formatRing } from "../utils";
 import { Point } from "../point";
-import { Curve } from "../curves";
+import { Curve, derivePubKey } from "../curves";
 import { SignatureConfig } from "../interfaces";
 
 /**
@@ -37,7 +37,7 @@ export function schnorrSignature(
       "0x" +
         hash(
           (keyPrefixing && !ring
-            ? formatPoint(curve.GtoPoint().mult(alpha))
+            ? formatPoint(derivePubKey(signerPrivKey, curve))
             : "") +
             (ring ? formatRing(ring) : "") +
             message +
@@ -75,27 +75,20 @@ export function verifySchnorrSignature(
 ): boolean {
   const G: Point = curve.GtoPoint(); // curve generator
   // compute H(R|m|[r*G - c*K]) (R is empty, signerPubkey or the ring used for signing). Return true if the result is equal to c
-  console.log("schnorr verify: ");
-  console.log("c: ", signature.c);
-  console.log("r: ", signature.r);
-  console.log(
-    "point: ",
-    G.mult(signature.r).add(signerPubKey.mult(signature.c).negate()).x,
+  const point = G.mult(signature.r).add(
+    signerPubKey.mult(signature.c).negate(),
   );
-  console.log(
-    "signerPubKey: ",
-    keyPrefixing && !signature.ring ? formatPoint(signerPubKey) : "none",
+
+  const h = BigInt(
+    "0x" +
+      hash(
+        (keyPrefixing && !signature.ring ? formatPoint(signerPubKey) : "") +
+          (signature.ring ? formatRing(signature.ring) : "") +
+          message +
+          formatPoint(point),
+        config?.hash,
+      ),
   );
-  console.log("ring: ", signature.ring ? formatRing(signature.ring) : "none");
-  return (
-    hash(
-      (keyPrefixing && !signature.ring ? formatPoint(signerPubKey) : "") +
-        (signature.ring ? formatRing(signature.ring) : "") +
-        message +
-        formatPoint(
-          G.mult(signature.r).add(signerPubKey.mult(signature.c).negate()),
-        ),
-      config?.hash,
-    ) === signature.c.toString(16)
-  );
+
+  return h === signature.c;
 }
