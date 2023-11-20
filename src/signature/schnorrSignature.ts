@@ -88,12 +88,6 @@ export function verifySchnorrSignature(
     signerPubKey.mult(signature.c).negate(),
   );
 
-  // console.log("schnorr verify: ");
-  // console.log("point: ", point.x);
-  // console.log("ring: ", signature.ring ? formatRing(signature.ring) : "none");
-  // console.log("keyPrefixing: ", (keyPrefixing && !signature.ring ? formatPoint(signerPubKey) : "none"));
-  // console.log("message: ", message);
-
   const h = modulo(
     BigInt(
       "0x" +
@@ -106,7 +100,6 @@ export function verifySchnorrSignature(
         ),
     ),
     curve.N,
-  ); // il manque un modulo N ici mais c'est voulu pour l'exemple
-
+  );
   return h === signature.c;
 }

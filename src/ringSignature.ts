@@ -336,6 +336,7 @@ export class RingSignature {
       signerPrivateKey,
       curve,
     );
+
     return new RingSignature(
       message,
       rawSignature.ring,
