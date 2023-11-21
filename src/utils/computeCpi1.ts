@@ -1,15 +1,17 @@
-import { modulo, hash, formatPoint, randomBigint, formatRing } from "../utils";
+import { modulo, hash, formatPoint, randomBigint, formatRing } from ".";
 import { Point } from "../point";
 import { SignatureConfig } from "../interfaces";
 import { Curve } from "../curves";
 
 /**
+ * Compute the value of Cpi+1
  *
  * @param message the message to sign digested
  * @param curve the curve to use
  * @param alpha the nonce value
  * @param config the config to use
  * @param ring the ring involved in the ring signature
+ * 
  * @returns the value of c1
  */
 export function computeCPI1(
@@ -20,6 +22,7 @@ export function computeCPI1(
   ring?: Point[],
 ): bigint {
   if (!alpha) alpha = randomBigint(curve.N);
+
   const c = modulo(
     BigInt(
       "0x" +
@@ -32,5 +35,6 @@ export function computeCPI1(
     ),
     curve.N,
   );
+
   return c;
 }

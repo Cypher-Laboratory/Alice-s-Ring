@@ -31,15 +31,6 @@ export function schnorrSignature(
   keyPrefixing = true,
 ): { messageDigest: bigint; c: bigint; r: bigint; ring?: Point[] } {
   if (!alpha) alpha = randomBigint(curve.N);
-  // console.log("schnorr sign: ");
-  // console.log("alpha: ", alpha);
-  // console.log("signerPrivKey: ", signerPrivKey);
-  // console.log("message: ", message);
-  // console.log("point: ", curve.GtoPoint().mult(alpha).x);
-  // console.log("ring: ", ring ? formatRing(ring) : "none");
-  // console.log("keyPrefixing: ", (keyPrefixing && !ring
-  //   ? formatPoint(derivePubKey(signerPrivKey, curve))
-  //   : "none"));
 
   const c = modulo(
     BigInt(

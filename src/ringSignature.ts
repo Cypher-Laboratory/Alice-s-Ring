@@ -318,7 +318,9 @@ export class RingSignature {
       .slice(0, signerIndex)
       .concat([signerPubKey], ring.slice(signerIndex)) as Point[];
 
+    // compute cpi+1
     const cpi1 = computeCPI1(messageDigest, curve, alpha, config, ring);
+
     const rawSignature = RingSignature.signature(
       curve,
       ring,
@@ -675,12 +677,12 @@ export class RingSignature {
       return modulo(
         BigInt(
           "0x" +
-            hash(
-              formatRing(ring) +
-                messageDigest +
-                formatPoint(G.mult(params.alpha)),
-              hashFct,
-            ),
+          hash(
+            formatRing(ring) +
+            messageDigest +
+            formatPoint(G.mult(params.alpha)),
+            hashFct,
+          ),
         ),
         N,
       );
@@ -689,16 +691,16 @@ export class RingSignature {
       return modulo(
         BigInt(
           "0x" +
-            hash(
-              formatRing(ring) +
-                messageDigest +
-                formatPoint(
-                  G.mult(params.previousR).add(
-                    params.previousPubKey.mult(params.previousC).negate(),
-                  ),
-                ),
-              hashFct,
+          hash(
+            formatRing(ring) +
+            messageDigest +
+            formatPoint(
+              G.mult(params.previousR).add(
+                params.previousPubKey.mult(params.previousC).negate(),
+              ),
             ),
+            hashFct,
+          ),
         ),
         N,
       );
