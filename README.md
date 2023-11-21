@@ -42,8 +42,22 @@ const retrievedFromJson = RingSignature.fromJsonString(jsonString);
 
 ## Dependencies
 
-| Dependency        | Version |
-|-------------------|---------|
-| @noble/hashes     | ^1.3.2  |
-| ts-jest           | ^29.1.1 |
-| ts-node           | ^10.9.1 |
+| Dependency        | Version | repo                                    |audit report                                     |
+|-------------------|---------|-----------------------------------------|-------------------------------------------------|
+| @noble/hashes     | ^1.3.2  |[github](https://github.com/paulmillr/noble-hashes)|[report](https://cure53.de/pentest-report_hashing-libs.pdf)|
+
+## Dev Dependecies
+
+## Dev Dependencies
+
+| Dev Dependency                      | Version  | Repository                                                                          |
+|-------------------------------------|----------|-------------------------------------------------------------------------------------|
+| @types/jest                         | ^29.5.7  | [GitHub](https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/jest) |
+| @types/node                         | ^20.8.7  | [GitHub](https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/node) |
+| @typescript-eslint/eslint-plugin    | ^5.61.0  | [GitHub](https://github.com/typescript-eslint/typescript-eslint)                   |
+| @typescript-eslint/parser           | ^5.61.0  | [GitHub](https://github.com/typescript-eslint/typescript-eslint)                   |
+| eslint                              | ^8.44.0  | [GitHub](https://github.com/eslint/eslint)                                         |
+| jest                                | ^29.7.0  | [GitHub](https://github.com/facebook/jest)                                         |
+| prettier                            | ^3.0.0   | [GitHub](https://github.com/prettier/prettier)                                     |
+| ts-jest                             | ^29.1.1  | [GitHub](https://github.com/kulshekhar/ts-jest)                                    |
+| ts-node                             | ^10.9.1  | [GitHub](https://github.com/TypeStrong/ts-node)                                    |
