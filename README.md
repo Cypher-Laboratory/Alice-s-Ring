@@ -44,7 +44,7 @@ const retrievedFromJson = RingSignature.fromJsonString(jsonString);
 
 | Dependency        | Version | repo                                    |audit report                                     |
 |-------------------|---------|-----------------------------------------|-------------------------------------------------|
-| @noble/hashes     | ^1.3.2  |[github](https://github.com/paulmillr/noble-hashes)|[report](https://cure53.de/pentest-report_hashing-libs.pdf)|
+| @noble/hashes     | ^1.3.2  |[GitHub](https://github.com/paulmillr/noble-hashes)|[Report](https://cure53.de/pentest-report_hashing-libs.pdf)|
 
 ## Dev Dependecies
 
