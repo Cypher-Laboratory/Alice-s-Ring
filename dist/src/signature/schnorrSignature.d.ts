@@ -14,8 +14,7 @@ import { SignatureConfig } from "../interfaces";
  *
  * @returns { messageDigest: bigint, c: bigint, r: bigint,  ring?: Point[] } - The signature { messageDigest, c, r, ring? }
  */
-export declare function schnorrSignature(message: bigint, // = c in our ring signature scheme
-signerPrivKey: bigint, curve: Curve, alpha?: bigint, config?: SignatureConfig, ring?: Point[], keyPrefixing?: boolean): {
+export declare function schnorrSignature(message: bigint, signerPrivKey: bigint, curve: Curve, alpha?: bigint, config?: SignatureConfig, ring?: Point[], keyPrefixing?: boolean): {
     messageDigest: bigint;
     c: bigint;
     r: bigint;

@@ -12,7 +12,6 @@ export declare class RingSignature {
     private ring;
     private curve;
     private config?;
-    private hash;
     /**
      * Ring signature class constructor
      *
@@ -107,10 +106,11 @@ export declare class RingSignature {
      *
      * @returns A RingSignature
      */
-    static sign(ring: Point[], // ring.length = n
+    static sign(ring: Point[], // ring.length = n+1
     signerPrivateKey: bigint, message: string, curve: Curve, config?: SignatureConfig): RingSignature;
     /**
      * Sign a message using ring signatures
+     * Allow the user to use its private key from an external software (external software/hardware wallet)
      *
      * @param ring - Ring of public keys (does not contain the signer public key)
      * @param message - Clear message to sign
@@ -147,7 +147,7 @@ export declare class RingSignature {
      */
     verify(): boolean;
     /**
-     * Verify a RingSignature stored as a json string
+     * Verify a RingSignature stored as a base64 string or a json string
      *
      * @param signature - The json or base64 encoded signature to verify
      * @returns True if the signature is valid, false otherwise
@@ -155,13 +155,11 @@ export declare class RingSignature {
     static verify(signature: string): boolean;
     /**
      * Generate an incomplete ring signature.
-     * Allow the user to use its private key from an external software (external software/hardware wallet)
      *
      * @param curve - The curve to use
      * @param ring - The ring of public keys
      * @param ceePiPlusOne - The Cpi+1 value
      * @param signerIndex - The signer index in the ring
-     * @param signerKey - The signer private or public key
      * @param message - The message to sign
      * @param config - The config params to use
      *
@@ -227,4 +225,3 @@ export declare function checkRing(ring: Point[], ref?: Curve, emptyRing?: boolea
  * @throws Error if at least 1 coordinate is not valid (= 0 or >= curve order)
  */
 export declare function checkPoint(point: Point, curve?: Curve): void;
-export { SignatureConfig };

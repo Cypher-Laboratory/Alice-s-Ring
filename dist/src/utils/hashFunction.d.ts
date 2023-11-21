@@ -6,7 +6,7 @@ export declare enum hashFunction {
  * Hash data using the specified hash function (default: keccak256)
  *
  * @param data - The data to hash
- * @param fct - The hash function to use
+ * @param fct - The hash function to use (optional)
  *
  * @returns - The hash of the data
  */
@@ -16,7 +16,7 @@ export declare function hash(data: string, fct?: hashFunction): string;
  *
  * @param input - The data to hash
  *
- * @returns - The hash of the data
+ * @returns - The hash of the data as an hex string
  */
 export declare function keccak256(input: string): string;
 /**
@@ -24,6 +24,6 @@ export declare function keccak256(input: string): string;
  *
  * @param input - The data to hash
  *
- * @returns - The hash of the data
+ * @returns - The hash of the data  as an hex string
  */
 export declare function sha_512(input: string): string;

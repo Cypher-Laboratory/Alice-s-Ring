@@ -13,7 +13,7 @@ var hashFunction;
  * Hash data using the specified hash function (default: keccak256)
  *
  * @param data - The data to hash
- * @param fct - The hash function to use
+ * @param fct - The hash function to use (optional)
  *
  * @returns - The hash of the data
  */
@@ -38,7 +38,7 @@ exports.hash = hash;
  *
  * @param input - The data to hash
  *
- * @returns - The hash of the data
+ * @returns - The hash of the data as an hex string
  */
 function keccak256(input) {
     return (0, uint8ArrayToHex_1.uint8ArrayToHex)((0, sha3_1.keccak_256)(input));
@@ -49,7 +49,7 @@ exports.keccak256 = keccak256;
  *
  * @param input - The data to hash
  *
- * @returns - The hash of the data
+ * @returns - The hash of the data  as an hex string
  */
 function sha_512(input) {
     return (0, uint8ArrayToHex_1.uint8ArrayToHex)((0, sha512_1.sha512)(input));

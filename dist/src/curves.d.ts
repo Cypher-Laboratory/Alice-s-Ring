@@ -38,6 +38,7 @@ export declare class Curve {
     /**
      * Checks if a point is on the curve.
      *
+     * @remarks the function return false by default if the curve is not supported
      * @param point - the point to check
      * @returns true if the point is on the curve, false otherwise
      */

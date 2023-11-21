@@ -57,7 +57,7 @@ class RingSignature {
         // check if config is an object
         if (config && typeof config !== "object")
             throw err.invalidParams("Config must be an object");
-        // check ring, c and responses validity if config.safeMode is true or if config.safeMode is not set
+        // check ring, c and responses validity
         checkRing(ring, curve, true);
         if (c === 0n)
             throw err.invalidParams("c");
@@ -65,15 +65,6 @@ class RingSignature {
             if (response >= curve.N || response === 0n)
                 throw err.invalidResponses;
         }
-        // check params
-        if (c === 0n)
-            throw err.invalidParams("c cannot be 0");
-        if (responses.includes(0n))
-            throw err.invalidParams("Responses cannot contain 0");
-        if (config?.hash)
-            this.hash = config.hash;
-        else
-            this.hash = hashFunction_1.hashFunction.KECCAK256;
         this.ring = ring;
         this.message = message;
         this.c = c;
@@ -135,7 +126,7 @@ class RingSignature {
      * @returns The message digest
      */
     get messageDigest() {
-        return BigInt("0x" + (0, utils_1.hash)(this.message, this.hash));
+        return BigInt("0x" + (0, utils_1.hash)(this.message, this.config?.hash));
     }
     /**
      * Create a RingSignature from a json object
@@ -148,42 +139,45 @@ class RingSignature {
      * @returns A RingSignature
      */
     static fromJsonString(json) {
-        if (typeof json === "object")
-            json = JSON.stringify(json);
-        try {
-            JSON.parse(json);
+        let parsedJson;
+        if (typeof json === "string") {
+            try {
+                parsedJson = JSON.parse(json);
+            }
+            catch (e) {
+                throw err.invalidJson(e);
+            }
         }
-        catch (e) {
-            throw err.invalidJson(e);
+        else {
+            parsedJson = json;
         }
         // check if message is stored as array or object. If so, throw an error
-        if (JSON.parse(json).message instanceof Array ||
-            typeof JSON.parse(json).message === "object")
+        if (parsedJson.message instanceof Array ||
+            typeof parsedJson.message === "object")
             throw err.invalidJson("Message must be a string or a number");
         // check if c is stored as array or object. If so, throw an error
-        if (JSON.parse(json).c instanceof Array ||
-            typeof JSON.parse(json).c === "object")
+        if (parsedJson.c instanceof Array || typeof parsedJson.c === "object")
             throw err.invalidJson("c must be a string or a number");
         // check if config is an object
-        if (JSON.parse(json).config && typeof JSON.parse(json).config !== "object")
+        if (parsedJson.config && typeof parsedJson.config !== "object")
             throw err.invalidJson("Config must be an object");
         // check if config.safeMode is a boolean. If not, throw an error
-        if (JSON.parse(json).config &&
-            JSON.parse(json).config.safeMode &&
-            typeof JSON.parse(json).config.safeMode !== "boolean")
+        if (parsedJson.config &&
+            parsedJson.config.safeMode &&
+            typeof parsedJson.config.safeMode !== "boolean")
             throw err.invalidJson("Config.safeMode must be a boolean");
         // check if config.hash is an element from hashFunction. If not, throw an error
-        if (JSON.parse(json).config &&
-            JSON.parse(json).config.hash &&
-            !Object.values(hashFunction_1.hashFunction).includes(JSON.parse(json).config.hash))
+        if (parsedJson.config &&
+            parsedJson.config.hash &&
+            !Object.values(hashFunction_1.hashFunction).includes(parsedJson.config.hash))
             throw err.invalidJson("Config.hash must be an element from hashFunction");
         // check if config.evmCompatibility is a boolean. If not, throw an error
-        if (JSON.parse(json).config &&
-            JSON.parse(json).config.evmCompatibility &&
-            typeof JSON.parse(json).config.evmCompatibility !== "boolean")
+        if (parsedJson.config &&
+            parsedJson.config.evmCompatibility &&
+            typeof parsedJson.config.evmCompatibility !== "boolean")
             throw err.invalidJson("Config.evmCompatibility must be a boolean");
         try {
-            const sig = JSON.parse(json);
+            const sig = parsedJson;
             return new RingSignature(sig.message, sig.ring.map((point) => _1.Point.fromString(point)), BigInt(sig.c), sig.responses.map((response) => BigInt(response)), _1.Curve.fromString(sig.curve), sig.config);
         }
         catch (e) {
@@ -196,7 +190,7 @@ class RingSignature {
      * @returns A json string
      */
     toJsonString() {
-        const out = JSON.stringify({
+        return JSON.stringify({
             message: this.message,
             ring: this.ring.map((point) => point.toString()),
             c: this.c.toString(),
@@ -204,7 +198,6 @@ class RingSignature {
             curve: this.curve.toString(),
             config: this.config,
         });
-        return out;
     }
     /**
      * Transforms a Base64 string to a ring signature
@@ -239,7 +232,7 @@ class RingSignature {
      *
      * @returns A RingSignature
      */
-    static sign(ring, // ring.length = n
+    static sign(ring, // ring.length = n+1
     signerPrivateKey, message, curve, config) {
         if (signerPrivateKey === 0n)
             throw err.invalidParams("Signer private key cannot be 0");
@@ -256,7 +249,7 @@ class RingSignature {
         const alpha = (0, utils_1.randomBigint)(curve.N);
         // set the signer position in the ring
         const signerIndex = // pi
-         ring.length === 0 ? 0 : (0, utils_1.getRandomSecuredNumber)(0, ring.length - 1); // signer index
+         ring.length === 0 ? 0 : (0, utils_1.getRandomSecuredNumber)(0, ring.length - 1);
         // get the signer public key
         const signerPubKey = (0, curves_1.derivePubKey)(signerPrivateKey, curve);
         // add the signer public key to the ring
@@ -264,8 +257,8 @@ class RingSignature {
             .slice(0, signerIndex)
             .concat([signerPubKey], ring.slice(signerIndex));
         // compute cpi+1
-        const cpi1 = (0, utils_1.computeCPI1)(messageDigest, curve, alpha, config, ring);
-        const rawSignature = RingSignature.signature(curve, ring, cpi1, signerIndex, signerPrivateKey, messageDigest, config);
+        const cpi1 = RingSignature.computeC(ring, messageDigest, { alpha: alpha }, curve, config);
+        const rawSignature = RingSignature.signature(curve, ring, cpi1, signerIndex, messageDigest, config);
         // compute the signer response
         const signerResponse = (0, piSignature_1.piSignature)(alpha, rawSignature.cees[rawSignature.signerIndex], signerPrivateKey, curve);
         return new RingSignature(message, rawSignature.ring, rawSignature.cees[0], 
@@ -276,6 +269,7 @@ class RingSignature {
     }
     /**
      * Sign a message using ring signatures
+     * Allow the user to use its private key from an external software (external software/hardware wallet)
      *
      * @param ring - Ring of public keys (does not contain the signer public key)
      * @param message - Clear message to sign
@@ -288,7 +282,7 @@ class RingSignature {
     message, signerPubKey, curve, config) {
         const messageDigest = BigInt("0x" + (0, utils_1.hash)(message, config?.hash));
         const alpha = (0, utils_1.randomBigint)(curve.N);
-        const ceePiPlusOne = RingSignature.computeC(ring, messageDigest, { alpha: alpha }, curve, config);
+        const cpi1 = RingSignature.computeC(ring, messageDigest, { alpha: alpha }, curve, config);
         // set the signer position in the ring
         const signerIndex = // pi
          ring.length === 0 ? 0 : (0, utils_1.getRandomSecuredNumber)(0, ring.length - 1); // signer index
@@ -296,7 +290,7 @@ class RingSignature {
         ring = ring
             .slice(0, signerIndex)
             .concat([signerPubKey], ring.slice(signerIndex));
-        const rawSignature = RingSignature.signature(curve, ring, ceePiPlusOne, signerIndex, signerPubKey, messageDigest, config);
+        const rawSignature = RingSignature.signature(curve, ring, cpi1, signerIndex, messageDigest, config);
         return {
             message,
             ring: rawSignature.ring,
@@ -365,7 +359,7 @@ class RingSignature {
             throw err.lengthMismatch("ring", "responses");
         }
         // hash the message
-        const messageDigest = BigInt("0x" + (0, utils_1.hash)(this.message, this.hash));
+        const messageDigest = BigInt("0x" + (0, utils_1.hash)(this.message, this.config?.hash));
         // computes the cees
         let lastComputedCp = RingSignature.computeC(
         // c1'
@@ -392,7 +386,7 @@ class RingSignature {
         return this.c === lastComputedCp;
     }
     /**
-     * Verify a RingSignature stored as a json string
+     * Verify a RingSignature stored as a base64 string or a json string
      *
      * @param signature - The json or base64 encoded signature to verify
      * @returns True if the signature is valid, false otherwise
@@ -407,19 +401,17 @@ class RingSignature {
     }
     /**
      * Generate an incomplete ring signature.
-     * Allow the user to use its private key from an external software (external software/hardware wallet)
      *
      * @param curve - The curve to use
      * @param ring - The ring of public keys
      * @param ceePiPlusOne - The Cpi+1 value
      * @param signerIndex - The signer index in the ring
-     * @param signerKey - The signer private or public key
      * @param message - The message to sign
      * @param config - The config params to use
      *
      * @returns An incomplete ring signature
      */
-    static signature(curve, ring, ceePiPlusOne, signerIndex, signerKey, messageDigest, config) {
+    static signature(curve, ring, ceePiPlusOne, signerIndex, messageDigest, config) {
         if (messageDigest === 0n ||
             messageDigest === BigInt("0x" + (0, utils_1.hash)("", config?.hash)))
             throw err.noEmptyMsg;
@@ -613,13 +605,6 @@ function checkPoint(point, curve) {
     }
     if (curve && !curve.equals(point.curve)) {
         throw err.curveMismatch();
-    }
-    // check if coordinates are valid
-    if (point.x === 0n ||
-        point.y === 0n ||
-        point.x >= point.curve.P ||
-        point.y >= point.curve.P) {
-        throw err.invalidCoordinates();
     }
 }
 exports.checkPoint = checkPoint;

@@ -21,8 +21,7 @@ const curves_1 = require("../curves");
  *
  * @returns { messageDigest: bigint, c: bigint, r: bigint,  ring?: Point[] } - The signature { messageDigest, c, r, ring? }
  */
-function schnorrSignature(message, // = c in our ring signature scheme
-signerPrivKey, curve, alpha, config, ring, keyPrefixing = true) {
+function schnorrSignature(message, signerPrivKey, curve, alpha, config, ring, keyPrefixing = true) {
     if (!alpha)
         alpha = (0, utils_1.randomBigint)(curve.N);
     const c = (0, utils_1.modulo)(BigInt("0x" +

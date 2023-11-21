@@ -87,6 +87,7 @@ class Curve {
     /**
      * Checks if a point is on the curve.
      *
+     * @remarks the function return false by default if the curve is not supported
      * @param point - the point to check
      * @returns true if the point is on the curve, false otherwise
      */
@@ -112,10 +113,10 @@ class Curve {
                 return ((0, utils_1.modulo)(y ** 2n - x ** 2n - 1n - d * x ** 2n * y ** 2n, this.P) === 0n);
             }
             default: {
-                console.warn("Unknown curve, cannot check if point is on curve. Returning true.");
+                console.warn("Unknown curve, cannot check if point is on curve. Returning false.");
             }
         }
-        return true;
+        return false;
     }
     equals(curve) {
         return (this.name === curve.name &&
