@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifyPiSignature = exports.piSignature = void 0;
+exports.piSignature = void 0;
 /*
   This TypeScript library is the exclusive property of Cypher Lab (https://www.cypherlab.fr/)
   and is exclusively reserved for the use of gemWallet. Any form of commercial use, including but
@@ -31,23 +31,3 @@ function piSignature(alpha, c, signerPrivKey, curve) {
     return (0, utils_1.modulo)(alpha + c * signerPrivKey, curve.N);
 }
 exports.piSignature = piSignature;
-/**
- * Verify a signature generated with the `piSignature` function
- *
- * @param message - The message (as bigint) (= c[pi] in our ring signature scheme)
- * @param signerPubKey - The signer public key
- * @param c - The challenge (= c in our ring signature scheme)
- * @param piSignature - The signature
- * @param curve - The curve to use
- * @param config - The signature config
- *
- * @returns true if the signature is valid, false otherwise
- */
-function verifyPiSignature(message, signerPubKey, c, piSignature, curve, config) {
-    const G = curve.GtoPoint(); // curve generator
-    // compute H(m|[r*G - c*K])
-    const cprime = (0, utils_1.hash)(message +
-        (0, utils_1.formatPoint)(G.mult(piSignature).add(signerPubKey.mult(c).negate()), config), config?.hash);
-    return cprime === c.toString(16);
-}
-exports.verifyPiSignature = verifyPiSignature;

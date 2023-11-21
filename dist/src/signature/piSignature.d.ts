@@ -1,6 +1,4 @@
-import { Point } from "../point";
 import { Curve } from "../curves";
-import { SignatureConfig } from "../interfaces";
 /**
  * Compute the signature from the actual signer
  *
@@ -16,16 +14,3 @@ import { SignatureConfig } from "../interfaces";
  * @returns the signer response as a point on the curve
  */
 export declare function piSignature(alpha: bigint, c: bigint, signerPrivKey: bigint, curve: Curve): bigint;
-/**
- * Verify a signature generated with the `piSignature` function
- *
- * @param message - The message (as bigint) (= c[pi] in our ring signature scheme)
- * @param signerPubKey - The signer public key
- * @param c - The challenge (= c in our ring signature scheme)
- * @param piSignature - The signature
- * @param curve - The curve to use
- * @param config - The signature config
- *
- * @returns true if the signature is valid, false otherwise
- */
-export declare function verifyPiSignature(message: string, signerPubKey: Point, c: bigint, piSignature: bigint, curve: Curve, config?: SignatureConfig): boolean;

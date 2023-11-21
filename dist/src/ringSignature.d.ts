@@ -32,11 +32,11 @@ export declare class RingSignature {
      */
     getRing(): Point[];
     /**
-     * Get the seed value
+     * Get the challenge value
      *
-     * @returns The seed value
+     * @returns The challenge value
      */
-    getC(): bigint;
+    getChallenge(): bigint;
     /**
      * Get the responses
      *
@@ -61,6 +61,12 @@ export declare class RingSignature {
      * @returns The message
      */
     getMessage(): string;
+    /**
+     * Get the message digest
+     *
+     * @returns The message digest
+     */
+    get messageDigest(): bigint;
     /**
      * Create a RingSignature from a json object
      *
@@ -127,6 +133,16 @@ export declare class RingSignature {
     /**
      * Verify a RingSignature
      *
+     * @remarks
+     * if ring.length = 1, the signature is a schnorr signature. It can be verified by this method or using 'verifySchnorrSignature' function.
+     * To do so, call 'verifySchnorrSignature' with the following parameters:
+     * - messageDigest: the message digest
+     * - signerPubKey: the public key of the signer
+     * - signature: the signature { c, r } or { c, r, ring }
+     * - curve: the curve used for the signature
+     * - config: the config params used for the signature (can be undefined)
+     * - keyPrefixing: true
+     *
      * @returns True if the signature is valid, false otherwise
      */
     verify(): boolean;
@@ -143,6 +159,8 @@ export declare class RingSignature {
      *
      * @param curve - The curve to use
      * @param ring - The ring of public keys
+     * @param ceePiPlusOne - The Cpi+1 value
+     * @param signerIndex - The signer index in the ring
      * @param signerKey - The signer private or public key
      * @param message - The message to sign
      * @param config - The config params to use

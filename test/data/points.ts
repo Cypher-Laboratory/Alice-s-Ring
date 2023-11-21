@@ -3,6 +3,7 @@ import { hash } from "../../src/utils";
 import { SECP256K1, ED25519 } from "./curves";
 import * as ed from "../../src/utils/noble-libraries/noble-ED25519";
 import { sha512 } from "@noble/hashes/sha512";
+import { derivePubKey } from "../../src/curves";
 ed.etc.sha512Sync = (...m) => sha512(ed.etc.concatBytes(...m));
 
 export const privateKey = [
@@ -143,5 +144,5 @@ export const signerPrivKey = ed.utils.getExtendedPublicKey(
   ).toString(16),
 ).scalar;
 
-export const signerPubKey_secp256k1 = SECP256K1.GtoPoint().mult(signerPrivKey);
-export const signerPubKey_ed25519 = ED25519.GtoPoint().mult(signerPrivKey);
+export const signerPubKey_secp256k1 = derivePubKey(signerPrivKey, SECP256K1);
+export const signerPubKey_ed25519 = derivePubKey(signerPrivKey, ED25519);

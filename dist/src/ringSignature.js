@@ -90,11 +90,11 @@ class RingSignature {
         return this.ring;
     }
     /**
-     * Get the seed value
+     * Get the challenge value
      *
-     * @returns The seed value
+     * @returns The challenge value
      */
-    getC() {
+    getChallenge() {
         return this.c;
     }
     /**
@@ -128,6 +128,14 @@ class RingSignature {
      */
     getMessage() {
         return this.message;
+    }
+    /**
+     * Get the message digest
+     *
+     * @returns The message digest
+     */
+    get messageDigest() {
+        return BigInt("0x" + (0, utils_1.hash)(this.message, this.hash));
     }
     /**
      * Create a RingSignature from a json object
@@ -235,6 +243,9 @@ class RingSignature {
     signerPrivateKey, message, curve, config) {
         if (signerPrivateKey === 0n)
             throw err.invalidParams("Signer private key cannot be 0");
+        if (message === "")
+            throw err.noEmptyMsg;
+        const messageDigest = BigInt("0x" + (0, utils_1.hash)(message, config?.hash));
         // check if ring is valid
         try {
             checkRing(ring, curve, true);
@@ -242,9 +253,21 @@ class RingSignature {
         catch (e) {
             throw err.invalidRing(e);
         }
-        const rawSignature = RingSignature.signature(curve, ring, signerPrivateKey, message, config);
+        const alpha = (0, utils_1.randomBigint)(curve.N);
+        // set the signer position in the ring
+        const signerIndex = // pi
+         ring.length === 0 ? 0 : (0, utils_1.getRandomSecuredNumber)(0, ring.length - 1); // signer index
+        // get the signer public key
+        const signerPubKey = (0, curves_1.derivePubKey)(signerPrivateKey, curve);
+        // add the signer public key to the ring
+        ring = ring
+            .slice(0, signerIndex)
+            .concat([signerPubKey], ring.slice(signerIndex));
+        // compute cpi+1
+        const cpi1 = (0, utils_1.computeCPI1)(messageDigest, curve, alpha, config, ring);
+        const rawSignature = RingSignature.signature(curve, ring, cpi1, signerIndex, signerPrivateKey, messageDigest, config);
         // compute the signer response
-        const signerResponse = (0, piSignature_1.piSignature)(rawSignature.alpha, rawSignature.cees[rawSignature.signerIndex], signerPrivateKey, curve);
+        const signerResponse = (0, piSignature_1.piSignature)(alpha, rawSignature.cees[rawSignature.signerIndex], signerPrivateKey, curve);
         return new RingSignature(message, rawSignature.ring, rawSignature.cees[0], 
         // insert the signer response
         rawSignature.responses
@@ -263,7 +286,17 @@ class RingSignature {
      */
     static partialSign(ring, // ring.length = n
     message, signerPubKey, curve, config) {
-        const rawSignature = RingSignature.signature(curve, ring, signerPubKey, message, config);
+        const messageDigest = BigInt("0x" + (0, utils_1.hash)(message, config?.hash));
+        const alpha = (0, utils_1.randomBigint)(curve.N);
+        const ceePiPlusOne = RingSignature.computeC(ring, messageDigest, { alpha: alpha }, curve, config);
+        // set the signer position in the ring
+        const signerIndex = // pi
+         ring.length === 0 ? 0 : (0, utils_1.getRandomSecuredNumber)(0, ring.length - 1); // signer index
+        // add the signer public key to the ring
+        ring = ring
+            .slice(0, signerIndex)
+            .concat([signerPubKey], ring.slice(signerIndex));
+        const rawSignature = RingSignature.signature(curve, ring, ceePiPlusOne, signerIndex, signerPubKey, messageDigest, config);
         return {
             message,
             ring: rawSignature.ring,
@@ -271,7 +304,7 @@ class RingSignature {
             cpi: rawSignature.cees[rawSignature.signerIndex],
             responses: rawSignature.responses,
             pi: rawSignature.signerIndex,
-            alpha: rawSignature.alpha,
+            alpha: alpha,
             curve: curve,
             config: config,
         };
@@ -309,6 +342,16 @@ class RingSignature {
     /**
      * Verify a RingSignature
      *
+     * @remarks
+     * if ring.length = 1, the signature is a schnorr signature. It can be verified by this method or using 'verifySchnorrSignature' function.
+     * To do so, call 'verifySchnorrSignature' with the following parameters:
+     * - messageDigest: the message digest
+     * - signerPubKey: the public key of the signer
+     * - signature: the signature { c, r } or { c, r, ring }
+     * - curve: the curve used for the signature
+     * - config: the config params used for the signature (can be undefined)
+     * - keyPrefixing: true
+     *
      * @returns True if the signature is valid, false otherwise
      */
     verify() {
@@ -321,33 +364,32 @@ class RingSignature {
         if (this.ring.length !== this.responses.length) {
             throw err.lengthMismatch("ring", "responses");
         }
-        // set curve generator point
-        const G = this.curve.GtoPoint();
         // hash the message
-        const messageDigest = (0, utils_1.hash)(this.message, this.hash);
+        const messageDigest = BigInt("0x" + (0, utils_1.hash)(this.message, this.hash));
         // computes the cees
         let lastComputedCp = RingSignature.computeC(
         // c1'
-        this.ring, messageDigest, G, this.curve.N, {
+        this.ring, messageDigest, {
             previousR: this.responses[0],
             previousC: this.c,
             previousPubKey: this.ring[0],
-        }, this.config);
+        }, this.curve, this.config);
         for (let i = 2; i < this.ring.length; i++) {
             // c2' -> cn'
-            lastComputedCp = RingSignature.computeC(this.ring, messageDigest, G, this.curve.N, {
+            lastComputedCp = RingSignature.computeC(this.ring, messageDigest, {
                 previousR: this.responses[i - 1],
                 previousC: lastComputedCp,
                 previousPubKey: this.ring[i - 1],
-            }, this.config);
+            }, this.curve, this.config);
         }
+        // compute c0'
+        lastComputedCp = RingSignature.computeC(this.ring, messageDigest, {
+            previousR: this.responses[this.responses.length - 1],
+            previousC: lastComputedCp,
+            previousPubKey: this.ring[this.ring.length - 1],
+        }, this.curve, this.config);
         // return true if c0 === c0'
-        return (this.c ===
-            RingSignature.computeC(this.ring, messageDigest, G, this.curve.N, {
-                previousR: this.responses[this.responses.length - 1],
-                previousC: lastComputedCp,
-                previousPubKey: this.ring[this.ring.length - 1],
-            }, this.config));
+        return this.c === lastComputedCp;
     }
     /**
      * Verify a RingSignature stored as a json string
@@ -369,14 +411,17 @@ class RingSignature {
      *
      * @param curve - The curve to use
      * @param ring - The ring of public keys
+     * @param ceePiPlusOne - The Cpi+1 value
+     * @param signerIndex - The signer index in the ring
      * @param signerKey - The signer private or public key
      * @param message - The message to sign
      * @param config - The config params to use
      *
      * @returns An incomplete ring signature
      */
-    static signature(curve, ring, signerKey, message, config) {
-        if (message === "")
+    static signature(curve, ring, ceePiPlusOne, signerIndex, signerKey, messageDigest, config) {
+        if (messageDigest === 0n ||
+            messageDigest === BigInt("0x" + (0, utils_1.hash)("", config?.hash)))
             throw err.noEmptyMsg;
         // check ring and responses validity
         if (ring.length !== ring.length)
@@ -388,34 +433,6 @@ class RingSignature {
         catch (e) {
             throw err.invalidRing(e);
         }
-        let hashFct = hashFunction_1.hashFunction.KECCAK256;
-        if (config?.hash)
-            hashFct = config.hash;
-        // hash the message
-        const messageDigest = (0, utils_1.hash)(message, hashFct);
-        // generate random number alpha
-        const alpha = (0, utils_1.randomBigint)(curve.N);
-        let signerPubKey;
-        if (typeof signerKey === "bigint") {
-            // check if the signer private key is valid
-            if (signerKey === 0n)
-                throw err.invalidParams("Signer private key cannot be 0");
-            signerPubKey = (0, curves_1.derivePubKey)(signerKey, curve);
-        }
-        else {
-            // check if the signer public key is valid
-            checkPoint(signerKey, curve);
-            signerPubKey = signerKey;
-        }
-        // set the signer position in the ring
-        const pi = ring.length === 0 ? 0 : (0, utils_1.getRandomSecuredNumber)(0, ring.length - 1); // signer index
-        // add the signer public key to the ring
-        ring = ring.slice(0, pi).concat([signerPubKey], ring.slice(pi));
-        // check for duplicates using a set
-        const ringSet = new Set(ring);
-        if (ringSet.size !== ring.length) {
-            throw err.noDuplicates("ring");
-        }
         // generate random responses for every public key in the ring
         const responses = [];
         for (let i = 0; i < ring.length; i++) {
@@ -423,32 +440,30 @@ class RingSignature {
         }
         // contains all the cees from 0 to ring.length - 1 (0, 1, ..., pi, ..., ring.length - 1)
         const cees = ring.map(() => 0n);
-        for (let i = pi + 1; i < ring.length + pi + 1; i++) {
+        for (let i = signerIndex + 1; i < ring.length + signerIndex + 1; i++) {
             /*
             Convert i to obtain a numbers between 0 and ring.length - 1,
             starting at pi + 1, going to ring.length and then going from 0 to pi (included)
             */
             const index = i % ring.length;
             const indexMinusOne = index - 1 >= 0n ? index - 1 : index - 1 + ring.length;
-            // use the right params depending on the index
             let params = {};
-            if (index === (pi + 1) % ring.length)
-                params = { alpha: alpha };
+            if (index === (signerIndex + 1) % ring.length)
+                cees[index] = ceePiPlusOne; // params = { alpha: alpha };
             else {
                 params = {
                     previousR: responses[indexMinusOne],
                     previousC: cees[indexMinusOne],
                     previousPubKey: ring[indexMinusOne],
                 };
+                // compute the c value
+                cees[index] = RingSignature.computeC(ring, messageDigest, params, curve, config);
             }
-            // compute the c value
-            cees[index] = RingSignature.computeC(ring, messageDigest, curve.GtoPoint(), curve.N, params, config);
         }
         return {
             ring: ring,
             cees: cees,
-            alpha: alpha,
-            signerIndex: pi,
+            signerIndex: signerIndex,
             responses: responses,
         };
     }
@@ -473,21 +488,23 @@ class RingSignature {
      *
      * @returns A new c value
      */
-    static computeC(ring, message, G, N, params, config) {
+    static computeC(ring, messageDigest, params, curve, config) {
+        const G = curve.GtoPoint();
+        const N = curve.N;
         let hashFct = hashFunction_1.hashFunction.KECCAK256;
         if (config?.hash)
             hashFct = config.hash;
         if (params.alpha) {
             return (0, utils_1.modulo)(BigInt("0x" +
-                (0, utils_1.hash)((0, utils_1.formatRing)(ring, config) +
-                    message +
-                    (0, utils_1.formatPoint)(G.mult(params.alpha), config), hashFct)), N);
+                (0, utils_1.hash)((0, utils_1.formatRing)(ring) +
+                    messageDigest +
+                    (0, utils_1.formatPoint)(G.mult(params.alpha)), hashFct)), N);
         }
         if (params.previousR && params.previousC && params.previousPubKey) {
             return (0, utils_1.modulo)(BigInt("0x" +
-                (0, utils_1.hash)((0, utils_1.formatRing)(ring, config) +
-                    message +
-                    (0, utils_1.formatPoint)(G.mult(params.previousR).add(params.previousPubKey.mult(params.previousC).negate()), config), hashFct)), N);
+                (0, utils_1.hash)((0, utils_1.formatRing)(ring) +
+                    messageDigest +
+                    (0, utils_1.formatPoint)(G.mult(params.previousR).add(params.previousPubKey.mult(params.previousC).negate())), hashFct)), N);
         }
         throw err.missingParams("Either 'alpha' or all the others params must be set");
     }

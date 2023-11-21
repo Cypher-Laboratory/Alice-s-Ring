@@ -12,10 +12,7 @@ exports.formatPoint = void 0;
  *
  * @returns the formatted point
  */
-function formatPoint(point, config) {
-    if (config?.evmCompatibility) {
-        return point.x.toString() + point.y.toString();
-    }
-    return point.toString();
+function formatPoint(point) {
+    return point.x.toString() + point.y.toString();
 }
 exports.formatPoint = formatPoint;
