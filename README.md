@@ -39,3 +39,11 @@ const jsonString = signature.toJsonString();
 // Import from jsonString
 const retrievedFromJson = RingSignature.fromJsonString(jsonString);
 ```
+
+## Dependencies
+
+| Dependency        | Version |
+|-------------------|---------|
+| @noble/hashes     | ^1.3.2  |
+| ts-jest           | ^29.1.1 |
+| ts-node           | ^10.9.1 |

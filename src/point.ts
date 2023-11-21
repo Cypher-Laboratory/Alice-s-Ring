@@ -2,18 +2,13 @@ import { Curve, CurveName } from "./curves";
 import { ProjectivePoint as SECP256K1Point } from "./utils/noble-libraries/noble-SECP256k1";
 import { ExtendedPoint as ED25519Point } from "./utils/noble-libraries/noble-ED25519";
 import { modulo } from "./utils";
-import * as elliptic from "elliptic";
 import { checkPoint } from "./ringSignature";
 import {
-  computationError,
   differentCurves,
   invalidParams,
   notOnCurve,
   unknownCurve,
 } from "./errors";
-
-const Ed25519 = new elliptic.eddsa("ed25519");
-const secp256k1 = new elliptic.ec("secp256k1");
 
 /**
  * A point on the elliptic curve.
@@ -256,57 +251,10 @@ export class Point {
   }
 
   /**
-   * Converts a hex public key (XRPL standard) to a Point object.
+   * Checks if a point is valid.
    *
-   * @param hex the hex string representation of the public key XRPL Format
-   * @returns the point
-   *
+   * @returns true if the point is valid, false otherwise
    */
-  static fromHexXRPL(hex: string): Point {
-    // Check which curve we are on
-    if (hex.startsWith("ED")) {
-      // Compute on ed25519
-      try {
-        // Use the `curve.keyFromPublic` method to create a Keypair based on the signing pubkey
-        // The keypair is encoded
-        // Get ride of the ED prefix indicating that the curve is on ed25519
-        const keypair = Ed25519.keyFromPublic(hex.slice(2));
-        // get the X and Y value by decoding the point
-        const xValue = Ed25519.decodePoint(keypair.getPublic())
-          .getX()
-          .toString(16);
-        const yValue = Ed25519.decodePoint(keypair.getPublic())
-          .getY()
-          .toString(16);
-        return new Point(new Curve(CurveName.ED25519), [
-          BigInt("0x" + xValue),
-          BigInt("0x" + yValue),
-        ]);
-      } catch (error) {
-        throw computationError("error while computing coordinates on ed25519");
-      }
-    } else {
-      // Compute on secp256k1
-      try {
-        // Use the `curve.pointFromX()` method to retrieve the point on the curve
-        // Get ride of the prefix (02/03) that indicate if y coordinate is odd or not
-        // see xrpl doc here : https://xrpl.org/cryptographic-keys.html
-        const point = secp256k1.curve.pointFromX(hex.slice(2));
-        // Access the y-coordinate from the retrieved point
-        const xValue = point.getX().toString(16);
-        const yValue = point.getY().toString(16);
-        return new Point(new Curve(CurveName.ED25519), [
-          BigInt("0x" + xValue),
-          BigInt("0x" + yValue),
-        ]);
-      } catch (error) {
-        throw computationError(
-          "error while computing coordinates on secp256k1",
-        );
-      }
-    }
-  }
-
   isValid(): boolean {
     try {
       checkPoint(this);
