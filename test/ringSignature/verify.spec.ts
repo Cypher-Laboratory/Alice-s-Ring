@@ -128,4 +128,32 @@ describe("Test verify()", () => {
       ),
     ).toBeTruthy();
   });
+
+  it("Should return true if the base64 signature is valid", () => {
+    const signature = RingSignature.sign(
+      data.publicKeys_secp256k1,
+      data.signerPrivKey,
+      data.message,
+      secp256k1,
+    ).toBase64();
+
+    expect(RingSignature.verify(signature)).toBeTruthy();
+  });
+
+  it("Should return false if the base64 signature is invalid", () => {
+    const signature = data.jsonRS.validBase64Sig;
+
+    expect(RingSignature.verify(signature)).toBeFalsy();
+  });
+
+  it("Should return true if the JSON signature is valid", () => {
+    const signature = RingSignature.sign(
+      data.publicKeys_secp256k1,
+      data.signerPrivKey,
+      data.message,
+      secp256k1,
+    ).toJsonString();
+
+    expect(RingSignature.verify(signature)).toBeTruthy();
+  });
 });
