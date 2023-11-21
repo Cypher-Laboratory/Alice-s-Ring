@@ -263,8 +263,9 @@ class RingSignature {
         ring = ring
             .slice(0, signerIndex)
             .concat([signerPubKey], ring.slice(signerIndex));
-        const schnorrSig = (0, _1.schnorrSignature)(messageDigest, signerPrivateKey, curve, alpha, config, ring, true);
-        const rawSignature = RingSignature.signature(curve, ring, schnorrSig.c, signerIndex, signerPrivateKey, messageDigest, config);
+        // compute cpi+1
+        const cpi1 = (0, utils_1.computeCPI1)(messageDigest, curve, alpha, config, ring);
+        const rawSignature = RingSignature.signature(curve, ring, cpi1, signerIndex, signerPrivateKey, messageDigest, config);
         // compute the signer response
         const signerResponse = (0, piSignature_1.piSignature)(alpha, rawSignature.cees[rawSignature.signerIndex], signerPrivateKey, curve);
         return new RingSignature(message, rawSignature.ring, rawSignature.cees[0], 

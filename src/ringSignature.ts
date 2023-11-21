@@ -677,12 +677,12 @@ export class RingSignature {
       return modulo(
         BigInt(
           "0x" +
-          hash(
-            formatRing(ring) +
-            messageDigest +
-            formatPoint(G.mult(params.alpha)),
-            hashFct,
-          ),
+            hash(
+              formatRing(ring) +
+                messageDigest +
+                formatPoint(G.mult(params.alpha)),
+              hashFct,
+            ),
         ),
         N,
       );
@@ -691,16 +691,16 @@ export class RingSignature {
       return modulo(
         BigInt(
           "0x" +
-          hash(
-            formatRing(ring) +
-            messageDigest +
-            formatPoint(
-              G.mult(params.previousR).add(
-                params.previousPubKey.mult(params.previousC).negate(),
-              ),
+            hash(
+              formatRing(ring) +
+                messageDigest +
+                formatPoint(
+                  G.mult(params.previousR).add(
+                    params.previousPubKey.mult(params.previousC).negate(),
+                  ),
+                ),
+              hashFct,
             ),
-            hashFct,
-          ),
         ),
         N,
       );

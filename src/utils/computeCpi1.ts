@@ -11,7 +11,7 @@ import { Curve } from "../curves";
  * @param alpha the nonce value
  * @param config the config to use
  * @param ring the ring involved in the ring signature
- * 
+ *
  * @returns the value of c1
  */
 export function computeCPI1(
