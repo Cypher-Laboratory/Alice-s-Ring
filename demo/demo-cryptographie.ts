@@ -1,3 +1,4 @@
+import { sign } from "crypto";
 import { Curve, CurveName, RingSignature } from "../src";
 import * as data from "../test/data";
 
@@ -16,6 +17,8 @@ const verified = signature.verify();
 
 console.log(
   "Signature: ",
+  "\n\tmessage: ",
+  signature.getMessage(),
   "\n\tmessage digest: ",
   signature.messageDigest,
   "\n\tseed: ",
