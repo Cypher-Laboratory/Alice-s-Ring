@@ -22,7 +22,7 @@ import { SignatureConfig } from "../interfaces";
  * @returns { messageDigest: bigint, c: bigint, r: bigint,  ring?: Point[] } - The signature { messageDigest, c, r, ring? }
  */
 export function schnorrSignature(
-  message: bigint, // = c in our ring signature scheme
+  message: bigint,
   signerPrivKey: bigint,
   curve: Curve,
   alpha?: bigint,

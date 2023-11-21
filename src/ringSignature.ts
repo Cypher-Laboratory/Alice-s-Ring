@@ -6,7 +6,6 @@ import {
   formatPoint,
   hash,
   base64Regex,
-  computeCPI1,
 } from "./utils";
 import { piSignature } from "./signature/piSignature";
 import { derivePubKey } from "./curves";
@@ -27,7 +26,6 @@ export class RingSignature {
   private ring: Point[];
   private curve: Curve;
   private config?: SignatureConfig;
-  private hash: hashFunction;
 
   /**
    * Ring signature class constructor
@@ -59,22 +57,13 @@ export class RingSignature {
     if (config && typeof config !== "object")
       throw err.invalidParams("Config must be an object");
 
-    // check ring, c and responses validity if config.safeMode is true or if config.safeMode is not set
-
+    // check ring, c and responses validity
     checkRing(ring, curve, true);
 
     if (c === 0n) throw err.invalidParams("c");
     for (const response of responses) {
       if (response >= curve.N || response === 0n) throw err.invalidResponses;
     }
-
-    // check params
-    if (c === 0n) throw err.invalidParams("c cannot be 0");
-    if (responses.includes(0n))
-      throw err.invalidParams("Responses cannot contain 0");
-
-    if (config?.hash) this.hash = config.hash;
-    else this.hash = hashFunction.KECCAK256;
 
     this.ring = ring;
     this.message = message;
@@ -144,7 +133,7 @@ export class RingSignature {
    * @returns The message digest
    */
   get messageDigest(): bigint {
-    return BigInt("0x" + hash(this.message, this.hash));
+    return BigInt("0x" + hash(this.message, this.config?.hash));
   }
 
   /**
@@ -158,51 +147,52 @@ export class RingSignature {
    * @returns A RingSignature
    */
   static fromJsonString(json: string | object): RingSignature {
-    if (typeof json === "object") json = JSON.stringify(json);
-    try {
-      JSON.parse(json);
-    } catch (e) {
-      throw err.invalidJson(e);
+    let parsedJson;
+    if (typeof json === "string") {
+      try {
+        parsedJson = JSON.parse(json);
+      } catch (e) {
+        throw err.invalidJson(e);
+      }
+    } else {
+      parsedJson = json;
     }
     // check if message is stored as array or object. If so, throw an error
     if (
-      JSON.parse(json).message instanceof Array ||
-      typeof JSON.parse(json).message === "object"
+      parsedJson.message instanceof Array ||
+      typeof parsedJson.message === "object"
     )
       throw err.invalidJson("Message must be a string or a number");
     // check if c is stored as array or object. If so, throw an error
-    if (
-      JSON.parse(json).c instanceof Array ||
-      typeof JSON.parse(json).c === "object"
-    )
+    if (parsedJson.c instanceof Array || typeof parsedJson.c === "object")
       throw err.invalidJson("c must be a string or a number");
     // check if config is an object
-    if (JSON.parse(json).config && typeof JSON.parse(json).config !== "object")
+    if (parsedJson.config && typeof parsedJson.config !== "object")
       throw err.invalidJson("Config must be an object");
     // check if config.safeMode is a boolean. If not, throw an error
     if (
-      JSON.parse(json).config &&
-      JSON.parse(json).config.safeMode &&
-      typeof JSON.parse(json).config.safeMode !== "boolean"
+      parsedJson.config &&
+      parsedJson.config.safeMode &&
+      typeof parsedJson.config.safeMode !== "boolean"
     )
       throw err.invalidJson("Config.safeMode must be a boolean");
     // check if config.hash is an element from hashFunction. If not, throw an error
     if (
-      JSON.parse(json).config &&
-      JSON.parse(json).config.hash &&
-      !Object.values(hashFunction).includes(JSON.parse(json).config.hash)
+      parsedJson.config &&
+      parsedJson.config.hash &&
+      !Object.values(hashFunction).includes(parsedJson.config.hash)
     )
       throw err.invalidJson("Config.hash must be an element from hashFunction");
     // check if config.evmCompatibility is a boolean. If not, throw an error
     if (
-      JSON.parse(json).config &&
-      JSON.parse(json).config.evmCompatibility &&
-      typeof JSON.parse(json).config.evmCompatibility !== "boolean"
+      parsedJson.config &&
+      parsedJson.config.evmCompatibility &&
+      typeof parsedJson.config.evmCompatibility !== "boolean"
     )
       throw err.invalidJson("Config.evmCompatibility must be a boolean");
 
     try {
-      const sig = JSON.parse(json) as {
+      const sig = parsedJson as {
         message: string;
         ring: string[];
         c: string;
@@ -229,7 +219,7 @@ export class RingSignature {
    * @returns A json string
    */
   toJsonString(): string {
-    const out = JSON.stringify({
+    return JSON.stringify({
       message: this.message,
       ring: this.ring.map((point: Point) => point.toString()),
       c: this.c.toString(),
@@ -237,8 +227,6 @@ export class RingSignature {
       curve: this.curve.toString(),
       config: this.config,
     });
-
-    return out;
   }
 
   /**
@@ -284,7 +272,7 @@ export class RingSignature {
    * @returns A RingSignature
    */
   static sign(
-    ring: Point[], // ring.length = n
+    ring: Point[], // ring.length = n+1
     signerPrivateKey: bigint,
     message: string,
     curve: Curve,
@@ -308,7 +296,7 @@ export class RingSignature {
 
     // set the signer position in the ring
     const signerIndex = // pi
-      ring.length === 0 ? 0 : getRandomSecuredNumber(0, ring.length - 1); // signer index
+      ring.length === 0 ? 0 : getRandomSecuredNumber(0, ring.length - 1);
 
     // get the signer public key
     const signerPubKey: Point = derivePubKey(signerPrivateKey, curve);
@@ -319,14 +307,19 @@ export class RingSignature {
       .concat([signerPubKey], ring.slice(signerIndex)) as Point[];
 
     // compute cpi+1
-    const cpi1 = computeCPI1(messageDigest, curve, alpha, config, ring);
+    const cpi1 = RingSignature.computeC(
+      ring,
+      messageDigest,
+      { alpha: alpha },
+      curve,
+      config,
+    );
 
     const rawSignature = RingSignature.signature(
       curve,
       ring,
       cpi1,
       signerIndex,
-      signerPrivateKey,
       messageDigest,
       config,
     );
@@ -357,6 +350,7 @@ export class RingSignature {
 
   /**
    * Sign a message using ring signatures
+   * Allow the user to use its private key from an external software (external software/hardware wallet)
    *
    * @param ring - Ring of public keys (does not contain the signer public key)
    * @param message - Clear message to sign
@@ -375,7 +369,7 @@ export class RingSignature {
     const messageDigest = BigInt("0x" + hash(message, config?.hash));
 
     const alpha = randomBigint(curve.N);
-    const ceePiPlusOne = RingSignature.computeC(
+    const cpi1 = RingSignature.computeC(
       ring,
       messageDigest,
       { alpha: alpha },
@@ -395,9 +389,8 @@ export class RingSignature {
     const rawSignature = RingSignature.signature(
       curve,
       ring,
-      ceePiPlusOne,
+      cpi1,
       signerIndex,
-      signerPubKey,
       messageDigest,
       config,
     );
@@ -482,7 +475,7 @@ export class RingSignature {
     }
 
     // hash the message
-    const messageDigest = BigInt("0x" + hash(this.message, this.hash));
+    const messageDigest = BigInt("0x" + hash(this.message, this.config?.hash));
 
     // computes the cees
     let lastComputedCp = RingSignature.computeC(
@@ -531,7 +524,7 @@ export class RingSignature {
   }
 
   /**
-   * Verify a RingSignature stored as a json string
+   * Verify a RingSignature stored as a base64 string or a json string
    *
    * @param signature - The json or base64 encoded signature to verify
    * @returns True if the signature is valid, false otherwise
@@ -548,13 +541,11 @@ export class RingSignature {
 
   /**
    * Generate an incomplete ring signature.
-   * Allow the user to use its private key from an external software (external software/hardware wallet)
    *
    * @param curve - The curve to use
    * @param ring - The ring of public keys
    * @param ceePiPlusOne - The Cpi+1 value
    * @param signerIndex - The signer index in the ring
-   * @param signerKey - The signer private or public key
    * @param message - The message to sign
    * @param config - The config params to use
    *
@@ -565,7 +556,6 @@ export class RingSignature {
     ring: Point[],
     ceePiPlusOne: bigint,
     signerIndex: number,
-    signerKey: Point | bigint,
     messageDigest: bigint,
     config?: SignatureConfig,
   ): {
@@ -821,15 +811,4 @@ export function checkPoint(point: Point, curve?: Curve): void {
   if (curve && !curve.equals(point.curve)) {
     throw err.curveMismatch();
   }
-
-  // check if coordinates are valid
-  if (
-    point.x === 0n ||
-    point.y === 0n ||
-    point.x >= point.curve.P ||
-    point.y >= point.curve.P
-  ) {
-    throw err.invalidCoordinates();
-  }
 }
-export { SignatureConfig };

@@ -104,6 +104,7 @@ export class Curve {
   /**
    * Checks if a point is on the curve.
    *
+   * @remarks the function return false by default if the curve is not supported
    * @param point - the point to check
    * @returns true if the point is on the curve, false otherwise
    */
@@ -135,12 +136,12 @@ export class Curve {
 
       default: {
         console.warn(
-          "Unknown curve, cannot check if point is on curve. Returning true.",
+          "Unknown curve, cannot check if point is on curve. Returning false.",
         );
       }
     }
 
-    return true;
+    return false;
   }
 
   equals(curve: Curve): boolean {

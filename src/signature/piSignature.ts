@@ -11,7 +11,6 @@ import { invalidParams } from "../errors";
  *
  * @remarks
  * This function is used to compute the signature of the actual signer in a ring signature scheme.
- * It is really close to a schnorr signature.
  *
  * @param alpha - the alpha value
  * @param c - the seed
