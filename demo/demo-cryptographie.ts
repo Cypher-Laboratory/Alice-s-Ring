@@ -1,4 +1,3 @@
-import { sign } from "crypto";
 import { Curve, CurveName, RingSignature } from "../src";
 import * as data from "../test/data";
 
