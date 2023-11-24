@@ -73,7 +73,7 @@ Let $R$ be a set of public keys of the group members such as $R$ = {$K_{0}$, $K_
 Let $m$ be the message to be signed. 
 Let $H$ be a hash function. 
 Let $k$ be a random integer in the range $[1, N-1]$. This is the private key of the signer.
-Let $\pi$ be the signer position in the group. This is a random integer in the range $[0, n-1]$.
+Let $\pi$ be the signer position in the group. This is a random integer in the range $[0, n]$.
 
 The signer computes the following:
 - Generates a random integer $\alpha$ in the range [1, N-1]
