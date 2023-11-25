@@ -13,6 +13,8 @@ import { Curve, PartialSignature, Point } from ".";
 import { SignatureConfig } from "./interfaces";
 import { hashFunction } from "./utils/hashFunction";
 import * as err from "./errors";
+import { encrypt } from "./encryption/encryption";
+import { EthEncryptedData } from "@metamask/eth-sig-util";
 
 /**
  * Ring signature class.
@@ -357,15 +359,16 @@ export class RingSignature {
    * @param signerPubKey - Public key of the signer
    * @param config - The config params to use
    *
-   * @returns A PartialSignature
+   * @returns An encrypted PartialSignature
    */
   static partialSign(
-    ring: Point[], // ring.length = n
+    ring: Point[], // ring.length = n + 1
     message: string,
     signerPubKey: Point,
     curve: Curve,
+    encryptionPubKey: string,
     config?: SignatureConfig,
-  ): PartialSignature {
+  ): EthEncryptedData {
     const messageDigest = BigInt("0x" + hash(message, config?.hash));
 
     const alpha = randomBigint(curve.N);
@@ -379,7 +382,7 @@ export class RingSignature {
 
     // set the signer position in the ring
     const signerIndex = // pi
-      ring.length === 0 ? 0 : getRandomSecuredNumber(0, ring.length - 1); // signer index
+      ring.length === 0 ? 0 : getRandomSecuredNumber(0, ring.length - 1);
 
     // add the signer public key to the ring
     ring = ring
@@ -395,7 +398,7 @@ export class RingSignature {
       config,
     );
 
-    return {
+    const partialSig = {
       message,
       ring: rawSignature.ring,
       c: rawSignature.cees[0],
@@ -406,6 +409,13 @@ export class RingSignature {
       curve: curve,
       config: config,
     } as PartialSignature;
+
+    const encryptedPartialSig = encrypt(
+      RingSignature.partialSigToBase64(partialSig),
+      encryptionPubKey,
+    );
+
+    return encryptedPartialSig;
   }
 
   /**
@@ -432,6 +442,7 @@ export class RingSignature {
     if (partialSig.alpha >= partialSig.curve.N)
       throw err.invalidParams("alpha must be < curve.N");
     if (partialSig.alpha <= 0) throw err.invalidParams("alpha must be > 0");
+
     return new RingSignature(
       partialSig.message,
       partialSig.ring,
@@ -632,7 +643,6 @@ export class RingSignature {
    * Compute a c value
    *
    * @remarks
-   * This function is used to compute the c value of a partial signature.
    * Either 'alpha' or all the other keys of 'params' must be set.
    *
    * @param ring - Ring of public keys

@@ -1,4 +1,5 @@
 import { Curve, CurveName, RingSignature } from "../../src";
+import { decrypt } from "../../src/encryption/encryption";
 import { invalidBase64 } from "../../src/errors";
 import * as data from "../data";
 
@@ -15,11 +16,16 @@ const ed25519 = new Curve(CurveName.ED25519);
  */
 describe("Test partialSigToBase64()", () => {
   it("Should return a valid base64 encoded string", () => {
-    const ps = RingSignature.partialSign(
+    const enc_ps = RingSignature.partialSign(
       data.publicKeys_secp256k1,
       data.message,
       data.signerPubKey_secp256k1,
       secp256k1,
+      data.signerEncryptionPubKey,
+    );
+
+    const ps = RingSignature.base64ToPartialSig(
+      decrypt(enc_ps, data.signerPrivKey),
     );
 
     expect(() => RingSignature.partialSigToBase64(ps)).not.toThrow();
@@ -30,16 +36,17 @@ describe("Test partialSigToBase64()", () => {
   });
 
   it("Should return a valid PartialSignature object - secp256k1", () => {
-    const ps = RingSignature.partialSigToBase64(
-      RingSignature.partialSign(
-        data.publicKeys_secp256k1,
-        data.message,
-        data.signerPubKey_secp256k1,
-        secp256k1,
-      ),
+    const enc_rs = RingSignature.partialSign(
+      data.publicKeys_secp256k1,
+      data.message,
+      data.signerPubKey_secp256k1,
+      secp256k1,
+      data.signerEncryptionPubKey,
     );
 
-    const rs = RingSignature.base64ToPartialSig(ps);
+    const rs = RingSignature.base64ToPartialSig(
+      decrypt(enc_rs, data.signerPrivKey),
+    );
 
     expect(rs).toBeDefined();
     expect(rs.ring).toBeDefined();
@@ -55,16 +62,17 @@ describe("Test partialSigToBase64()", () => {
   });
 
   it("Should return a valid PartialSignature object - ed25519", () => {
-    const ps = RingSignature.partialSigToBase64(
-      RingSignature.partialSign(
-        data.publicKeys_ed25519,
-        data.message,
-        data.signerPubKey_ed25519,
-        ed25519,
-      ),
+    const enc_rs = RingSignature.partialSign(
+      data.publicKeys_ed25519,
+      data.message,
+      data.signerPubKey_ed25519,
+      ed25519,
+      data.signerEncryptionPubKey,
     );
 
-    const rs = RingSignature.base64ToPartialSig(ps);
+    const rs = RingSignature.base64ToPartialSig(
+      decrypt(enc_rs, data.signerPrivKey),
+    );
 
     // check properties
     expect(rs).toBeDefined();

@@ -7,8 +7,8 @@ import { SignatureConfig } from "./signatureConfig";
  *
  * @see message - Clear message
  * @see ring - Ring of public keys
- * @see pi - The signer index -> should be kept secret
- * @see c - The first c computed during the first part of the signing
+ * @see pi - The signer index
+ * @see c - The first c value
  * @see cpi - The c value of the signer
  * @see alpha - The alpha value
  * @see responses - The generated responses
@@ -25,4 +25,13 @@ export interface PartialSignature {
   responses: bigint[];
   curve: Curve;
   config?: SignatureConfig;
+}
+
+/**
+ * Encrypted partial ring signature interface
+ *
+ * @see partialSignature - The encrypted partial signature object as a base64 string
+ */
+export interface EncryptedPartialSignature {
+  partialSignature: string;
 }

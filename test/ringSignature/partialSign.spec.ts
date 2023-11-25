@@ -2,6 +2,7 @@ import { Curve, CurveName, RingSignature } from "../../src";
 import { invalidRing } from "../../src/errors";
 import * as data from "../data";
 import { hashFunction } from "../../src/utils/hashFunction";
+import { decrypt } from "../../src/encryption/encryption";
 
 const secp256k1 = new Curve(CurveName.SECP256K1);
 const ed25519 = new Curve(CurveName.ED25519);
@@ -18,14 +19,27 @@ const ed25519 = new Curve(CurveName.ED25519);
  */
 describe("Test partialSign()", () => {
   it("Should return a valid PartialSignature object - secp256k1", () => {
-    const rs = RingSignature.partialSign(
+    const enc_rs = RingSignature.partialSign(
       data.publicKeys_secp256k1,
       data.message,
       data.signerPubKey_secp256k1,
       secp256k1,
+      data.signerEncryptionPubKey,
     );
 
-    expect(rs).toBeDefined();
+    expect(enc_rs).toBeDefined();
+    expect(enc_rs.ciphertext).toBeDefined();
+    expect(enc_rs.ephemPublicKey).toBeDefined();
+
+    // decrypt rs
+    expect(() =>
+      RingSignature.base64ToPartialSig(decrypt(enc_rs, data.signerPrivKey)),
+    ).not.toThrow();
+
+    const rs = RingSignature.base64ToPartialSig(
+      decrypt(enc_rs, data.signerPrivKey),
+    );
+
     expect(rs.ring).toBeDefined();
     expect(rs.ring.length).toBe(data.publicKeys_secp256k1.length + 1); // +1 for the signerPubKey
     expect(rs.pi).toBeDefined();
@@ -44,6 +58,7 @@ describe("Test partialSign()", () => {
         data.message,
         data.signerPubKey_secp256k1,
         secp256k1,
+        data.signerEncryptionPubKey,
       );
     }).not.toThrow();
   });
@@ -54,6 +69,7 @@ describe("Test partialSign()", () => {
         data.message,
         data.signerPubKey_secp256k1,
         secp256k1,
+        data.signerEncryptionPubKey,
       );
     }).toThrow(
       invalidRing(
@@ -69,6 +85,7 @@ describe("Test partialSign()", () => {
         data.message,
         data.idPointX_secp256k1,
         secp256k1,
+        data.signerEncryptionPubKey,
       );
     }).toThrow(
       invalidRing(
@@ -84,16 +101,31 @@ describe("Test partialSign()", () => {
         "",
         data.signerPubKey_secp256k1,
         secp256k1,
+        data.signerEncryptionPubKey,
       );
     }).toThrow("Cannot sign empty message");
   });
   it("Should pass if config.evmCompatibility = true - secp256k1", () => {
-    const rs = RingSignature.partialSign(
+    const enc_rs = RingSignature.partialSign(
       data.publicKeys_secp256k1,
       data.message,
       data.signerPubKey_secp256k1,
       secp256k1,
+      data.signerEncryptionPubKey,
       { evmCompatibility: true },
+    );
+
+    expect(enc_rs).toBeDefined();
+    expect(enc_rs.ciphertext).toBeDefined();
+    expect(enc_rs.ephemPublicKey).toBeDefined();
+
+    // decrypt rs
+    expect(() =>
+      RingSignature.base64ToPartialSig(decrypt(enc_rs, data.signerPrivKey)),
+    ).not.toThrow();
+
+    const rs = RingSignature.base64ToPartialSig(
+      decrypt(enc_rs, data.signerPrivKey),
     );
 
     expect(rs).toBeDefined();
@@ -110,12 +142,26 @@ describe("Test partialSign()", () => {
     expect(rs.config && rs.config.evmCompatibility).toBe(true);
   });
   it("Should pass if config.hash = sha512 - secp256k1", () => {
-    const rs = RingSignature.partialSign(
+    const enc_rs = RingSignature.partialSign(
       data.publicKeys_secp256k1,
       data.message,
       data.signerPubKey_secp256k1,
       secp256k1,
+      data.signerEncryptionPubKey,
       { hash: hashFunction.SHA512 },
+    );
+
+    expect(enc_rs).toBeDefined();
+    expect(enc_rs.ciphertext).toBeDefined();
+    expect(enc_rs.ephemPublicKey).toBeDefined();
+
+    // decrypt rs
+    expect(() =>
+      RingSignature.base64ToPartialSig(decrypt(enc_rs, data.signerPrivKey)),
+    ).not.toThrow();
+
+    const rs = RingSignature.base64ToPartialSig(
+      decrypt(enc_rs, data.signerPrivKey),
     );
 
     expect(rs).toBeDefined();
@@ -133,11 +179,25 @@ describe("Test partialSign()", () => {
   });
 
   it("Should return a valid PartialSignature object - ed25519", () => {
-    const rs = RingSignature.partialSign(
+    const enc_rs = RingSignature.partialSign(
       data.publicKeys_ed25519,
       data.message,
       data.signerPubKey_ed25519,
       ed25519,
+      data.signerEncryptionPubKey,
+    );
+
+    expect(enc_rs).toBeDefined();
+    expect(enc_rs.ciphertext).toBeDefined();
+    expect(enc_rs.ephemPublicKey).toBeDefined();
+
+    // decrypt rs
+    expect(() =>
+      RingSignature.base64ToPartialSig(decrypt(enc_rs, data.signerPrivKey)),
+    ).not.toThrow();
+
+    const rs = RingSignature.base64ToPartialSig(
+      decrypt(enc_rs, data.signerPrivKey),
     );
 
     expect(rs).toBeDefined();
@@ -159,6 +219,7 @@ describe("Test partialSign()", () => {
         data.message,
         data.signerPubKey_ed25519,
         ed25519,
+        data.signerEncryptionPubKey,
       );
     }).not.toThrow();
   });
@@ -169,6 +230,7 @@ describe("Test partialSign()", () => {
         data.message,
         data.signerPubKey_ed25519,
         ed25519,
+        data.signerEncryptionPubKey,
       );
     }).toThrow(
       invalidRing(
@@ -184,6 +246,7 @@ describe("Test partialSign()", () => {
         data.message,
         data.idPointX_ed25519,
         ed25519,
+        data.signerEncryptionPubKey,
       );
     }).toThrow(
       invalidRing(
@@ -199,16 +262,31 @@ describe("Test partialSign()", () => {
         "",
         data.signerPubKey_ed25519,
         ed25519,
+        data.signerEncryptionPubKey,
       );
     }).toThrow("Cannot sign empty message");
   });
   it("Should pass if config.evmCompatibility = true - ed25519", () => {
-    const rs = RingSignature.partialSign(
+    const enc_rs = RingSignature.partialSign(
       data.publicKeys_ed25519,
       data.message,
       data.signerPubKey_ed25519,
       ed25519,
+      data.signerEncryptionPubKey,
       { evmCompatibility: true },
+    );
+
+    expect(enc_rs).toBeDefined();
+    expect(enc_rs.ciphertext).toBeDefined();
+    expect(enc_rs.ephemPublicKey).toBeDefined();
+
+    // decrypt rs
+    expect(() =>
+      RingSignature.base64ToPartialSig(decrypt(enc_rs, data.signerPrivKey)),
+    ).not.toThrow();
+
+    const rs = RingSignature.base64ToPartialSig(
+      decrypt(enc_rs, data.signerPrivKey),
     );
 
     expect(rs).toBeDefined();
@@ -225,12 +303,26 @@ describe("Test partialSign()", () => {
     expect(rs.config && rs.config.evmCompatibility).toBe(true);
   });
   it("Should pass if config.hashFunction = sha512 - ed25519", () => {
-    const rs = RingSignature.partialSign(
+    const enc_rs = RingSignature.partialSign(
       data.publicKeys_ed25519,
       data.message,
       data.signerPubKey_ed25519,
       ed25519,
+      data.signerEncryptionPubKey,
       { hash: hashFunction.SHA512 },
+    );
+
+    expect(enc_rs).toBeDefined();
+    expect(enc_rs.ciphertext).toBeDefined();
+    expect(enc_rs.ephemPublicKey).toBeDefined();
+
+    // decrypt rs
+    expect(() =>
+      RingSignature.base64ToPartialSig(decrypt(enc_rs, data.signerPrivKey)),
+    ).not.toThrow();
+
+    const rs = RingSignature.base64ToPartialSig(
+      decrypt(enc_rs, data.signerPrivKey),
     );
 
     expect(rs).toBeDefined();

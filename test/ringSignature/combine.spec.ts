@@ -1,4 +1,5 @@
 import { Curve, CurveName, RingSignature, piSignature } from "../../src";
+import { decrypt } from "../../src/encryption/encryption";
 import {
   invalidParams,
   invalidPoint,
@@ -29,11 +30,16 @@ const secp256k1 = new Curve(CurveName.SECP256K1);
 describe("Test combine()", () => {
   /* ------------VALID PAYLOAD------------ */
   it("Should return a RingSignature object - secp256k1", () => {
-    const partialSig = RingSignature.partialSign(
+    const enc_partialSig = RingSignature.partialSign(
       data.publicKeys_secp256k1,
       data.message,
       data.signerPubKey_secp256k1,
       secp256k1,
+      data.signerEncryptionPubKey,
+    );
+
+    const partialSig = RingSignature.base64ToPartialSig(
+      decrypt(enc_partialSig, data.signerPrivKey),
     );
 
     const signerResponse = piSignature(
@@ -48,11 +54,16 @@ describe("Test combine()", () => {
     );
   });
   it("Should return a RingSignature object - ed25519", () => {
-    const partialSig = RingSignature.partialSign(
+    const enc_partialSig = RingSignature.partialSign(
       data.publicKeys_ed25519,
       data.message,
       data.signerPubKey_ed25519,
       ed25519,
+      data.signerEncryptionPubKey,
+    );
+
+    const partialSig = RingSignature.base64ToPartialSig(
+      decrypt(enc_partialSig, data.signerPrivKey),
     );
 
     const signerResponse = piSignature(
@@ -69,11 +80,16 @@ describe("Test combine()", () => {
 
   /* ------------INVALID PAYLOAD------------ */
   it("Should throw if the signer response is 0 - secp256k1", () => {
-    const partialSig = RingSignature.partialSign(
+    const enc_partialSig = RingSignature.partialSign(
       data.publicKeys_secp256k1,
       data.message,
       data.signerPubKey_secp256k1,
       secp256k1,
+      data.signerEncryptionPubKey,
+    );
+
+    const partialSig = RingSignature.base64ToPartialSig(
+      decrypt(enc_partialSig, data.signerPrivKey),
     );
 
     expect(() => {
@@ -81,11 +97,16 @@ describe("Test combine()", () => {
     }).toThrow("At least one response is not valid");
   });
   it("Should throw if the signer response is 0 - ed25519", () => {
-    const partialSig = RingSignature.partialSign(
+    const enc_partialSig = RingSignature.partialSign(
       data.publicKeys_ed25519,
       data.message,
       data.signerPubKey_ed25519,
       ed25519,
+      data.signerEncryptionPubKey,
+    );
+
+    const partialSig = RingSignature.base64ToPartialSig(
+      decrypt(enc_partialSig, data.signerPrivKey),
     );
 
     expect(() => {
