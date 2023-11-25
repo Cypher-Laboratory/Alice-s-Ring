@@ -155,7 +155,7 @@ export function randomBigint(max: bigint): bigint
   ): bigint 
 ```
 #### 4. Compute the ring without the signer
-Generates random responses *r* = {$r_{0}$ , $r_{1}$, ... , $r_{\pi-1}$, $r_{\pi+1}$, ... , $r_{n}$ } where $r_{i}$ ($0 <= i <= n$ excluding $\pi$) is a random integer in the range $[1, N-1]$  
+Generates random responses *r* = { $r_{0}$ , $r_{1}$, ... , $r_{\pi-1}$, $r_{\pi+1}$, ... , $r_{n}$ } where $r_{i}$ ($0 <= i <= n$ excluding $\pi$) is a random integer in the range $[1, N-1]$  
 For i = ${\pi+1}$, ${\pi+2}$ , ..., n, 1, 2, ..., ${\pi-1}$ calculate, replacing n + 1 → 1,
 
 $c_{i+1} = H(R, m, [r_{s}G + c_{s}K_{s}])$
