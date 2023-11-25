@@ -77,33 +77,33 @@ Let $\pi$ be the signer position in the group. This is a random integer in the r
 
 The signer computes the following:
 - Generates a random integer $\alpha$ in the range [1, N-1]
-- Generates random responses *r* = {$r_{0}$, $r_{1}$, ... , $r_{\pi-1}$, $r_{\pi+1}$, ... , $r_{n}$} where ri ($0 <= i <= n$ excluding $\pi$) is a random integer in the range $[1, N-1]$
+- Generates random responses *r* = { $r_{0}$ , $r_{1}$ , ... , $r_{\pi-1}$, $r_{\pi+1}$, ... , $r_{n}$ } where $r_{i}$ ($0 <= i <= n$ excluding $\pi$) is a random integer in the range $[1, N-1]$
 - Computes $c_{\pi+1} = H(R, m, [\alpha G])$
 - For $j$ in $[\pi + 1, l + \pi]$ computes the following:
     - $i = mod(j, l)$ -> allows to loop over the group members
-    - $s = i - 1$ if $i > 0$ else $l - 1$ -> $s = i - 1$ except when i = 0. In this case, $s = l - 1$
+    - $s = i - 1$ if $i > 0$ else $l - 1$ -> $s = i - 1$ except when $i = 0$. In this case, $s = l - 1$
     - $c_{i+1} = H(R, m, [r_{s}G + c_{s}K_{s}])$
 - Define the signer's response to verify $\alpha = r_{\pi} + c_{\pi}k$ ($mod$ $N$)
 
 The signature contains the following:
 - the ring of public keys $R$
 - the seed $c_{0}$
-- the responses $r$ = {$r_{0}$, $r_{1}$, ... , $r_{n}$}
+- the responses $r$ = { $r_{0}$ , $r_{1}$ , ... , $r_{n}$ }
   
 
 ### Signature Verification
 Known data:
 - the ring of public keys $R$
 - the seed $c_{0}$
-- the responses $r$ = {$r_{0}$, $r_{1}$, ... , $r_{n}$}
+- the responses $r$ = { $r_{0}$ , $r_{1}$ , ... , $r_{n}$ }
 - the message $m$
 
 The signature is valid if and only if the signature has been generated using one of the group members' private keys.
 
 The verifier computes the following:
-- For $i = 1$ to $n$, replacing $n + 1$ by 0:
+- For $i = 1$ to $n$, with $i$ wrapping around to 0 after $n$:
     - $c'_{i} = H(R, m, [r_{i-1}G + c'_{i-1}K_{i-1}])$ if $i ≠ 0$ else $c'_{i} = H(R, m, [r_{0}G + c_{0}K_{0}])$
-- If $c'_{0} = c_{0}$ then the signature is valid, else it is invalid.
+-If $c'_{0} = c_{0}$ then the signature is valid, else it is invalid.
 
 
 ## Detailled implementation 
@@ -155,7 +155,7 @@ export function randomBigint(max: bigint): bigint
   ): bigint 
 ```
 #### 4. Compute the ring without the signer
-Generates random responses *r* = {$r_{0}$, $r_{1}$, ... , $r_{\pi-1}$, $r_{\pi+1}$, ... , $r_{n}$} where ri ($0 <= i <= n$ excluding $\pi$) is a random integer in the range $[1, N-1]$  
+Generates random responses *r* = {$r_{0}$ , $r_{1}$, ... , $r_{\pi-1}$, $r_{\pi+1}$, ... , $r_{n}$ } where $r_{i}$ ($0 <= i <= n$ excluding $\pi$) is a random integer in the range $[1, N-1]$  
 For i = ${\pi+1}$, ${\pi+2}$ , ..., n, 1, 2, ..., ${\pi-1}$ calculate, replacing n + 1 → 1,
 
 $c_{i+1} = H(R, m, [r_{s}G + c_{s}K_{s}])$
@@ -258,13 +258,13 @@ export function randomBigint(max: bigint): bigint
   ): bigint 
 ```
 #### 4. Compute the ring without the signer
-Generates random responses *r* = {$r_{0}$, $r_{1}$, ... , $r_{\pi-1}$, $r_{\pi+1}$, ... , $r_{n}$} where ri ($0 <= i <= n$ excluding $\pi$) is a random integer in the range $[1, N-1]$  
+Generates random responses *r* = {$r_{0}$, $r_{1}$, ... , $r_{\pi-1}$, $r_{\pi+1}$, ... , $r_{n}$ } where $r_{i}$ ($0 <= i <= n$ excluding $\pi$) is a random integer in the range $[1, N-1]$  
 For i = ${\pi+1}$, ${\pi+2}$ , ..., n, 1, 2, ..., ${\pi-1}$ calculate, replacing n + 1 → 1,
 
 $c_{i+1} = H(R, m, [r_{s}G + c_{s}K_{s}])$
 - **Function:** `RingSignature.partialSign`
 - **Location:** `src/ringSignatures.ts`
-- **Description:** Generate an incomplete ring signature (without the signer response).
+- **Description:** Generate an incomplete ring signature (without the signer response). And return a partialSign encrypted using x25519-xsalsa20-poly1305.
 
 ```typescript
   static partialSign(
