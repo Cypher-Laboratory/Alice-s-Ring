@@ -180,7 +180,7 @@ $c_{i+1} = H(R, m, [r_{s}G + c_{s}K_{s}])$
   }
 ```
 
-#### 5. Compute the true signer response $r_{\pi}$
+#### 5. Compute the signer response $r_{\pi}$
 $r_{\pi}$ such that $\alpha = r_{\pi} + c_{\pi}k$ ($mod$ $N$).
 - **Function:** `piSignature`
 - **Location:** `src/signature/piSignature.ts`
