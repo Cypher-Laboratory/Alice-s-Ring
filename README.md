@@ -69,7 +69,7 @@ When setting up a group for cryptographic purposes, such as for a Spontaneous An
 
 ### Signature Generation
 Let $l$ be the number of members in the group.
-Let $R$ be a set of public keys of the group members such as $R$ = {$K_{0}$, $K_{1}$, ..., $K_{n}$} where n be the number of members in the group minus 1 ($l = n + 1$). 
+Let $R$ be a set of public keys of the group members such as $R$ = { $K_{0}$ , $K_{1}$ , ..., $K_{n}$ } where n be the number of members in the group minus 1 ($l = n + 1$). 
 Let $m$ be the message to be signed. 
 Let $H$ be a hash function. 
 Let $k$ be a random integer in the range $[1, N-1]$. This is the private key of the signer.
@@ -102,11 +102,11 @@ The signature is valid if and only if the signature has been generated using one
 
 The verifier computes the following:
 - For $i = 1$ to $n$, with $i$ wrapping around to 0 after $n$:
-    - $c'_{i} = H(R, m, [r_{i-1}G + c'_{i-1}K_{i-1}])$ if $i ≠ 0$ else $c'_{i} = H(R, m, [r_{0}G + c_{0}K_{0}])$
--If $c'_{0} = c_{0}$ then the signature is valid, else it is invalid.
+    - $c'_{i}$ = H( R, m, [ r_{i-1}G + c'_{i-1} K_{i-1}])$ if $i ≠ 0$ else $c'_{i} = H(R, m, [r_{0}G + c_{0}K_{0}])$
+- If $c'_{0} = c_{0}$ then the signature is valid, else it is invalid.
 
 
-## Detailled implementation 
+## Detailed implementation 
 
 ### RingSignature.sign
 
@@ -131,7 +131,7 @@ It will be use as the nonce.
 export function randomBigint(max: bigint): bigint
 ```
 
-#### 3. Compute $c_{\pi+1}$
+#### 3. Compute the seed $c_{\pi+1}$
  $c_{\pi+1} = H(R, m, [\alpha G])$
 - **Function:** `computeC`
 - **Location:** `src/ringSignatures.ts`
@@ -154,7 +154,7 @@ export function randomBigint(max: bigint): bigint
     config?: SignatureConfig,
   ): bigint 
 ```
-#### 4. Compute the ring without the signer
+#### 4. Compute the challenges.
 Generates random responses *r* = { $r_{0}$ , $r_{1}$, ... , $r_{\pi-1}$, $r_{\pi+1}$, ... , $r_{n}$ } where $r_{i}$ ($0 <= i <= n$ excluding $\pi$) is a random integer in the range $[1, N-1]$  
 For i = ${\pi+1}$, ${\pi+2}$ , ..., n, 1, 2, ..., ${\pi-1}$ calculate, replacing n + 1 → 1,
 
@@ -228,13 +228,13 @@ export function getRandomSecuredNumber(min: number, max: number): number
 It will be use as the nonce.
 - **Function:** `randomBigint`
 - **Location:** `src/utils/randomNumber.ts`
-- **Description:** Generates a random bigint in the range [1, max].
+- **Description:** Generates a random bigint in the range [1, max[.
 
 ```typescript
 export function randomBigint(max: bigint): bigint
 ```
 
-#### 3.Compute $c_{\pi+1}$
+#### 3.Compute the seed $c_{\pi+1}$
  $c_{\pi+1} = H(R, m, [\alpha G])$
 - **Function:** `computeC`
 - **Location:** `src/ringSignatures.ts`
@@ -257,7 +257,7 @@ export function randomBigint(max: bigint): bigint
     config?: SignatureConfig,
   ): bigint 
 ```
-#### 4. Compute the ring without the signer
+#### 4. Compute the challenges.
 Generates random responses *r* = { $r_{0}$ , $r_{1}$ , ... , $r_{\pi-1}$ , $r_{\pi+1}$ , ... , $r_{n}$ } where $r_{i}$ ($0 <= i <= n$ excluding $\pi$) is a random integer in the range $[1, N-1]$  
 For i = ${\pi+1}$, ${\pi+2}$ , ..., n, 1, 2, ..., ${\pi-1}$ calculate, replacing n + 1 → 1,
 
