@@ -212,7 +212,7 @@ Return the ring-signature.
   ) 
 ```
 ### RingSignature.partialSign
-The RingSignature.partialSign method enables users to create a ring signature using private keys stored in a wallet. This method closely resembles the RingSignature.sign approach, following a stepwise process that first focuses on constructing the ring and then generating the actual signature.  
+The RingSignature.partialSign method enables users to generate a ring signature using private keys securely stored in a cryptographic storage solution, such as a wallet, Key Management System (KMS), or Hardware Security Module (HSM). This method closely resembles the RingSignature.sign approach, following a stepwise process that first focuses on constructing the ring and then generating the actual signature.  
 A key distinction of partialSign lies in how it handles the signature generated in step 4: this incomplete signature is securely encrypted using the x25519-xsalsa20-poly1305 encryption scheme. This encryption step is crucial as it significantly reduces the risk of private key exposure, ensuring enhanced security for users leveraging wallet-stored keys.
 
 #### 1. Generate a random number $\pi$
