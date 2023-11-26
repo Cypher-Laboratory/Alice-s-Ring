@@ -52,6 +52,8 @@ describe("Test combine()", () => {
     expect(RingSignature.combine(partialSig, signerResponse)).toBeInstanceOf(
       RingSignature,
     );
+
+    expect(RingSignature.combine(partialSig, signerResponse).verify()).toBe(true);
   });
   it("Should return a RingSignature object - ed25519", () => {
     const enc_partialSig = RingSignature.partialSign(
