@@ -372,13 +372,6 @@ export class RingSignature {
     const messageDigest = BigInt("0x" + hash(message, config?.hash));
 
     const alpha = randomBigint(curve.N);
-    const cpi1 = RingSignature.computeC(
-      ring,
-      messageDigest,
-      { alpha: alpha },
-      curve,
-      config,
-    );
 
     // set the signer position in the ring
     const signerIndex = // pi
@@ -388,6 +381,15 @@ export class RingSignature {
     ring = ring
       .slice(0, signerIndex)
       .concat([signerPubKey], ring.slice(signerIndex)) as Point[];
+
+    // compute cpi+1
+    const cpi1 = RingSignature.computeC(
+      ring,
+      messageDigest,
+      { alpha: alpha },
+      curve,
+      config,
+    );
 
     const rawSignature = RingSignature.signature(
       curve,
@@ -681,12 +683,12 @@ export class RingSignature {
       return modulo(
         BigInt(
           "0x" +
-            hash(
-              formatRing(ring) +
-                messageDigest +
-                formatPoint(G.mult(params.alpha)),
-              hashFct,
-            ),
+          hash(
+            formatRing(ring) +
+            messageDigest +
+            formatPoint(G.mult(params.alpha)),
+            hashFct,
+          ),
         ),
         N,
       );
@@ -695,16 +697,16 @@ export class RingSignature {
       return modulo(
         BigInt(
           "0x" +
-            hash(
-              formatRing(ring) +
-                messageDigest +
-                formatPoint(
-                  G.mult(params.previousR).add(
-                    params.previousPubKey.mult(params.previousC).negate(),
-                  ),
-                ),
-              hashFct,
+          hash(
+            formatRing(ring) +
+            messageDigest +
+            formatPoint(
+              G.mult(params.previousR).add(
+                params.previousPubKey.mult(params.previousC).negate(),
+              ),
             ),
+            hashFct,
+          ),
         ),
         N,
       );
