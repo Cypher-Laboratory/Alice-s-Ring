@@ -16,23 +16,21 @@ const curves_1 = require("../curves");
  * @param curve - The curve to use
  * @param alpha - The alpha value (optional)
  * @param config - The signature config (optional)
- * @param ring - The ring used for signing (only needed in case of ring signature context)(optional)
  * @param keyPrefixing - Whether to prefix the hashed data with the public key (default: true)
  *
- * @returns { messageDigest: bigint, c: bigint, r: bigint,  ring?: Point[] } - The signature { messageDigest, c, r, ring? }
+ * @returns { messageDigest: bigint, c: bigint, r: bigint } - The signature { messageDigest, c, r }
  */
-function schnorrSignature(message, signerPrivKey, curve, alpha, config, ring, keyPrefixing = true) {
+function schnorrSignature(message, signerPrivKey, curve, alpha, config, keyPrefixing = true) {
     if (!alpha)
         alpha = (0, utils_1.randomBigint)(curve.N);
     const c = (0, utils_1.modulo)(BigInt("0x" +
-        (0, utils_1.hash)((keyPrefixing && !ring
+        (0, utils_1.hash)((keyPrefixing
             ? (0, utils_1.formatPoint)((0, curves_1.derivePubKey)(signerPrivKey, curve))
             : "") +
-            (ring ? (0, utils_1.formatRing)(ring) : "") +
             message +
             (0, utils_1.formatPoint)(curve.GtoPoint().mult(alpha)), config?.hash)), curve.N);
     const r = (0, utils_1.modulo)(alpha - c * signerPrivKey, curve.N);
-    return { messageDigest: message, c, r, ring: ring };
+    return { messageDigest: message, c, r };
 }
 exports.schnorrSignature = schnorrSignature;
 /**
@@ -49,11 +47,10 @@ exports.schnorrSignature = schnorrSignature;
  */
 function verifySchnorrSignature(message, signerPubKey, signature, curve, config, keyPrefixing = true) {
     const G = curve.GtoPoint(); // curve generator
-    // compute H(R|m|[r*G - c*K]) (R is empty, signerPubkey or the ring used for signing). Return true if the result is equal to c
+    // compute H(R|m|[r*G - c*K]) (R is empty, or the signerPubkey). Return true if the result is equal to c
     const point = G.mult(signature.r).add(signerPubKey.mult(signature.c));
     const h = (0, utils_1.modulo)(BigInt("0x" +
-        (0, utils_1.hash)((keyPrefixing && !signature.ring ? (0, utils_1.formatPoint)(signerPubKey) : "") +
-            (signature.ring ? (0, utils_1.formatRing)(signature.ring) : "") +
+        (0, utils_1.hash)((keyPrefixing ? (0, utils_1.formatPoint)(signerPubKey) : "") +
             message +
             (0, utils_1.formatPoint)(point), config?.hash)), curve.N);
     return h === signature.c;

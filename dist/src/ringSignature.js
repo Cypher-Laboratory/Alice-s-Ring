@@ -345,7 +345,7 @@ class RingSignature {
      * To do so, call 'verifySchnorrSignature' with the following parameters:
      * - messageDigest: the message digest
      * - signerPubKey: the public key of the signer
-     * - signature: the signature { c, r } or { c, r, ring }
+     * - signature: the signature { c, r }
      * - curve: the curve used for the signature
      * - config: the config params used for the signature (can be undefined)
      * - keyPrefixing: true

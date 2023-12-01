@@ -9,16 +9,14 @@ import { SignatureConfig } from "../interfaces";
  * @param curve - The curve to use
  * @param alpha - The alpha value (optional)
  * @param config - The signature config (optional)
- * @param ring - The ring used for signing (only needed in case of ring signature context)(optional)
  * @param keyPrefixing - Whether to prefix the hashed data with the public key (default: true)
  *
- * @returns { messageDigest: bigint, c: bigint, r: bigint,  ring?: Point[] } - The signature { messageDigest, c, r, ring? }
+ * @returns { messageDigest: bigint, c: bigint, r: bigint } - The signature { messageDigest, c, r }
  */
-export declare function schnorrSignature(message: bigint, signerPrivKey: bigint, curve: Curve, alpha?: bigint, config?: SignatureConfig, ring?: Point[], keyPrefixing?: boolean): {
+export declare function schnorrSignature(message: bigint, signerPrivKey: bigint, curve: Curve, alpha?: bigint, config?: SignatureConfig, keyPrefixing?: boolean): {
     messageDigest: bigint;
     c: bigint;
     r: bigint;
-    ring?: Point[];
 };
 /**
  * Verify a signature generated with the `schnorrSignature` function
@@ -35,5 +33,4 @@ export declare function schnorrSignature(message: bigint, signerPrivKey: bigint,
 export declare function verifySchnorrSignature(message: bigint, signerPubKey: Point, signature: {
     c: bigint;
     r: bigint;
-    ring?: Point[];
 }, curve: Curve, config?: SignatureConfig, keyPrefixing?: boolean): boolean;
