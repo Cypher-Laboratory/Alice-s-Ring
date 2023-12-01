@@ -33,5 +33,5 @@ export function piSignature(
   )
     throw invalidParams();
 
-  return modulo(alpha + c * signerPrivKey, curve.N);
+  return modulo(alpha - c * signerPrivKey, curve.N);
 }

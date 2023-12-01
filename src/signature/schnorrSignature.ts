@@ -48,7 +48,7 @@ export function schnorrSignature(
     curve.N,
   );
 
-  const r = modulo(alpha + c * signerPrivKey, curve.N);
+  const r = modulo(alpha - c * signerPrivKey, curve.N);
 
   return { messageDigest: message, c, r, ring: ring };
 }
@@ -75,9 +75,7 @@ export function verifySchnorrSignature(
 ): boolean {
   const G: Point = curve.GtoPoint(); // curve generator
   // compute H(R|m|[r*G - c*K]) (R is empty, signerPubkey or the ring used for signing). Return true if the result is equal to c
-  const point = G.mult(signature.r).add(
-    signerPubKey.mult(signature.c).negate(),
-  );
+  const point = G.mult(signature.r).add(signerPubKey.mult(signature.c));
 
   const h = modulo(
     BigInt(

@@ -24,6 +24,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const src_1 = require("../../src");
+const encryption_1 = require("../../src/encryption/encryption");
 const errors_1 = require("../../src/errors");
 const data = __importStar(require("../data"));
 const ed25519 = new src_1.Curve(src_1.CurveName.ED25519);
@@ -46,24 +47,29 @@ const secp256k1 = new src_1.Curve(src_1.CurveName.SECP256K1);
 describe("Test combine()", () => {
     /* ------------VALID PAYLOAD------------ */
     it("Should return a RingSignature object - secp256k1", () => {
-        const partialSig = src_1.RingSignature.partialSign(data.publicKeys_secp256k1, data.message, data.signerPubKey_secp256k1, secp256k1);
+        const enc_partialSig = src_1.RingSignature.partialSign(data.publicKeys_secp256k1, data.message, data.signerPubKey_secp256k1, secp256k1, data.signerEncryptionPubKey);
+        const partialSig = src_1.RingSignature.base64ToPartialSig((0, encryption_1.decrypt)(enc_partialSig, data.signerPrivKey));
         const signerResponse = (0, src_1.piSignature)(partialSig.alpha, partialSig.cpi, data.signerPrivKey, secp256k1);
         expect(src_1.RingSignature.combine(partialSig, signerResponse)).toBeInstanceOf(src_1.RingSignature);
+        expect(src_1.RingSignature.combine(partialSig, signerResponse).verify()).toBe(true);
     });
     it("Should return a RingSignature object - ed25519", () => {
-        const partialSig = src_1.RingSignature.partialSign(data.publicKeys_ed25519, data.message, data.signerPubKey_ed25519, ed25519);
+        const enc_partialSig = src_1.RingSignature.partialSign(data.publicKeys_ed25519, data.message, data.signerPubKey_ed25519, ed25519, data.signerEncryptionPubKey);
+        const partialSig = src_1.RingSignature.base64ToPartialSig((0, encryption_1.decrypt)(enc_partialSig, data.signerPrivKey));
         const signerResponse = (0, src_1.piSignature)(partialSig.alpha, partialSig.cpi, data.signerPrivKey, ed25519);
         expect(src_1.RingSignature.combine(partialSig, signerResponse)).toBeInstanceOf(src_1.RingSignature);
     });
     /* ------------INVALID PAYLOAD------------ */
     it("Should throw if the signer response is 0 - secp256k1", () => {
-        const partialSig = src_1.RingSignature.partialSign(data.publicKeys_secp256k1, data.message, data.signerPubKey_secp256k1, secp256k1);
+        const enc_partialSig = src_1.RingSignature.partialSign(data.publicKeys_secp256k1, data.message, data.signerPubKey_secp256k1, secp256k1, data.signerEncryptionPubKey);
+        const partialSig = src_1.RingSignature.base64ToPartialSig((0, encryption_1.decrypt)(enc_partialSig, data.signerPrivKey));
         expect(() => {
             src_1.RingSignature.combine(partialSig, 0n);
         }).toThrow("At least one response is not valid");
     });
     it("Should throw if the signer response is 0 - ed25519", () => {
-        const partialSig = src_1.RingSignature.partialSign(data.publicKeys_ed25519, data.message, data.signerPubKey_ed25519, ed25519);
+        const enc_partialSig = src_1.RingSignature.partialSign(data.publicKeys_ed25519, data.message, data.signerPubKey_ed25519, ed25519, data.signerEncryptionPubKey);
+        const partialSig = src_1.RingSignature.base64ToPartialSig((0, encryption_1.decrypt)(enc_partialSig, data.signerPrivKey));
         expect(() => {
             src_1.RingSignature.combine(partialSig, 0n);
         }).toThrow("At least one response is not valid");

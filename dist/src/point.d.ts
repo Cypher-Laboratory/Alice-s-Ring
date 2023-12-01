@@ -81,12 +81,9 @@ export declare class Point {
      */
     static fromBase64(base64: string): Point;
     /**
-     * Converts a hex public key (XRPL standard) to a Point object.
+     * Checks if a point is valid.
      *
-     * @param hex the hex string representation of the public key XRPL Format
-     * @returns the point
-     *
+     * @returns true if the point is valid, false otherwise
      */
-    static fromHexXRPL(hex: string): Point;
     isValid(): boolean;
 }

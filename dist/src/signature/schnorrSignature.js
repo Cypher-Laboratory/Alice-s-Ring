@@ -31,7 +31,7 @@ function schnorrSignature(message, signerPrivKey, curve, alpha, config, ring, ke
             (ring ? (0, utils_1.formatRing)(ring) : "") +
             message +
             (0, utils_1.formatPoint)(curve.GtoPoint().mult(alpha)), config?.hash)), curve.N);
-    const r = (0, utils_1.modulo)(alpha + c * signerPrivKey, curve.N);
+    const r = (0, utils_1.modulo)(alpha - c * signerPrivKey, curve.N);
     return { messageDigest: message, c, r, ring: ring };
 }
 exports.schnorrSignature = schnorrSignature;
@@ -50,7 +50,7 @@ exports.schnorrSignature = schnorrSignature;
 function verifySchnorrSignature(message, signerPubKey, signature, curve, config, keyPrefixing = true) {
     const G = curve.GtoPoint(); // curve generator
     // compute H(R|m|[r*G - c*K]) (R is empty, signerPubkey or the ring used for signing). Return true if the result is equal to c
-    const point = G.mult(signature.r).add(signerPubKey.mult(signature.c).negate());
+    const point = G.mult(signature.r).add(signerPubKey.mult(signature.c));
     const h = (0, utils_1.modulo)(BigInt("0x" +
         (0, utils_1.hash)((keyPrefixing && !signature.ring ? (0, utils_1.formatPoint)(signerPubKey) : "") +
             (signature.ring ? (0, utils_1.formatRing)(signature.ring) : "") +

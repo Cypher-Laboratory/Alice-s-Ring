@@ -27,6 +27,6 @@ function piSignature(alpha, c, signerPrivKey, curve) {
         signerPrivKey === BigInt(0) ||
         curve.N === BigInt(0))
         throw (0, errors_1.invalidParams)();
-    return (0, utils_1.modulo)(alpha + c * signerPrivKey, curve.N);
+    return (0, utils_1.modulo)(alpha - c * signerPrivKey, curve.N);
 }
 exports.piSignature = piSignature;

@@ -24,6 +24,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const src_1 = require("../../src");
+const encryption_1 = require("../../src/encryption/encryption");
 const errors_1 = require("../../src/errors");
 const data = __importStar(require("../data"));
 const secp256k1 = new src_1.Curve(src_1.CurveName.SECP256K1);
@@ -38,14 +39,15 @@ const ed25519 = new src_1.Curve(src_1.CurveName.ED25519);
  */
 describe("Test partialSigToBase64()", () => {
     it("Should return a valid base64 encoded string", () => {
-        const ps = src_1.RingSignature.partialSign(data.publicKeys_secp256k1, data.message, data.signerPubKey_secp256k1, secp256k1);
+        const enc_ps = src_1.RingSignature.partialSign(data.publicKeys_secp256k1, data.message, data.signerPubKey_secp256k1, secp256k1, data.signerEncryptionPubKey);
+        const ps = src_1.RingSignature.base64ToPartialSig((0, encryption_1.decrypt)(enc_ps, data.signerPrivKey));
         expect(() => src_1.RingSignature.partialSigToBase64(ps)).not.toThrow();
         expect(typeof src_1.RingSignature.partialSigToBase64(ps)).toBe("string");
         expect(data.base64Regex.test(src_1.RingSignature.partialSigToBase64(ps))).toBe(true);
     });
     it("Should return a valid PartialSignature object - secp256k1", () => {
-        const ps = src_1.RingSignature.partialSigToBase64(src_1.RingSignature.partialSign(data.publicKeys_secp256k1, data.message, data.signerPubKey_secp256k1, secp256k1));
-        const rs = src_1.RingSignature.base64ToPartialSig(ps);
+        const enc_rs = src_1.RingSignature.partialSign(data.publicKeys_secp256k1, data.message, data.signerPubKey_secp256k1, secp256k1, data.signerEncryptionPubKey);
+        const rs = src_1.RingSignature.base64ToPartialSig((0, encryption_1.decrypt)(enc_rs, data.signerPrivKey));
         expect(rs).toBeDefined();
         expect(rs.ring).toBeDefined();
         expect(rs.ring.length).toBe(data.publicKeys_secp256k1.length + 1); // +1 for the signerPubKey
@@ -59,8 +61,8 @@ describe("Test partialSigToBase64()", () => {
         expect(rs.config).not.toBeDefined();
     });
     it("Should return a valid PartialSignature object - ed25519", () => {
-        const ps = src_1.RingSignature.partialSigToBase64(src_1.RingSignature.partialSign(data.publicKeys_ed25519, data.message, data.signerPubKey_ed25519, ed25519));
-        const rs = src_1.RingSignature.base64ToPartialSig(ps);
+        const enc_rs = src_1.RingSignature.partialSign(data.publicKeys_ed25519, data.message, data.signerPubKey_ed25519, ed25519, data.signerEncryptionPubKey);
+        const rs = src_1.RingSignature.base64ToPartialSig((0, encryption_1.decrypt)(enc_rs, data.signerPrivKey));
         // check properties
         expect(rs).toBeDefined();
         expect(rs.ring).toBeDefined();
