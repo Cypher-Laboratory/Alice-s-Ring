@@ -250,11 +250,6 @@ export class Point {
     return new Point(retrievedCurve, [BigInt(x), BigInt(y)]);
   }
 
-  /**
-   * Checks if a point is valid.
-   *
-   * @returns true if the point is valid, false otherwise
-   */
   isValid(): boolean {
     try {
       checkPoint(this);

@@ -27,7 +27,7 @@ export function schnorrSignature(
   alpha?: bigint,
   config?: SignatureConfig,
   keyPrefixing = true,
-): { messageDigest: bigint; c: bigint; r: bigint } {
+): { messageDigest: bigint; c: bigint; r: bigint; ring?: Point[] } {
   if (!alpha) alpha = randomBigint(curve.N);
 
   const c = modulo(
@@ -71,7 +71,7 @@ export function verifySchnorrSignature(
   keyPrefixing = true,
 ): boolean {
   const G: Point = curve.GtoPoint(); // curve generator
-  // compute H(R|m|[r*G - c*K]) (R is empty, or the signerPubkey). Return true if the result is equal to c
+  // compute H(R|m|[r*G - c*K]) (R is empty or signerPubkey). Return true if the result is equal to c
   const point = G.mult(signature.r).add(signerPubKey.mult(signature.c));
 
   const h = modulo(
