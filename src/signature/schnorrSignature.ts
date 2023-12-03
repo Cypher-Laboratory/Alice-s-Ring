@@ -71,7 +71,7 @@ export function verifySchnorrSignature(
   keyPrefixing = true,
 ): boolean {
   const G: Point = curve.GtoPoint(); // curve generator
-  // compute H(R|m|[r*G - c*K]) (R is empty or signerPubkey). Return true if the result is equal to c
+  // compute H(R|m|[r*G + c*K]) (R is empty or signerPubkey). Return true if the result is equal to c
   const point = G.mult(signature.r).add(signerPubKey.mult(signature.c));
 
   const h = modulo(
