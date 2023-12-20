@@ -1,5 +1,6 @@
 import { Curve, PartialSignature, Point } from ".";
 import { SignatureConfig } from "./interfaces";
+import { EthEncryptedData } from "@metamask/eth-sig-util";
 /**
  * Ring signature class.
  * This class is used to sign messages using ring signatures.
@@ -117,10 +118,10 @@ export declare class RingSignature {
      * @param signerPubKey - Public key of the signer
      * @param config - The config params to use
      *
-     * @returns A PartialSignature
+     * @returns An encrypted PartialSignature
      */
-    static partialSign(ring: Point[], // ring.length = n
-    message: string, signerPubKey: Point, curve: Curve, config?: SignatureConfig): PartialSignature;
+    static partialSign(ring: Point[], // ring.length = n + 1
+    message: string, signerPubKey: Point, curve: Curve, encryptionPubKey: string, config?: SignatureConfig): EthEncryptedData;
     /**
      * Combine partial signatures into a RingSignature
      *
@@ -138,7 +139,7 @@ export declare class RingSignature {
      * To do so, call 'verifySchnorrSignature' with the following parameters:
      * - messageDigest: the message digest
      * - signerPubKey: the public key of the signer
-     * - signature: the signature { c, r } or { c, r, ring }
+     * - signature: the signature { c, r }
      * - curve: the curve used for the signature
      * - config: the config params used for the signature (can be undefined)
      * - keyPrefixing: true
@@ -170,7 +171,6 @@ export declare class RingSignature {
      * Compute a c value
      *
      * @remarks
-     * This function is used to compute the c value of a partial signature.
      * Either 'alpha' or all the other keys of 'params' must be set.
      *
      * @param ring - Ring of public keys

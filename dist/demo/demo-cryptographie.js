@@ -31,4 +31,4 @@ const signerPrivKey = 4705133659738916058765653209842709526799663499842509269386
 const ring = data.publicKeys_secp256k1;
 const signature = src_1.RingSignature.sign(ring, signerPrivKey, message, curve);
 const verified = signature.verify();
-console.log("Signature: ", "\n\tmessage digest: ", signature.messageDigest, "\n\tseed: ", signature.getChallenge(), "\n\tresponses: ", signature.getResponses(), "\n\tcurve: ", signature.getCurve().name, "\n\tverified: ", verified);
+console.log("Signature: ", "\n\tmessage: ", signature.getMessage(), "\n\tmessage digest: ", signature.messageDigest, "\n\tseed: ", signature.getChallenge(), "\n\tresponses: ", signature.getResponses(), "\n\tcurve: ", signature.getCurve().name, "\n\tverified: ", verified);

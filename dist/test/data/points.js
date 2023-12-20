@@ -23,13 +23,14 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.signerPubKey_ed25519 = exports.signerPubKey_secp256k1 = exports.signerPrivKey = exports.randomResponses = exports.randomC = exports.idPointY_ed25519 = exports.idPointX_ed25519 = exports.idPoint_ed25519 = exports.idPointY_secp256k1 = exports.idPointX_secp256k1 = exports.idPoint_secp256k1 = exports.invalid_string_point_ed25519 = exports.invalid_string_point_secp256k1 = exports.valid_string_point_secp256k1 = exports.valid_string_point_ed25519 = exports.valid_coordinates_secp256k1 = exports.valid_coordinates_ed25519 = exports.publicKeys_ed25519 = exports.publicKeys_secp256k1 = exports.zeroPivateKey = exports.privateKey = void 0;
+exports.signerPubKey_ed25519 = exports.signerPubKey_secp256k1 = exports.signerEncryptionPubKey = exports.signerPrivKey = exports.randomResponses = exports.randomC = exports.idPointY_ed25519 = exports.idPointX_ed25519 = exports.idPoint_ed25519 = exports.idPointY_secp256k1 = exports.idPointX_secp256k1 = exports.idPoint_secp256k1 = exports.invalid_string_point_ed25519 = exports.invalid_string_point_secp256k1 = exports.valid_string_point_secp256k1 = exports.valid_string_point_ed25519 = exports.valid_coordinates_secp256k1 = exports.valid_coordinates_ed25519 = exports.publicKeys_ed25519 = exports.publicKeys_secp256k1 = exports.zeroPivateKey = exports.privateKey = void 0;
 const src_1 = require("../../src");
 const utils_1 = require("../../src/utils");
 const curves_1 = require("./curves");
 const ed = __importStar(require("../../src/utils/noble-libraries/noble-ED25519"));
 const sha512_1 = require("@noble/hashes/sha512");
 const curves_2 = require("../../src/curves");
+const encryption_1 = require("../../src/encryption/encryption");
 ed.etc.sha512Sync = (...m) => (0, sha512_1.sha512)(ed.etc.concatBytes(...m));
 exports.privateKey = [
     // len = 10
@@ -97,5 +98,6 @@ exports.randomResponses = [
 /* -------------SIGNER KEYS------------- */
 exports.signerPrivKey = ed.utils.getExtendedPublicKey(BigInt("0x" +
     (0, utils_1.hash)("4705133659738916056634998425092693862103756529453934308865022401716")).toString(16)).scalar;
+exports.signerEncryptionPubKey = (0, encryption_1.getEncryptionPubKey)(exports.signerPrivKey);
 exports.signerPubKey_secp256k1 = (0, curves_2.derivePubKey)(exports.signerPrivKey, curves_1.SECP256K1);
 exports.signerPubKey_ed25519 = (0, curves_2.derivePubKey)(exports.signerPrivKey, curves_1.ED25519);

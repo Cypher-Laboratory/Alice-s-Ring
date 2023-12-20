@@ -30,6 +30,7 @@ const curves_1 = require("./curves");
 const _1 = require(".");
 const hashFunction_1 = require("./utils/hashFunction");
 const err = __importStar(require("./errors"));
+const encryption_1 = require("./encryption/encryption");
 /**
  * Ring signature class.
  * This class is used to sign messages using ring signatures.
@@ -276,22 +277,23 @@ class RingSignature {
      * @param signerPubKey - Public key of the signer
      * @param config - The config params to use
      *
-     * @returns A PartialSignature
+     * @returns An encrypted PartialSignature
      */
-    static partialSign(ring, // ring.length = n
-    message, signerPubKey, curve, config) {
+    static partialSign(ring, // ring.length = n + 1
+    message, signerPubKey, curve, encryptionPubKey, config) {
         const messageDigest = BigInt("0x" + (0, utils_1.hash)(message, config?.hash));
         const alpha = (0, utils_1.randomBigint)(curve.N);
-        const cpi1 = RingSignature.computeC(ring, messageDigest, { alpha: alpha }, curve, config);
         // set the signer position in the ring
         const signerIndex = // pi
-         ring.length === 0 ? 0 : (0, utils_1.getRandomSecuredNumber)(0, ring.length - 1); // signer index
+         ring.length === 0 ? 0 : (0, utils_1.getRandomSecuredNumber)(0, ring.length - 1);
         // add the signer public key to the ring
         ring = ring
             .slice(0, signerIndex)
             .concat([signerPubKey], ring.slice(signerIndex));
+        // compute cpi+1
+        const cpi1 = RingSignature.computeC(ring, messageDigest, { alpha: alpha }, curve, config);
         const rawSignature = RingSignature.signature(curve, ring, cpi1, signerIndex, messageDigest, config);
-        return {
+        const partialSig = {
             message,
             ring: rawSignature.ring,
             c: rawSignature.cees[0],
@@ -302,6 +304,8 @@ class RingSignature {
             curve: curve,
             config: config,
         };
+        const encryptedPartialSig = (0, encryption_1.encrypt)(RingSignature.partialSigToBase64(partialSig), encryptionPubKey);
+        return encryptedPartialSig;
     }
     /**
      * Combine partial signatures into a RingSignature
@@ -341,7 +345,7 @@ class RingSignature {
      * To do so, call 'verifySchnorrSignature' with the following parameters:
      * - messageDigest: the message digest
      * - signerPubKey: the public key of the signer
-     * - signature: the signature { c, r } or { c, r, ring }
+     * - signature: the signature { c, r }
      * - curve: the curve used for the signature
      * - config: the config params used for the signature (can be undefined)
      * - keyPrefixing: true
@@ -368,20 +372,14 @@ class RingSignature {
             previousC: this.c,
             previousPubKey: this.ring[0],
         }, this.curve, this.config);
-        for (let i = 2; i < this.ring.length; i++) {
-            // c2' -> cn'
+        // compute the c values: c2', c3', ..., cn', c0'
+        for (let i = 1; i < this.ring.length; i++) {
             lastComputedCp = RingSignature.computeC(this.ring, messageDigest, {
-                previousR: this.responses[i - 1],
+                previousR: this.responses[i],
                 previousC: lastComputedCp,
-                previousPubKey: this.ring[i - 1],
+                previousPubKey: this.ring[i],
             }, this.curve, this.config);
         }
-        // compute c0'
-        lastComputedCp = RingSignature.computeC(this.ring, messageDigest, {
-            previousR: this.responses[this.responses.length - 1],
-            previousC: lastComputedCp,
-            previousPubKey: this.ring[this.ring.length - 1],
-        }, this.curve, this.config);
         // return true if c0 === c0'
         return this.c === lastComputedCp;
     }
@@ -463,7 +461,6 @@ class RingSignature {
      * Compute a c value
      *
      * @remarks
-     * This function is used to compute the c value of a partial signature.
      * Either 'alpha' or all the other keys of 'params' must be set.
      *
      * @param ring - Ring of public keys
@@ -496,7 +493,7 @@ class RingSignature {
             return (0, utils_1.modulo)(BigInt("0x" +
                 (0, utils_1.hash)((0, utils_1.formatRing)(ring) +
                     messageDigest +
-                    (0, utils_1.formatPoint)(G.mult(params.previousR).add(params.previousPubKey.mult(params.previousC).negate())), hashFct)), N);
+                    (0, utils_1.formatPoint)(G.mult(params.previousR).add(params.previousPubKey.mult(params.previousC))), hashFct)), N);
         }
         throw err.missingParams("Either 'alpha' or all the others params must be set");
     }

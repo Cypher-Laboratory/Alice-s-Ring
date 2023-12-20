@@ -469,7 +469,7 @@ export class RingSignature {
    * To do so, call 'verifySchnorrSignature' with the following parameters:
    * - messageDigest: the message digest
    * - signerPubKey: the public key of the signer
-   * - signature: the signature { c, r } or { c, r, ring }
+   * - signature: the signature { c, r }
    * - curve: the curve used for the signature
    * - config: the config params used for the signature (can be undefined)
    * - keyPrefixing: true
@@ -504,33 +504,20 @@ export class RingSignature {
       this.config,
     );
 
-    for (let i = 2; i < this.ring.length; i++) {
-      // c2' -> cn'
+    // compute the c values: c2', c3', ..., cn', c0'
+    for (let i = 1; i < this.ring.length; i++) {
       lastComputedCp = RingSignature.computeC(
         this.ring,
         messageDigest,
         {
-          previousR: this.responses[i - 1],
+          previousR: this.responses[i],
           previousC: lastComputedCp,
-          previousPubKey: this.ring[i - 1],
+          previousPubKey: this.ring[i],
         },
         this.curve,
         this.config,
       );
     }
-
-    // compute c0'
-    lastComputedCp = RingSignature.computeC(
-      this.ring,
-      messageDigest,
-      {
-        previousR: this.responses[this.responses.length - 1],
-        previousC: lastComputedCp,
-        previousPubKey: this.ring[this.ring.length - 1],
-      },
-      this.curve,
-      this.config,
-    );
 
     // return true if c0 === c0'
     return this.c === lastComputedCp;
@@ -683,12 +670,12 @@ export class RingSignature {
       return modulo(
         BigInt(
           "0x" +
-          hash(
-            formatRing(ring) +
-            messageDigest +
-            formatPoint(G.mult(params.alpha)),
-            hashFct,
-          ),
+            hash(
+              formatRing(ring) +
+                messageDigest +
+                formatPoint(G.mult(params.alpha)),
+              hashFct,
+            ),
         ),
         N,
       );
@@ -697,16 +684,16 @@ export class RingSignature {
       return modulo(
         BigInt(
           "0x" +
-          hash(
-            formatRing(ring) +
-            messageDigest +
-            formatPoint(
-              G.mult(params.previousR).add(
-                params.previousPubKey.mult(params.previousC).negate(),
-              ),
+            hash(
+              formatRing(ring) +
+                messageDigest +
+                formatPoint(
+                  G.mult(params.previousR).add(
+                    params.previousPubKey.mult(params.previousC),
+                  ),
+                ),
+              hashFct,
             ),
-            hashFct,
-          ),
         ),
         N,
       );
