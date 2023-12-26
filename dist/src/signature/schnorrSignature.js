@@ -47,7 +47,7 @@ exports.schnorrSignature = schnorrSignature;
  */
 function verifySchnorrSignature(message, signerPubKey, signature, curve, config, keyPrefixing = true) {
     const G = curve.GtoPoint(); // curve generator
-    // compute H(R|m|[r*G - c*K]) (R is empty, or the signerPubkey). Return true if the result is equal to c
+    // compute H(R|m|[r*G + c*K]) (R is empty or signerPubkey). Return true if the result is equal to c
     const point = G.mult(signature.r).add(signerPubKey.mult(signature.c));
     const h = (0, utils_1.modulo)(BigInt("0x" +
         (0, utils_1.hash)((keyPrefixing ? (0, utils_1.formatPoint)(signerPubKey) : "") +

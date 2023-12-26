@@ -17,6 +17,7 @@ export declare function schnorrSignature(message: bigint, signerPrivKey: bigint,
     messageDigest: bigint;
     c: bigint;
     r: bigint;
+    ring?: Point[];
 };
 /**
  * Verify a signature generated with the `schnorrSignature` function

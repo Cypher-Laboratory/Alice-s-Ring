@@ -216,11 +216,6 @@ class Point {
         const retrievedCurve = curves_1.Curve.fromString(curve);
         return new Point(retrievedCurve, [BigInt(x), BigInt(y)]);
     }
-    /**
-     * Checks if a point is valid.
-     *
-     * @returns true if the point is valid, false otherwise
-     */
     isValid() {
         try {
             (0, ringSignature_1.checkPoint)(this);

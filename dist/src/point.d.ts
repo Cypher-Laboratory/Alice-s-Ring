@@ -80,10 +80,5 @@ export declare class Point {
      * @returns the point
      */
     static fromBase64(base64: string): Point;
-    /**
-     * Checks if a point is valid.
-     *
-     * @returns true if the point is valid, false otherwise
-     */
     isValid(): boolean;
 }

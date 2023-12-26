@@ -531,12 +531,12 @@ function hashToPrivateKey(hash) {
 const etc = {
     // Not placed in utils because they
     hexToBytes: h2b,
-    bytesToHex: b2h,
+    bytesToHex: b2h, // share API with noble-curves.
     concatBytes: concatB,
     bytesToNumberBE: b2n,
     numberToBytesBE: n2b,
     mod,
-    invert: inv,
+    invert: inv, // math utilities
     hmacSha256Async: async (key, ...msgs) => {
         const c = cr(); // async HMAC-SHA256, no sync built-in!
         const s = c && c.subtle; // For React Native support, see README.
@@ -545,7 +545,7 @@ const etc = {
         const k = await s.importKey("raw", key, { name: "HMAC", hash: { name: "SHA-256" } }, false, ["sign"]);
         return u8n(await s.sign("HMAC", k, concatB(...msgs)));
     },
-    hmacSha256Sync: _hmacSync,
+    hmacSha256Sync: _hmacSync, // For TypeScript. Actual logic is below
     hashToPrivateKey,
     randomBytes: (len = 32) => {
         // CSPRNG (random number generator)
@@ -567,7 +567,7 @@ const utils = {
             return false;
         }
     },
-    randomPrivateKey: () => hashToPrivateKey(etc.randomBytes(fLen + 8)),
+    randomPrivateKey: () => hashToPrivateKey(etc.randomBytes(fLen + 8)), // FIPS 186 B.4.1.
     precompute(w = 8, p = G) {
         p.multiply(3n);
         w;
