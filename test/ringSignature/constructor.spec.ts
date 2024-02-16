@@ -228,20 +228,6 @@ describe("Test Constructor", () => {
           ),
       ).toThrow(unknownCurve("invalid name"));
     });
-    it("Should pass if config.safeMode is not undefined", () => {
-      expect(
-        () =>
-          new RingSignature(
-            data.message,
-            data.publicKeys_ed25519,
-            data.randomC,
-            data.randomResponses,
-            ed25519,
-            {},
-          ),
-      );
-    });
-
     /* -------------TEST CONFIG.HASH------------- */
     it("Should pass if config.hash is keccack256", () => {
       expect(

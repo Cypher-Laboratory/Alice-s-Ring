@@ -16,7 +16,6 @@ import * as data from "../data";
  * - the method throws an error if at least one argument is undefined
  * - the method throws an error if at least one argument is null
  * - the method throws an error if the config is not an object
- * - the method throws an error if config.safeMode is not a boolean
  * - the method throws an error if config.hash is not in the list of supported hash functions
  */
 describe("Test fromJsonString()", () => {
@@ -101,12 +100,6 @@ describe("Test fromJsonString()", () => {
     expect(() => {
       RingSignature.fromJsonString(data.jsonRS.configNotObject);
     }).toThrow(invalidJson("Config must be an object"));
-  });
-
-  it("Should throw if config.safeMode is not a boolean", () => {
-    expect(() => {
-      RingSignature.fromJsonString(data.jsonRS.configSafeModeNotBoolean);
-    }).toThrow(invalidJson("Config.safeMode must be a boolean"));
   });
 
   it("Should throw if config.hash is not in the list of supported hash functions", () => {

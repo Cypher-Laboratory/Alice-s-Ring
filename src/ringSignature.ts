@@ -35,7 +35,6 @@ export class RingSignature {
    * @param cees - c values
    * @param responses - Responses for each public key in the ring
    * @param curve - Curve used for the signature
-   * @param safeMode - If true, check if all the points are on the same curve
    * @param config - The config params to use (optional)
    */
   constructor(
@@ -169,13 +168,6 @@ export class RingSignature {
     // check if config is an object
     if (parsedJson.config && typeof parsedJson.config !== "object")
       throw err.invalidJson("Config must be an object");
-    // check if config.safeMode is a boolean. If not, throw an error
-    if (
-      parsedJson.config &&
-      parsedJson.config.safeMode &&
-      typeof parsedJson.config.safeMode !== "boolean"
-    )
-      throw err.invalidJson("Config.safeMode must be a boolean");
     // check if config.hash is an element from hashFunction. If not, throw an error
     if (
       parsedJson.config &&
