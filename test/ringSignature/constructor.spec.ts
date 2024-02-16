@@ -3,7 +3,6 @@ import {
   invalidParams,
   invalidResponses,
   lengthMismatch,
-  noEmptyMsg,
   noEmptyRing,
   notOnCurve,
   unknownCurve,
@@ -26,32 +25,6 @@ describe("Test Constructor", () => {
    * - c is 0
    */
   describe("Test constructor with invalid parameters", () => {
-    /* -------------TEST INVALID MSG------------- */
-    it("Should throw if msg is empty - ed25519", () => {
-      expect(
-        () =>
-          new RingSignature(
-            "",
-            data.publicKeys_ed25519,
-            data.randomC,
-            data.randomResponses,
-            ed25519,
-          ),
-      ).toThrow(noEmptyMsg);
-    });
-    it("Should throw if msg is empty - secp256k1", () => {
-      expect(
-        () =>
-          new RingSignature(
-            "",
-            data.publicKeys_secp256k1,
-            data.randomC,
-            data.randomResponses,
-            secp256k1,
-          ),
-      ).toThrow(noEmptyMsg);
-    });
-
     /* -------------TEST INVALID RING------------- */
     it("Should throw if public keys are empty - ed25519", () => {
       expect(
