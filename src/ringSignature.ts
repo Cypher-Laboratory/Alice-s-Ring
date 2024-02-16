@@ -373,7 +373,7 @@ export class RingSignature {
         {
           previousR: this.responses[i],
           previousC: lastComputedCp,
-          previousPubKey: this.ring[i],
+          previousIndex: i,
         },
         this.curve,
         this.config,
@@ -458,7 +458,7 @@ export class RingSignature {
         params = {
           previousR: responses[indexMinusOne],
           previousC: cees[indexMinusOne],
-          previousPubKey: ring[indexMinusOne],
+          previousIndex: indexMinusOne,
         };
 
         // compute the c value
@@ -506,7 +506,7 @@ export class RingSignature {
     params: {
       previousR?: bigint;
       previousC?: bigint;
-      previousPubKey?: Point;
+      previousIndex?: number;
       alpha?: bigint;
     },
     curve: Curve,
@@ -532,7 +532,7 @@ export class RingSignature {
         N,
       );
     }
-    if (params.previousR && params.previousC && params.previousPubKey) {
+    if (params.previousR && params.previousC && params.previousIndex !== undefined) {
       return modulo(
         BigInt(
           "0x" +
@@ -541,7 +541,7 @@ export class RingSignature {
             messageDigest +
             formatPoint(
               G.mult(params.previousR).add(
-                params.previousPubKey.mult(params.previousC),
+                ring[params.previousIndex].mult(params.previousC),
               ),
             ),
             hashFct,
