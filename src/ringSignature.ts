@@ -294,17 +294,21 @@ export class RingSignature {
 
     const alpha = randomBigint(curve.N);
 
-    // set the signer position in the ring
-    const signerIndex = // pi
-      ring.length === 0 ? 0 : getRandomSecuredNumber(0, ring.length - 1);
-
     // get the signer public key
     const signerPubKey: Point = derivePubKey(signerPrivateKey, curve);
 
     // add the signer public key to the ring
-    ring = ring
-      .slice(0, signerIndex)
-      .concat([signerPubKey], ring.slice(signerIndex)) as Point[];
+    ring = ring.concat([signerPubKey]);
+
+    // order ring by x coordinate ascending
+    ring.sort((a, b) => {
+      if (a.x < b.x) return -1;
+      if (a.x > b.x) return 1;
+      return 0;
+    });
+
+    // set the signer position in the ring from its position in the ordered ring
+    const signerIndex = ring.findIndex((point) => point.equals(signerPubKey));
 
     // compute cpi+1
     const cpi1 = RingSignature.computeC(
@@ -347,7 +351,7 @@ export class RingSignature {
       config,
     );
   }
-  
+
   /**
    * Verify a RingSignature
    *
@@ -557,12 +561,12 @@ export class RingSignature {
       return modulo(
         BigInt(
           "0x" +
-            hash(
-              formatRing(ring) +
-                messageDigest +
-                formatPoint(G.mult(params.alpha)),
-              hashFct,
-            ),
+          hash(
+            formatRing(ring) +
+            messageDigest +
+            formatPoint(G.mult(params.alpha)),
+            hashFct,
+          ),
         ),
         N,
       );
@@ -571,16 +575,16 @@ export class RingSignature {
       return modulo(
         BigInt(
           "0x" +
-            hash(
-              formatRing(ring) +
-                messageDigest +
-                formatPoint(
-                  G.mult(params.previousR).add(
-                    params.previousPubKey.mult(params.previousC),
-                  ),
-                ),
-              hashFct,
+          hash(
+            formatRing(ring) +
+            messageDigest +
+            formatPoint(
+              G.mult(params.previousR).add(
+                params.previousPubKey.mult(params.previousC),
+              ),
             ),
+            hashFct,
+          ),
         ),
         N,
       );
