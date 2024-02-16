@@ -9,12 +9,10 @@ import {
 } from "./utils";
 import { piSignature } from "./signature/piSignature";
 import { derivePubKey } from "./curves";
-import { Curve, PartialSignature, Point } from ".";
+import { Curve, Point } from ".";
 import { SignatureConfig } from "./interfaces";
 import { hashFunction } from "./utils/hashFunction";
 import * as err from "./errors";
-import { encrypt } from "./encryption/encryption";
-import { EthEncryptedData } from "@metamask/eth-sig-util";
 
 /**
  * Ring signature class.
@@ -349,118 +347,7 @@ export class RingSignature {
       config,
     );
   }
-
-  /**
-   * Sign a message using ring signatures
-   * Allow the user to use its private key from an external software (external software/hardware wallet)
-   *
-   * @param ring - Ring of public keys (does not contain the signer public key)
-   * @param message - Clear message to sign
-   * @param signerPubKey - Public key of the signer
-   * @param config - The config params to use
-   *
-   * @returns An encrypted PartialSignature
-   */
-  static partialSign(
-    ring: Point[], // ring.length = n + 1
-    message: string,
-    signerPubKey: Point,
-    curve: Curve,
-    encryptionPubKey: string,
-    config?: SignatureConfig,
-  ): EthEncryptedData {
-    const messageDigest = BigInt("0x" + hash(message, config?.hash));
-
-    const alpha = randomBigint(curve.N);
-
-    // set the signer position in the ring
-    const signerIndex = // pi
-      ring.length === 0 ? 0 : getRandomSecuredNumber(0, ring.length - 1);
-
-    // add the signer public key to the ring
-    ring = ring
-      .slice(0, signerIndex)
-      .concat([signerPubKey], ring.slice(signerIndex)) as Point[];
-
-    // compute cpi+1
-    const cpi1 = RingSignature.computeC(
-      ring,
-      messageDigest,
-      { alpha: alpha },
-      curve,
-      config,
-    );
-
-    const rawSignature = RingSignature.signature(
-      curve,
-      ring,
-      cpi1,
-      signerIndex,
-      messageDigest,
-      config,
-    );
-
-    const partialSig = {
-      message,
-      ring: rawSignature.ring,
-      c: rawSignature.cees[0],
-      cpi: rawSignature.cees[rawSignature.signerIndex],
-      responses: rawSignature.responses,
-      pi: rawSignature.signerIndex,
-      alpha: alpha,
-      curve: curve,
-      config: config,
-    } as PartialSignature;
-
-    const encryptedPartialSig = encrypt(
-      RingSignature.partialSigToBase64(partialSig),
-      encryptionPubKey,
-    );
-
-    return encryptedPartialSig;
-  }
-
-  /**
-   * Combine partial signatures into a RingSignature
-   *
-   * @param partialSig - Partial signatures to combine
-   * @param signerResponse - Response of the signer
-   *
-   * @returns A RingSignature
-   */
-  static combine(
-    partialSig: PartialSignature,
-    signerResponse: bigint,
-  ): RingSignature {
-    // check pi value
-    if (partialSig.pi < 0) throw err.invalidParams("pi must be >= 0");
-    if (partialSig.pi >= partialSig.ring.length)
-      throw err.invalidParams("pi must be < ring.length");
-    // check cpi value
-    if (partialSig.cpi >= partialSig.curve.N)
-      throw err.invalidParams("cpi must be < curve.N");
-    if (partialSig.cpi <= 0) throw err.invalidParams("cpi must be > 0");
-    // check alpha value
-    if (partialSig.alpha >= partialSig.curve.N)
-      throw err.invalidParams("alpha must be < curve.N");
-    if (partialSig.alpha <= 0) throw err.invalidParams("alpha must be > 0");
-
-    return new RingSignature(
-      partialSig.message,
-      partialSig.ring,
-      partialSig.c,
-      // insert the signer response
-      partialSig.responses
-        .slice(0, partialSig.pi)
-        .concat(
-          [signerResponse],
-          partialSig.responses.slice(partialSig.pi + 1),
-        ),
-      partialSig.curve,
-      partialSig.config,
-    );
-  }
-
+  
   /**
    * Verify a RingSignature
    *
@@ -702,63 +589,6 @@ export class RingSignature {
     throw err.missingParams(
       "Either 'alpha' or all the others params must be set",
     );
-  }
-
-  /**
-   * Convert a partial signature to a base64 string
-   *
-   * @param partialSig - The partial signature to convert
-   * @returns A base64 string
-   */
-  static partialSigToBase64(partialSig: PartialSignature): string {
-    let configStr: string | undefined = undefined;
-    if (partialSig.config) {
-      configStr = JSON.stringify(partialSig.config);
-    }
-    const strPartialSig = {
-      message: partialSig.message,
-      ring: partialSig.ring.map((point: Point) => point.toString()),
-      c: partialSig.c.toString(),
-      cpi: partialSig.cpi.toString(),
-      responses: partialSig.responses.map((response) => response.toString()),
-      pi: partialSig.pi.toString(),
-      alpha: partialSig.alpha.toString(),
-      curve: partialSig.curve.toString(),
-      config: configStr,
-    };
-    return Buffer.from(JSON.stringify(strPartialSig)).toString("base64");
-  }
-
-  /**
-   * Convert a base64 string to a partial signature
-   *
-   * @param base64 - The base64 string to convert
-   * @returns A partial signature
-   */
-  static base64ToPartialSig(base64: string): PartialSignature {
-    // check if the base64 string is valid
-    if (!base64Regex.test(base64)) throw err.invalidBase64();
-
-    try {
-      const decoded = Buffer.from(base64, "base64").toString("ascii");
-      const json = JSON.parse(decoded);
-      if (json.config && json.config != "undefined") {
-        json.config = JSON.parse(json.config);
-      }
-      return {
-        message: json.message,
-        ring: json.ring.map((point: string) => Point.fromString(point)),
-        c: BigInt(json.c),
-        cpi: BigInt(json.cpi),
-        responses: json.responses.map((response: string) => BigInt(response)),
-        pi: Number(json.pi),
-        alpha: BigInt(json.alpha),
-        curve: Curve.fromString(json.curve),
-        config: json.config as SignatureConfig,
-      };
-    } catch (e) {
-      throw err.invalidBase64();
-    }
   }
 }
 

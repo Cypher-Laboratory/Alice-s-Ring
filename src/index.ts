@@ -11,4 +11,4 @@ export { randomBigint, getRandomSecuredNumber, uint8ArrayToHex } from "./utils";
 
 export { RingSignature } from "./ringSignature";
 
-export { PartialSignature, SignatureConfig } from "./interfaces";
+export { SignatureConfig } from "./interfaces";
