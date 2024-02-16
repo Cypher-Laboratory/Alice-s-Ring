@@ -426,10 +426,6 @@ export class RingSignature {
     responses: bigint[];
   } {
 
-    // check ring and responses validity
-    if (ring.length !== ring.length)
-      throw err.lengthMismatch("ring", "responses");
-
     // check if ring is valid
     try {
       checkRing(ring, curve, true);
