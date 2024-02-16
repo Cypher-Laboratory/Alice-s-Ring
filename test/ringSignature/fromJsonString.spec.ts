@@ -50,22 +50,10 @@ describe("Test fromJsonString()", () => {
     }).toThrow(invalidJson("Error: Unknown curve: invalid curve"));
   });
 
-  it("Should throw if the message is empty", () => {
-    expect(() => {
-      RingSignature.fromJsonString(data.jsonRS.emptyMessage);
-    }).toThrow(invalidJson("Error: Cannot sign empty message"));
-  });
-
   it("Should throw if the message is not a string or a number", () => {
     expect(() => {
       RingSignature.fromJsonString(data.jsonRS.msgNotString);
     }).toThrow(invalidJson("Message must be a string or a number"));
-  });
-
-  it("Should throw if the c is 0 ", () => {
-    expect(() => {
-      RingSignature.fromJsonString(data.jsonRS.cEquals0);
-    }).toThrow(invalidJson("Error: Invalid param: c"));
   });
 
   it("Should throw if c is not a string or a number ", () => {

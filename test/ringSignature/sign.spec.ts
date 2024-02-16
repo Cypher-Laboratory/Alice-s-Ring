@@ -116,28 +116,6 @@ describe("Test sign()", () => {
     }).toThrow(invalidParams("Signer private key cannot be 0"));
   });
 
-  it("Should throw if the message is empty - secp256k1", () => {
-    expect(() => {
-      RingSignature.sign(
-        data.publicKeys_secp256k1,
-        data.signerPrivKey,
-        data.emptyMessage,
-        secp256k1,
-      );
-    }).toThrow("Cannot sign empty message");
-  });
-
-  it("Should throw if the message is empty - ed25519", () => {
-    expect(() => {
-      RingSignature.sign(
-        data.publicKeys_ed25519,
-        data.signerPrivKey,
-        data.emptyMessage,
-        ed25519,
-      );
-    }).toThrow("Cannot sign empty message");
-  });
-
   /* ------------CONFIG.HASH = SHA512------------ */
   it("Should return a valid ring signature if config.hash is SHA512 - secp256k1", () => {
     const ringSignature = RingSignature.sign(

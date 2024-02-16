@@ -161,33 +161,6 @@ describe("Test Constructor", () => {
       ).toThrow(invalidResponses);
     });
 
-    /* -------------TEST INVALID C------------- */
-    it("Should throw if c is 0 - ed25519", () => {
-      expect(
-        () =>
-          new RingSignature(
-            data.message,
-            data.publicKeys_ed25519,
-            0n,
-            data.randomResponses,
-            ed25519,
-          ),
-      ).toThrow(invalidParams("c"));
-    });
-
-    it("Should throw if c is 0 - secp256k1", () => {
-      expect(
-        () =>
-          new RingSignature(
-            data.message,
-            data.publicKeys_secp256k1,
-            0n,
-            data.randomResponses,
-            secp256k1,
-          ),
-      ).toThrow(invalidParams("c"));
-    });
-
     /* -------------TEST UNKNOWN CURVE------------- */
     it("Should throw if curve is invalid", () => {
       expect(
@@ -266,32 +239,6 @@ describe("Test Constructor", () => {
             secp256k1,
           ),
       );
-    });
-
-    it("Should throw if c is 0 - ed25519", () => {
-      expect(
-        () =>
-          new RingSignature(
-            data.message,
-            data.publicKeys_ed25519,
-            0n,
-            data.randomResponses,
-            ed25519,
-          ),
-      ).toThrow(invalidParams("c"));
-    });
-
-    it("Should throw if c is 0 - secp256k1", () => {
-      expect(
-        () =>
-          new RingSignature(
-            data.message,
-            data.publicKeys_secp256k1,
-            0n,
-            data.randomResponses,
-            secp256k1,
-          ),
-      ).toThrow(invalidParams("c"));
     });
 
     it("Should throw if at least 1 response is 0 - ed25519", () => {

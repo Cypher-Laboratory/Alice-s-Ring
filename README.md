@@ -115,12 +115,12 @@ This method is designed to compute a ring signature by directly utilizing a priv
 
 #### 1. Generate a random number $\pi$
 It will be use as the signer index.
-- **Function:** `getRandomSecuredNumber`
+- **Function:** `getRandomNumber`
 - **Location:** `src/utils/randomNumber.ts`
 - **Description:** Generates a random number in [min, max].
 
 ```typescript
-export function getRandomSecuredNumber(min: number, max: number): number
+export function getRandomNumber(min: number, max: number): number
 ```
 #### 2. Generate Random Number $\alpha$
 It will be use as the nonce.

@@ -1,6 +1,6 @@
 import {
   randomBigint,
-  getRandomSecuredNumber,
+  getRandomNumber,
   modulo,
   formatRing,
   formatPoint,
@@ -362,7 +362,7 @@ export class RingSignature {
     }
 
     // hash the message
-    const messageDigest = BigInt("0x" + hash(this.message, this.config?.hash));
+    const messageDigest = this.messageDigest;
 
     // computes the cees
     let lastComputedCp = RingSignature.computeC(
