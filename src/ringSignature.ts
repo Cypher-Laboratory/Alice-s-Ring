@@ -514,7 +514,13 @@ export class RingSignature {
   ): bigint {
     const G = curve.GtoPoint();
     const N = curve.N;
-
+    const hasAlphaWithoutPrevious = params.alpha && params.previousR === undefined && params.previousC === undefined && params.previousIndex === undefined;
+    const hasPreviousWithoutAlpha = !params.alpha && params.previousR !== undefined && params.previousC !== undefined && params.previousIndex !== undefined;
+    if (!(hasAlphaWithoutPrevious || hasPreviousWithoutAlpha)){
+      throw err.missingParams(
+        "Either 'alpha' or all the others params must be set",
+      );
+    }
     if (params.alpha) {
       return modulo(
         BigInt(
@@ -547,7 +553,6 @@ export class RingSignature {
         N,
       );
     }
-
     throw err.missingParams(
       "Either 'alpha' or all the others params must be set",
     );
