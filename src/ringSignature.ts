@@ -51,7 +51,7 @@ export class RingSignature {
     if (ring.length != responses.length)
       throw err.lengthMismatch("ring", "responses");
 
-      if(c >= curve.N) throw err.invalidParams("c must be a < N");
+    if (c >= curve.N) throw err.invalidParams("c must be a < N");
 
     // check if config is an object
     if (config && typeof config !== "object")
@@ -158,13 +158,16 @@ export class RingSignature {
     }
     // check if message is stored as array or object. If so, throw an error
     if (
-      parsedJson.message instanceof Array ||
-      typeof parsedJson.message === "object"
+      typeof parsedJson.message !== "string"
     )
-      throw err.invalidJson("Message must be a string or a number");
+      throw err.invalidJson("Message must be a string ");
+
     // check if c is stored as array or object. If so, throw an error
-    if (parsedJson.c instanceof Array || typeof parsedJson.c === "object")
+    if (typeof parsedJson.c !== "string" && typeof parsedJson.c !== "number")
       throw err.invalidJson("c must be a string or a number");
+    // if c is a number, convert it to a string
+    if (typeof parsedJson.c === "number") parsedJson.c = parsedJson.c.toString();
+
     // check if config is an object
     if (parsedJson.config && typeof parsedJson.config !== "object")
       throw err.invalidJson("Config must be an object");

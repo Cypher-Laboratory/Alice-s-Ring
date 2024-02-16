@@ -50,10 +50,10 @@ describe("Test fromJsonString()", () => {
     }).toThrow(invalidJson("Error: Unknown curve: invalid curve"));
   });
 
-  it("Should throw if the message is not a string or a number", () => {
+  it("Should throw if the message is not a string", () => {
     expect(() => {
       RingSignature.fromJsonString(data.jsonRS.msgNotString);
-    }).toThrow(invalidJson("Message must be a string or a number"));
+    }).toThrow(invalidJson("Message must be a string "));
   });
 
   it("Should throw if c is not a string or a number ", () => {
@@ -81,7 +81,7 @@ describe("Test fromJsonString()", () => {
   it("Should throw if at least one argument is null", () => {
     expect(() => {
       RingSignature.fromJsonString(data.jsonRS.nullMessage);
-    }).toThrow(invalidJson("Message must be a string or a number"));
+    }).toThrow(invalidJson("Message must be a string "));
   });
 
   it("Should throw if the config is not an object", () => {
