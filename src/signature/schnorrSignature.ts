@@ -27,7 +27,9 @@ export function schnorrSignature(
   alpha?: bigint,
   config?: SignatureConfig,
   keyPrefixing = true,
-): { messageDigest: bigint; c: bigint; r: bigint; ring?: Point[] } {
+): { messageDigest: bigint; c: bigint; r: bigint } {
+  if (signerPrivKey <= 1n || signerPrivKey >= curve.N)
+    throw new Error("Invalid private key");
   if (!alpha) alpha = randomBigint(curve.N);
 
   const c = modulo(
@@ -53,7 +55,7 @@ export function schnorrSignature(
 /**
  * Verify a signature generated with the `schnorrSignature` function
  *
- * @param message - The message (as bigint) (= c[pi] in our ring signature scheme)
+ * @param message - The message (as bigint)
  * @param signerPubKey - The signer public key
  * @param signature - The signature { c, r }
  * @param curve - The curve to use

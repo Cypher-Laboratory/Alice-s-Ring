@@ -45,7 +45,6 @@ export class RingSignature {
     curve: Curve,
     config?: SignatureConfig,
   ) {
-
     if (ring.length === 0) throw err.noEmptyRing;
 
     if (ring.length != responses.length)
@@ -157,16 +156,15 @@ export class RingSignature {
       parsedJson = json;
     }
     // check if message is stored as array or object. If so, throw an error
-    if (
-      typeof parsedJson.message !== "string"
-    )
+    if (typeof parsedJson.message !== "string")
       throw err.invalidJson("Message must be a string ");
 
     // check if c is stored as array or object. If so, throw an error
     if (typeof parsedJson.c !== "string" && typeof parsedJson.c !== "number")
       throw err.invalidJson("c must be a string or a number");
     // if c is a number, convert it to a string
-    if (typeof parsedJson.c === "number") parsedJson.c = parsedJson.c.toString();
+    if (typeof parsedJson.c === "number")
+      parsedJson.c = parsedJson.c.toString();
 
     // check if config is an object
     if (parsedJson.config && typeof parsedJson.config !== "object")
@@ -425,7 +423,6 @@ export class RingSignature {
     signerIndex: number;
     responses: bigint[];
   } {
-
     // check if ring is valid
     try {
       checkRing(ring, curve, true);
@@ -514,9 +511,17 @@ export class RingSignature {
   ): bigint {
     const G = curve.GtoPoint();
     const N = curve.N;
-    const hasAlphaWithoutPrevious = params.alpha && params.previousR === undefined && params.previousC === undefined && params.previousIndex === undefined;
-    const hasPreviousWithoutAlpha = !params.alpha && params.previousR !== undefined && params.previousC !== undefined && params.previousIndex !== undefined;
-    if (!(hasAlphaWithoutPrevious || hasPreviousWithoutAlpha)){
+    const hasAlphaWithoutPrevious =
+      params.alpha &&
+      params.previousR === undefined &&
+      params.previousC === undefined &&
+      params.previousIndex === undefined;
+    const hasPreviousWithoutAlpha =
+      !params.alpha &&
+      params.previousR !== undefined &&
+      params.previousC !== undefined &&
+      params.previousIndex !== undefined;
+    if (!(hasAlphaWithoutPrevious || hasPreviousWithoutAlpha)) {
       throw err.missingParams(
         "Either 'alpha' or all the others params must be set",
       );
@@ -525,30 +530,34 @@ export class RingSignature {
       return modulo(
         BigInt(
           "0x" +
-          hash(
-            formatRing(ring) +
-            messageDigest +
-            formatPoint(G.mult(params.alpha)),
-            config?.hash,
-          ),
+            hash(
+              formatRing(ring) +
+                messageDigest +
+                formatPoint(G.mult(params.alpha)),
+              config?.hash,
+            ),
         ),
         N,
       );
     }
-    if (params.previousR && params.previousC && params.previousIndex !== undefined) {
+    if (
+      params.previousR &&
+      params.previousC &&
+      params.previousIndex !== undefined
+    ) {
       return modulo(
         BigInt(
           "0x" +
-          hash(
-            formatRing(ring) +
-            messageDigest +
-            formatPoint(
-              G.mult(params.previousR).add(
-                ring[params.previousIndex].mult(params.previousC),
-              ),
+            hash(
+              formatRing(ring) +
+                messageDigest +
+                formatPoint(
+                  G.mult(params.previousR).add(
+                    ring[params.previousIndex].mult(params.previousC),
+                  ),
+                ),
+              config?.hash,
             ),
-            config?.hash,
-          ),
         ),
         N,
       );
