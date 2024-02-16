@@ -393,7 +393,7 @@ export class RingSignature {
   static verify(signature: string): boolean {
     // check if the signature is a json or a base64 string
     if (base64Regex.test(signature)) {
-      signature = Buffer.from(signature, "base64").toString("ascii");
+      signature = RingSignature.fromBase64(signature).toJsonString();
     }
     const ringSignature: RingSignature =
       RingSignature.fromJsonString(signature);
