@@ -183,13 +183,6 @@ export class RingSignature {
       !Object.values(hashFunction).includes(parsedJson.config.hash)
     )
       throw err.invalidJson("Config.hash must be an element from hashFunction");
-    // check if config.evmCompatibility is a boolean. If not, throw an error
-    if (
-      parsedJson.config &&
-      parsedJson.config.evmCompatibility &&
-      typeof parsedJson.config.evmCompatibility !== "boolean"
-    )
-      throw err.invalidJson("Config.evmCompatibility must be a boolean");
 
     try {
       const sig = parsedJson as {

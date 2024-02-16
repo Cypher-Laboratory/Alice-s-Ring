@@ -15,7 +15,6 @@ const ed25519 = new Curve(CurveName.ED25519);
  * - the method returns a valid signature if the ring is empty
  * - the method throws if signerPrivKey is not valid
  * - the method throws if the message is empty
- * - the method returns a valid ring signature if config.evmCompatibility is true
  * - the method returns a valid ring signature if config.hash is SHA512
  */
 describe("Test sign()", () => {
@@ -137,31 +136,6 @@ describe("Test sign()", () => {
         ed25519,
       );
     }).toThrow("Cannot sign empty message");
-  });
-
-  /* ------------CONFIG.EVMCOMPATIBILITY = TRUE------------ */
-  it("Should return a valid ring signature if config.evmCompatibility is true - secp256k1", () => {
-    const ringSignature = RingSignature.sign(
-      data.publicKeys_secp256k1,
-      data.signerPrivKey,
-      data.message,
-      secp256k1,
-      { evmCompatibility: true },
-    );
-    expect(ringSignature).toBeInstanceOf(RingSignature);
-    expect(ringSignature.verify()).toBe(true);
-  });
-
-  it("Should return a valid ring signature if config.evmCompatibility is true - ed25519", () => {
-    const ringSignature = RingSignature.sign(
-      data.publicKeys_ed25519,
-      data.signerPrivKey,
-      data.message,
-      ed25519,
-      { evmCompatibility: true },
-    );
-    expect(ringSignature).toBeInstanceOf(RingSignature);
-    expect(ringSignature.verify()).toBe(true);
   });
 
   /* ------------CONFIG.HASH = SHA512------------ */
