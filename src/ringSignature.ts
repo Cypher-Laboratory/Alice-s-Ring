@@ -73,9 +73,9 @@ export class RingSignature {
   }
 
   /**
-   * Get the message
+   * Get the Ring
    *
-   * @returns The message
+   * @returns The Ring
    */
   getRing(): Point[] {
     return this.ring;
