@@ -32,7 +32,7 @@ export class RingSignature {
    *
    * @param message - Clear message to sign
    * @param ring - Ring of public keys
-   * @param cees - c values
+   * @param c - c value
    * @param responses - Responses for each public key in the ring
    * @param curve - Curve used for the signature
    * @param config - The config params to use (optional)
