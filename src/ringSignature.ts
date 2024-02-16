@@ -51,6 +51,8 @@ export class RingSignature {
     if (ring.length != responses.length)
       throw err.lengthMismatch("ring", "responses");
 
+      if(c >= curve.N) throw err.invalidParams("c must be a < N");
+
     // check if config is an object
     if (config && typeof config !== "object")
       throw err.invalidParams("Config must be an object");
@@ -58,7 +60,6 @@ export class RingSignature {
     // check ring, c and responses validity
     checkRing(ring, curve, true);
 
-    if (c === 0n) throw err.invalidParams("c");
     for (const response of responses) {
       if (response >= curve.N || response === 0n) throw err.invalidResponses;
     }
