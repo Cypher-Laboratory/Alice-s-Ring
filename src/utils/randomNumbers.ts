@@ -24,7 +24,7 @@ export function randomBigint(max: bigint): bigint {
     const randomBig = BigInt("0x" + randomHex);
 
     if (randomBig < max) {
-      return randomBig;
+      return randomBig + 1n;
     }
   }
 }
@@ -36,7 +36,7 @@ export function randomBigint(max: bigint): bigint {
  * @param max the max value of the random number
  * @returns the random number
  */
-export function getRandomSecuredNumber(min: number, max: number): number {
+export function getRandomNumber(min: number, max: number): number {
   if (min > max) {
     throw new Error("Min value should be less than or equal to max value.");
   }
