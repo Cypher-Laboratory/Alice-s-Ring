@@ -197,7 +197,7 @@ export class Point {
    *
    * @returns the affine representation of the point
    */
-  toAffine(): [bigint, bigint] {
+  toCoordinates(): [bigint, bigint] {
     return [this.x, this.y];
   }
 
