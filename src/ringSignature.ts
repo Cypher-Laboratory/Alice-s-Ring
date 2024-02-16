@@ -266,8 +266,8 @@ export class RingSignature {
     curve: Curve,
     config?: SignatureConfig,
   ): RingSignature {
-    if (signerPrivateKey === 0n)
-      throw err.invalidParams("Signer private key cannot be 0");
+    if (signerPrivateKey === 0n || signerPrivateKey >= curve.N)
+      throw err.invalidParams("Signer private key cannot be 0 and must be < N");
 
     const messageDigest = BigInt("0x" + hash(message, config?.hash));
 
