@@ -260,7 +260,7 @@ export class RingSignature {
    * @returns A RingSignature
    */
   static sign(
-    ring: Point[], // ring.length = n+1
+    ring: Point[], // ring.length = n
     signerPrivateKey: bigint,
     message: string,
     curve: Curve,
