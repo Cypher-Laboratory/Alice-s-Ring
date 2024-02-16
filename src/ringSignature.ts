@@ -515,9 +515,6 @@ export class RingSignature {
     const G = curve.GtoPoint();
     const N = curve.N;
 
-    let hashFct = hashFunction.KECCAK256;
-    if (config?.hash) hashFct = config.hash;
-
     if (params.alpha) {
       return modulo(
         BigInt(
@@ -526,7 +523,7 @@ export class RingSignature {
             formatRing(ring) +
             messageDigest +
             formatPoint(G.mult(params.alpha)),
-            hashFct,
+            config?.hash,
           ),
         ),
         N,
@@ -544,7 +541,7 @@ export class RingSignature {
                 ring[params.previousIndex].mult(params.previousC),
               ),
             ),
-            hashFct,
+            config?.hash,
           ),
         ),
         N,
