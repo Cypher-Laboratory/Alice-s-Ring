@@ -107,13 +107,13 @@ describe("Test sign()", () => {
         data.message,
         secp256k1,
       );
-    }).toThrow(invalidParams("Signer private key cannot be 0"));
+    }).toThrow(invalidParams("Signer private key cannot be 0 and must be < N"));
   });
 
   it("Should throw if signerPrivKey is not valid - ed25519", () => {
     expect(() => {
       RingSignature.sign(data.publicKeys_ed25519, 0n, data.message, ed25519);
-    }).toThrow(invalidParams("Signer private key cannot be 0"));
+    }).toThrow(invalidParams("Signer private key cannot be 0 and must be < N"));
   });
 
   /* ------------CONFIG.HASH = SHA512------------ */

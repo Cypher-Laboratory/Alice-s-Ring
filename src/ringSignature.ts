@@ -362,22 +362,11 @@ export class RingSignature {
     // hash the message
     const messageDigest = this.messageDigest;
 
-    // computes the cees
-    let lastComputedCp = RingSignature.computeC(
-      // c1'
-      this.ring,
-      messageDigest,
-      {
-        previousR: this.responses[0],
-        previousC: this.c,
-        previousPubKey: this.ring[0],
-      },
-      this.curve,
-      this.config,
-    );
-
-    // compute the c values: c2', c3', ..., cn', c0'
-    for (let i = 1; i < this.ring.length; i++) {
+    // NOTE : the loop has at least one iteration since the ring
+    // is ensured to be not empty
+    let lastComputedCp = this.c;
+    // compute the c values : c1 ’, c2 ’, ... , cn ’, c0 ’
+    for (let i = 0; i < this.ring.length; i++) {
       lastComputedCp = RingSignature.computeC(
         this.ring,
         messageDigest,
