@@ -56,8 +56,8 @@ export class Point {
           x: this.x,
           y: this.y,
         }).mul(modulo(scalar, this.curve.N));
-
-        return new Point(this.curve, [result.x, result.y]);
+        const affine = result.toAffine();
+        return new Point(this.curve, [affine.x, affine.y]);
       }
       case CurveName.ED25519: {
         const result = ED25519Point.fromAffine({
@@ -65,7 +65,8 @@ export class Point {
           y: this.y,
         }).mul(modulo(scalar, this.curve.N));
 
-        return new Point(this.curve, [result.x, result.y]);
+        const affine = result.toAffine();
+        return new Point(this.curve, [affine.x, affine.y]);
       }
       default: {
         throw unknownCurve(this.curve.name);
@@ -95,7 +96,8 @@ export class Point {
           }),
         );
 
-        return new Point(this.curve, [result.x, result.y]);
+        const affine = result.toAffine();
+        return new Point(this.curve, [affine.x, affine.y]);
       }
       case CurveName.ED25519: {
         const result = ED25519Point.fromAffine({
@@ -108,7 +110,8 @@ export class Point {
           }),
         );
 
-        return new Point(this.curve, [result.x, result.y]);
+        const affine = result.toAffine();
+        return new Point(this.curve, [affine.x, affine.y]);
       }
       default: {
         throw unknownCurve(this.curve.name);
@@ -171,7 +174,8 @@ export class Point {
           y: this.y,
         }).negate();
 
-        return new Point(this.curve, [result.x, result.y]);
+        const affine = result.toAffine();
+        return new Point(this.curve, [affine.x, affine.y]);
       }
       case CurveName.ED25519: {
         const result = ED25519Point.fromAffine({
@@ -179,7 +183,8 @@ export class Point {
           y: this.y,
         }).negate();
 
-        return new Point(this.curve, [result.x, result.y]);
+        const affine = result.toAffine();
+        return new Point(this.curve, [affine.x, affine.y]);
       }
       default: {
         throw unknownCurve("Cannot negate point");
