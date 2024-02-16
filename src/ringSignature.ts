@@ -407,7 +407,7 @@ export class RingSignature {
    * @param ring - The ring of public keys
    * @param ceePiPlusOne - The Cpi+1 value
    * @param signerIndex - The signer index in the ring
-   * @param message - The message to sign
+   * @param messageDigest - The message digest
    * @param config - The config params to use
    *
    * @returns An incomplete ring signature
