@@ -269,14 +269,14 @@ export class RingSignature {
     if (signerPrivateKey === 0n || signerPrivateKey >= curve.N)
       throw err.invalidParams("Signer private key cannot be 0 and must be < N");
 
-    const messageDigest = BigInt("0x" + hash(message, config?.hash));
-
     // check if ring is valid
     try {
       checkRing(ring, curve, true);
     } catch (e) {
       throw err.invalidRing(e as string);
     }
+
+    const messageDigest = BigInt("0x" + hash(message, config?.hash));
 
     const alpha = randomBigint(curve.N);
 
