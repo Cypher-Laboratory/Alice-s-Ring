@@ -358,11 +358,6 @@ export class RingSignature {
     // then, for each ci (1 < i < n), compute ci' = Hash(Ring, message, [riG + ciKi])
     // (G = generator, K = ring public key)
     // finally, if we substitute lastC for lastC' and c0' == c0, the signature is valid
-    if (this.ring.length === 0) throw err.noEmptyRing;
-
-    if (this.ring.length !== this.responses.length) {
-      throw err.lengthMismatch("ring", "responses");
-    }
 
     // hash the message
     const messageDigest = this.messageDigest;
