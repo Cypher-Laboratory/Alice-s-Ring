@@ -599,12 +599,11 @@ export function checkRing(ring: Point[], ref?: Curve, emptyRing = false): void {
  * @throws Error if at least 1 coordinate is not valid (= 0 or >= curve order)
  */
 export function checkPoint(point: Point, curve?: Curve): void {
+  if (curve && !curve.equals(point.curve)) {
+    throw err.curveMismatch();
+  }
   // check if the point is on the reference curve
   if (!point.curve.isOnCurve(point)) {
     throw err.notOnCurve();
-  }
-
-  if (curve && !curve.equals(point.curve)) {
-    throw err.curveMismatch();
   }
 }
