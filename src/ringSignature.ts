@@ -45,7 +45,6 @@ export class RingSignature {
     curve: Curve,
     config?: SignatureConfig,
   ) {
-    if (!message || message === "") throw err.noEmptyMsg;
 
     if (ring.length === 0) throw err.noEmptyRing;
 
@@ -266,8 +265,6 @@ export class RingSignature {
     if (signerPrivateKey === 0n)
       throw err.invalidParams("Signer private key cannot be 0");
 
-    if (message === "") throw err.noEmptyMsg;
-
     const messageDigest = BigInt("0x" + hash(message, config?.hash));
 
     // check if ring is valid
@@ -440,11 +437,6 @@ export class RingSignature {
     signerIndex: number;
     responses: bigint[];
   } {
-    if (
-      messageDigest === 0n ||
-      messageDigest === BigInt("0x" + hash("", config?.hash))
-    )
-      throw err.noEmptyMsg;
 
     // check ring and responses validity
     if (ring.length !== ring.length)

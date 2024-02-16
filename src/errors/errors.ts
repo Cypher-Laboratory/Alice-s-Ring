@@ -1,4 +1,3 @@
-export const noEmptyMsg = new Error("Cannot sign empty message");
 export const noEmptyRing = new Error("Ring cannot be empty");
 export const invalidSignature = new Error("Invalid signature");
 
