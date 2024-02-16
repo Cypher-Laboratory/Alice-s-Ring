@@ -654,4 +654,8 @@ export {
   utils,
   Point as ProjectivePoint,
   Signature,
+  P,
+  N,
+  Gx,
+  Gy,
 }; // envs like browser console

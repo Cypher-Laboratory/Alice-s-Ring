@@ -508,5 +508,7 @@ export {
   CURVE,
   etc,
   utils,
+  P,
+  N,
   Point as ExtendedPoint,
 }; // envs like browser console
