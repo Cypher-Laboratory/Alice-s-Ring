@@ -49,7 +49,7 @@ export class RingSignature {
       throw err.invalidParams("Config must be an object");
 
     // check ring, c and responses validity
-    checkRing(ring, curve, true);
+    checkRing(ring, curve);
 
     for (const response of responses) {
       if (response >= curve.N || response === 0n) throw err.invalidResponses;
@@ -261,7 +261,7 @@ export class RingSignature {
 
     // check if ring is valid
     try {
-      checkRing(ring, curve, true);
+      checkRing(ring, curve,true);
     } catch (e) {
       throw err.invalidRing(e as string);
     }
@@ -417,7 +417,7 @@ export class RingSignature {
   } {
     // check if ring is valid
     try {
-      checkRing(ring, curve, true);
+      checkRing(ring, curve);
     } catch (e) {
       throw err.invalidRing(e as string);
     }
