@@ -1,6 +1,6 @@
 export { randomBigint, getRandomNumber } from "./randomNumbers";
 export { modulo } from "./modulo";
-export { formatRing } from "./formatData/formatRing";
+export { serializeRing } from "./formatData/serializeRing";
 export { keccak_256, hash, sha_512 } from "./hashFunction";
 export const base64Regex =
   // eslint-disable-next-line no-useless-escape

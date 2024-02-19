@@ -265,7 +265,7 @@ export class Point {
    *
    * @returns the formatted point
    */
-  formatPoint(): string {
+  serializePoint(): string {
     return this.x.toString() + this.y.toString();
   }
 }

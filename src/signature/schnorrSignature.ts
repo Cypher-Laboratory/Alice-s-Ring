@@ -37,10 +37,10 @@ export function schnorrSignature(
       "0x" +
         hash(
           (keyPrefixing
-            ? derivePubKey(signerPrivKey, curve).formatPoint()
+            ? derivePubKey(signerPrivKey, curve).serializePoint()
             : "") +
             message +
-            curve.GtoPoint().mult(alpha).formatPoint(),
+            curve.GtoPoint().mult(alpha).serializePoint(),
           config?.hash,
         ),
     ),
@@ -80,9 +80,9 @@ export function verifySchnorrSignature(
     BigInt(
       "0x" +
         hash(
-          (keyPrefixing ? signerPubKey.formatPoint() : "") +
+          (keyPrefixing ? signerPubKey.serializePoint() : "") +
             message +
-            point.formatPoint(),
+            point.serializePoint(),
           config?.hash,
         ),
     ),
