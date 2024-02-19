@@ -251,7 +251,7 @@ export class Point {
 
   isValid(): boolean {
     try {
-    this.curve.isOnCurve([this.x, this.y]); 
+    this.curve.isOnCurve(this); 
     }catch (error) {
       return false;
     }
@@ -275,4 +275,30 @@ export class Point {
     const yBytes = this.y.toString(16).padStart(64, "0");
     return xBytes + yBytes;
   }
+
+  /**
+   * Check if a point is a low order point
+   *
+   * @remarks
+   * This function checks if the point is a low order point or a hybrid point
+   *
+   * @returns true if the point is not a low order point, false otherwise
+   */
+  checkLowOrder(): boolean {
+    switch (this.curve.name) {
+      // secp256k1 has a cofactor of 1 so no need to check for low order or hybrid points
+      case CurveName.SECP256K1: {
+        return true;
+      }
+      // ed25519 has a cofactor of 8 so we need to check for low order points
+      // we check if (N-1)*P = -P (where P is the point and N is the order of the curve)
+      // if true, the point is not low order or hybrid
+      case CurveName.ED25519: {
+        return this.mult(this.curve.N-1n).equals(this.negate());
+      }
+      default: {
+        throw unknownCurve(this.curve.name);
+      }
+  }
+ }
 }

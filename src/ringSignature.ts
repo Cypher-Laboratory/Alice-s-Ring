@@ -356,6 +356,11 @@ export class RingSignature {
     // finally, if we substitute lastC for lastC' and c0' == c0, the signature is valid
 
     // hash the message
+    for(const point of this.ring){
+      if(point.checkLowOrder()===false){
+        throw(`The public key ${point} is not valid`);
+      }
+    }
     const messageDigest = this.messageDigest;
 
     // NOTE : the loop has at least one iteration since the ring
