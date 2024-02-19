@@ -249,7 +249,7 @@ export class Point {
 
   isValid(): boolean {
     try {
-      checkPoint(this);
+      this.curve.isOnCurve;
     } catch (error) {
       return false;
     }
