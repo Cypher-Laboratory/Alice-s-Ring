@@ -232,13 +232,7 @@ export class Point {
    * Converts a point to its base64 string representation.
    */
   toBase64(): string {
-    // save x, y and curve in json and encode it
-    const json = JSON.stringify({
-      x: this.x.toString(),
-      y: this.y.toString(),
-      curve: this.curve.toString(),
-    });
-    return Buffer.from(json).toString("base64");
+    return Buffer.from(this.toString()).toString("base64");
   }
 
   /**
@@ -250,9 +244,7 @@ export class Point {
   static fromBase64(base64: string): Point {
     // decode base64
     const json = Buffer.from(base64, "base64").toString("ascii");
-    const { x, y, curve } = JSON.parse(json);
-    const retrievedCurve = Curve.fromString(curve);
-    return new Point(retrievedCurve, [BigInt(x), BigInt(y)]);
+    return Point.fromString(json);
   }
 
   isValid(): boolean {
