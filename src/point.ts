@@ -269,6 +269,10 @@ export class Point {
    * @returns the formatted point
    */
   serializePoint(): string {
-    return this.x.toString() + this.y.toString();
+    // convert x value to bytes and pad with 0 to 32 bytes
+    const xBytes = this.x.toString(16).padStart(64, "0");
+    // convert y value to bytes and pad with 0 to 32 bytes
+    const yBytes = this.y.toString(16).padStart(64, "0");
+    return xBytes + yBytes;
   }
 }

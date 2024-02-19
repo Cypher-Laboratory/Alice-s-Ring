@@ -8,6 +8,6 @@ import { Point } from "../../point";
  */
 export function serializeRing(ring: Point[]): string {
   return ring
-    .map((point: Point) => point.x.toString() + point.y.toString())
+    .map((point: Point) => point.serializePoint())
     .join("");
 }
