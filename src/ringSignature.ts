@@ -1,4 +1,10 @@
-import { randomBigint, modulo, serializeRing, hash, base64Regex } from "./utils";
+import {
+  randomBigint,
+  modulo,
+  serializeRing,
+  hash,
+  base64Regex,
+} from "./utils";
 import { piSignature } from "./signature/piSignature";
 import { derivePubKey } from "./curves";
 import { Curve, Point } from ".";
@@ -261,7 +267,7 @@ export class RingSignature {
 
     // check if ring is valid
     try {
-      checkRing(ring, curve,true);
+      checkRing(ring, curve, true);
     } catch (e) {
       throw err.invalidRing(e as string);
     }

@@ -48,7 +48,10 @@ export class Point {
    * @returns the result of the multiplication
    */
   mult(scalar: bigint): Point {
-    if (scalar === BigInt(0)) throw invalidParams("invalid scalar : 0");
+    if (scalar > this.curve.N)
+      throw invalidParams(
+        `Scalar must be < N ${this.curve.N}, but got ${scalar}`,
+      );
     switch (this.curve.name) {
       case CurveName.SECP256K1: {
         const result = SECP256K1Point.fromAffine({
