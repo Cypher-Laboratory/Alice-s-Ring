@@ -171,7 +171,7 @@ class Point {
   toAffine(): AffinePoint {
     // converts point to 2d xy affine point
     const { ex: x, ey: y, ez: z } = this; // (x, y, z, t) ∋ (x=x/z, y=y/z, t=xy)
-    if ( this . equals (I )) return { x: 0n , y: 1n }; // affine zero point (0 , 1)
+    if (this.equals(I)) return { x: 0n, y: 1n }; // affine zero point (0 , 1)
     const iz = invert(z); // z^-1: invert z
     if (mod(z * iz) !== 1n) err("invalid inverse"); // (z * z^-1) must be 1, otherwise bad math
     return { x: mod(x * iz), y: mod(y * iz) }; // x = x*z^-1; y = y*z^-1

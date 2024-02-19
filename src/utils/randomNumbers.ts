@@ -13,17 +13,16 @@ export function randomBigint(max: bigint): bigint {
     throw tooSmall("Max", max);
   }
 
-  // +1 to ensure we can reach max value
+  const range = max + 1n; // range is max - min + 1, min is assumed to be 0n here
   const byteSize = (max.toString(16).length + 1) >> 1;
-
-  //we use a while loop as a safeguard against the case where the random number is greater than the max value
+  const n = BigInt(2n ** BigInt(byteSize * 8) / range);
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    const array = randomBytes(byteSize);
+    const array = randomBytes(Number(n));
     const randomHex = array.toString("hex");
     const randomBig = BigInt("0x" + randomHex);
 
-    if (randomBig < max) {
+    if (randomBig < range * n) {
       return randomBig + 1n;
     }
   }
@@ -52,6 +51,7 @@ export function getRandomNumber(min: number, max: number): number {
 
   const range = max - min + 1;
   const byteSize = Math.ceil(Math.log2(range) / 8);
+  const n = Math.ceil(Math.pow(2, byteSize * 8) / range);
 
   //we use a while loop as a safeguard against the case where the random number is greater than the max value
   // eslint-disable-next-line no-constant-condition
@@ -59,7 +59,7 @@ export function getRandomNumber(min: number, max: number): number {
     const array = randomBytes(byteSize);
     const value = array.readUIntBE(0, byteSize);
 
-    if (value < range) {
+    if (value < n * range) {
       return value + min;
     }
   }
