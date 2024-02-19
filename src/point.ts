@@ -254,4 +254,18 @@ export class Point {
     }
     return true;
   }
+
+  /**
+   * Format a point according to the selected config
+   *
+   * @remarks
+   * Default value is Point.toString()
+   *
+   * @param point - the point to format
+   *
+   * @returns the formatted point
+   */
+  formatPoint(): string {
+    return this.x.toString() + this.y.toString();
+  }
 }

@@ -1,11 +1,4 @@
-import {
-  randomBigint,
-  modulo,
-  formatRing,
-  formatPoint,
-  hash,
-  base64Regex,
-} from "./utils";
+import { randomBigint, modulo, formatRing, hash, base64Regex } from "./utils";
 import { piSignature } from "./signature/piSignature";
 import { derivePubKey } from "./curves";
 import { Curve, Point } from ".";
@@ -532,7 +525,7 @@ export class RingSignature {
             hash(
               formatRing(ring) +
                 messageDigest +
-                formatPoint(G.mult(params.alpha)),
+                G.mult(params.alpha).formatPoint(),
               config?.hash,
             ),
         ),
@@ -550,11 +543,9 @@ export class RingSignature {
             hash(
               formatRing(ring) +
                 messageDigest +
-                formatPoint(
-                  G.mult(params.previousR).add(
-                    ring[params.previousIndex].mult(params.previousC),
-                  ),
-                ),
+                G.mult(params.previousR)
+                  .add(ring[params.previousIndex].mult(params.previousC))
+                  .formatPoint(),
               config?.hash,
             ),
         ),

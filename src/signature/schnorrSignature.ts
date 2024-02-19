@@ -3,7 +3,7 @@
   and is exclusively reserved for the use of gemWallet. Any form of commercial use, including but 
   not limited to selling, licensing, or generating revenue from this code, is strictly prohibited.
 */
-import { modulo, hash, formatPoint, randomBigint } from "../utils";
+import { modulo, hash, randomBigint } from "../utils";
 import { Point } from "../point";
 import { Curve, derivePubKey } from "../curves";
 import { SignatureConfig } from "../interfaces";
@@ -37,10 +37,10 @@ export function schnorrSignature(
       "0x" +
         hash(
           (keyPrefixing
-            ? formatPoint(derivePubKey(signerPrivKey, curve))
+            ? derivePubKey(signerPrivKey, curve).formatPoint()
             : "") +
             message +
-            formatPoint(curve.GtoPoint().mult(alpha)),
+            curve.GtoPoint().mult(alpha).formatPoint(),
           config?.hash,
         ),
     ),
@@ -80,9 +80,9 @@ export function verifySchnorrSignature(
     BigInt(
       "0x" +
         hash(
-          (keyPrefixing ? formatPoint(signerPubKey) : "") +
+          (keyPrefixing ? signerPubKey.formatPoint() : "") +
             message +
-            formatPoint(point),
+            point.formatPoint(),
           config?.hash,
         ),
     ),
