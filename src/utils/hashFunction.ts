@@ -1,4 +1,3 @@
-import { uint8ArrayToHex } from "./convertTypes/uint8ArrayToHex";
 import { keccak_256 as keccak256 } from "@noble/hashes/sha3";
 import { sha512 } from "@noble/hashes/sha512";
 
@@ -38,7 +37,7 @@ export function hash(data: string, fct?: hashFunction): string {
  * @returns - The hash of the data as an hex string
  */
 export function keccak_256(input: string): string {
-  return uint8ArrayToHex(keccak256(input));
+  return Buffer.from(keccak256(input)).toString("hex");
 }
 
 /**
@@ -49,5 +48,5 @@ export function keccak_256(input: string): string {
  * @returns - The hash of the data  as an hex string
  */
 export function sha_512(input: string): string {
-  return uint8ArrayToHex(sha512(input));
+  return Buffer.from(sha512(input)).toString("hex");
 }
