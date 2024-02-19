@@ -7,7 +7,5 @@ import { Point } from "../../point";
  * @returns the formatted ring
  */
 export function serializeRing(ring: Point[]): string {
-  return ring
-    .map((point: Point) => point.serializePoint())
-    .join("");
+  return ring.map((point: Point) => point.serializePoint()).join("");
 }

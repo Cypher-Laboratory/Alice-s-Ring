@@ -13,14 +13,14 @@ describe("Test toString()", () => {
   it("Should return a stringified curve - secp256k1", () => {
     expect(secp256k1.toString()).toBe(
       // eslint-disable-next-line max-len
-  '{\"curve\":\"SECP256K1\"}'    
-  );
+      '{"curve":"SECP256K1"}',
+    );
   });
 
   it("Should return a stringified curve - ed25519", () => {
     expect(ed25519.toString()).toBe(
       // eslint-disable-next-line max-len
-      '{\"curve\":\"ED25519\"}',
+      '{"curve":"ED25519"}',
     );
   });
 });

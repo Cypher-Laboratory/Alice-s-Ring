@@ -251,8 +251,8 @@ export class Point {
 
   isValid(): boolean {
     try {
-    this.curve.isOnCurve(this); 
-    }catch (error) {
+      this.curve.isOnCurve(this);
+    } catch (error) {
       return false;
     }
     return true;
@@ -294,11 +294,11 @@ export class Point {
       // we check if (N-1)*P = -P (where P is the point and N is the order of the curve)
       // if true, the point is not low order or hybrid
       case CurveName.ED25519: {
-        return this.mult(this.curve.N-1n).equals(this.negate());
+        return this.mult(this.curve.N - 1n).equals(this.negate());
       }
       default: {
         throw unknownCurve(this.curve.name);
       }
+    }
   }
- }
 }

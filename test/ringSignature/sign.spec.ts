@@ -50,8 +50,10 @@ describe("Test sign()", () => {
         secp256k1,
       );
     }).toThrow(
+      invalidRing(
         // eslint-disable-next-line max-len
-        'Invalid ring: Error: Invalid point: At least one point is not valid: Error: Invalid param: Point is not on curve: {\"curve\":\"{\\\"curve\\\":\\\"SECP256K1\\\"}\",\"x\":\"0\",\"y\":\"1\"}',
+        'Error: Invalid point: At least one point is not valid: Error: Invalid param: Point is not on curve: {"curve":"{\\"curve\\":\\"SECP256K1\\"}","x":"0","y":"1"}',
+      ),
     );
   });
 
@@ -64,8 +66,10 @@ describe("Test sign()", () => {
         ed25519,
       );
     }).toThrow(
+      invalidRing(
         // eslint-disable-next-line max-len
-        'Invalid ring: Error: Invalid point: At least one point is not valid: Error: Invalid param: Point is not on curve: {\"curve\":\"{\\\"curve\\\":\\\"ED25519\\\"}\",\"x\":\"0\",\"y\":\"1\"}',
+        'Error: Invalid point: At least one point is not valid: Error: Invalid param: Point is not on curve: {"curve":"{\\"curve\\":\\"ED25519\\"}","x":"0","y":"1"}',
+      ),
     );
   });
 

@@ -356,9 +356,9 @@ export class RingSignature {
     // finally, if we substitute lastC for lastC' and c0' == c0, the signature is valid
 
     // hash the message
-    for(const point of this.ring){
-      if(point.checkLowOrder()===false){
-        throw(`The public key ${point} is not valid`);
+    for (const point of this.ring) {
+      if (point.checkLowOrder() === false) {
+        throw `The public key ${point} is not valid`;
       }
     }
     const messageDigest = this.messageDigest;
@@ -587,7 +587,8 @@ export function checkRing(ring: Point[], ref?: Curve, emptyRing = false): void {
   if (ring.length === 0 && !emptyRing) throw err.noEmptyRing;
 
   // check for duplicates using a set
-  if (new Set(ring).size !== ring.length) throw err.noDuplicates("ring");
+  if (new Set(serializeRingPoints(ring)).size !== ring.length)
+    throw err.noDuplicates("ring");
 
   // check if all the points are valid
   try {
@@ -597,6 +598,21 @@ export function checkRing(ring: Point[], ref?: Curve, emptyRing = false): void {
   } catch (e) {
     throw err.invalidPoint(("At least one point is not valid: " + e) as string);
   }
+}
+
+/**
+ * Serialize a ring, i.e., serialize each point in the ring
+ *
+ * @param ring - The ring to serialize
+ *
+ * @returns The serialized ring as a string array
+ */
+function serializeRingPoints(ring: Point[]): string[] {
+  const serializedPoints: string[] = [];
+  for (const point of ring) {
+    serializedPoints.push(point.serializePoint()); // Call serializePoint() on each 'point' object
+  }
+  return serializedPoints;
 }
 
 /**
