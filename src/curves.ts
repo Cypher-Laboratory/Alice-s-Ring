@@ -133,11 +133,11 @@ export class Curve {
       throw invalidParams("Point is not on curve: " + point);
     switch (this.name) {
       case CurveName.SECP256K1: {
-        if(x > this.P|| y>this.P) return false;
+        if (x > this.P || y > this.P) return false;
         return modulo(x ** 3n + 7n - y ** 2n, this.P) === 0n;
       }
       case CurveName.ED25519: {
-        if(x > this.P|| y>this.P) return false;
+        if (x > this.P || y > this.P) return false;
         const d =
           -4513249062541557337682894930092624173785641285191125241628941591882900924598840740n;
         return (

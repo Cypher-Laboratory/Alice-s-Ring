@@ -1,6 +1,5 @@
 import {
   randomBigint,
-  getRandomNumber,
   modulo,
   formatRing,
   formatPoint,
