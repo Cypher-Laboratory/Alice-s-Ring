@@ -251,8 +251,8 @@ export class Point {
 
   isValid(): boolean {
     try {
-      this.curve.isOnCurve;
-    } catch (error) {
+    this.curve.isOnCurve([this.x, this.y]); 
+    }catch (error) {
       return false;
     }
     return true;

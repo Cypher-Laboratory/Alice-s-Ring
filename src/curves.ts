@@ -91,10 +91,6 @@ export class Curve {
   toString(): string {
     return JSON.stringify({
       curve: this.name,
-      Gx: this.G[0].toString(),
-      Gy: this.G[1].toString(),
-      N: this.N.toString(),
-      P: this.P.toString(),
     });
   }
 
