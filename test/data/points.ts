@@ -88,7 +88,7 @@ export const zeroPivateKey = 0n;
 
 export const publicKeys_secp256k1 = privateKey.map((privKey) =>
   SECP256K1.GtoPoint().mult(privKey),
-).concat([signerPubKey_secp256k1]).sort(// sort by x ascending
+).sort(// sort by x ascending
   (a, b) => a.x < b.x ? -1 : a.x > b.x ? 1 : 0,
 );
 
@@ -97,11 +97,10 @@ export const publicKeys_ed25519 = privateKey.map((key) => {
   return ED25519.GtoPoint().mult(
     ed.utils.getExtendedPublicKey(key.toString(16)).scalar,
   );
-}).concat([signerPubKey_ed25519]).sort(// sort by x ascending
+}).sort(// sort by x ascending
   (a, b) => a.x < b.x ? -1 : a.x > b.x ? 1 : 0,
 );
-console.log(publicKeys_ed25519);
-
+console.log()
 
 export const valid_coordinates_ed25519: [bigint, bigint] = [
   18692818425924056284077361575286289503472634786144083983260241244353871635402n,

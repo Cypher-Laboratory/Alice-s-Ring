@@ -271,11 +271,27 @@ export class RingSignature {
     const signerPubKey: Point = derivePubKey(signerPrivateKey, curve);
 
     // check if the signer public key is in the ring and if it is sorted by x ascending coordinate (and y ascending if x's are equal)
-    if (!isRingSorted(ring, signerPubKey)) throw err.invalidRing("The ring is not sorted and/or does not contains teh signer public key");
+    if (!isRingSorted(ring)) throw err.invalidRing("The ring is not sorted and/or does not contains teh signer public key");
 
-
-    // set the signer position in the ring from its position in the ordered ring
-    const signerIndex = ring.findIndex((point) => point.equals(signerPubKey));
+    // insert the user public key at the right place (sorted by x ascending coordinate)
+    let signerIndex = 0;
+    for (let i = 0; i < ring.length; i++) {
+      if (signerPubKey.x < ring[i].x) {
+        ring.splice(i, 0, signerPubKey);
+        signerIndex = i;
+        break;
+      }
+      if (signerPubKey.x === ring[i].x) {
+        // order by y ascending
+        if (signerPubKey.y < ring[i].y) {
+          ring.splice(i, 0, signerPubKey);
+          signerIndex = i;
+          break;
+        }
+      }
+    }
+    if(ring.length === 0) ring = [signerPubKey];
+    console.log('ringLength: ', ring.length);
 
     // compute cpi+1
     const cpi1 = RingSignature.computeC(
