@@ -20,16 +20,11 @@ export function isRingSorted(points: Point[]): boolean {
       if (points[i].y > points[i + 1].y) {
         return false;
       }
-      // Check if current point's x is equal to next point's x
-      if (points[i].x === points[i + 1].x) {
-          // If x's are equal, check if current point's y is greater than next point's y (not in ascending order)
-          if (points[i].y > points[i + 1].y) {
-              return false;
-          }
-      }
-      if (points[i].x === points[i + 1].x && points[i].y === points[i + 1].y) {
-        throw new Error("Duplicates points found in the ring.");
-      }
+    }
+    if (points[i].x === points[i + 1].x && points[i].y === points[i + 1].y) {
+      throw new Error("Duplicates points found in the ring.");
+
+    }
   }
   // If all checks pass, the array is sorted correctly
   return true;
