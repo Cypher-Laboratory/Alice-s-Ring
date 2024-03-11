@@ -28,21 +28,21 @@ export function schnorrSignature(
   config?: SignatureConfig,
   keyPrefixing = true,
 ): { messageDigest: bigint; c: bigint; r: bigint } {
-  if (signerPrivKey <= 1n || signerPrivKey >= curve.N)
+  if (signerPrivKey < 0n || signerPrivKey >= curve.N)
     throw new Error("Invalid private key");
   if (!alpha) alpha = randomBigint(curve.N);
 
   const c = modulo(
     BigInt(
       "0x" +
-        hash(
-          (keyPrefixing
-            ? derivePubKey(signerPrivKey, curve).serializePoint()
-            : "") +
-            message +
-            curve.GtoPoint().mult(alpha).serializePoint(),
-          config?.hash,
-        ),
+      hash(
+        (keyPrefixing
+          ? derivePubKey(signerPrivKey, curve).serializePoint()
+          : "") +
+        message +
+        curve.GtoPoint().mult(alpha).serializePoint(),
+        config?.hash,
+      ),
     ),
     curve.N,
   );
@@ -72,6 +72,15 @@ export function verifySchnorrSignature(
   config?: SignatureConfig,
   keyPrefixing = true,
 ): boolean {
+  if (signature.c < 0n || signature.c >= curve.N || signature.r < 0n || signature.r >= curve.N)
+    throw new Error("Invalid signature");
+
+  if(curve.isOnCurve([signerPubKey.x, signerPubKey.y]) === false) {
+    throw new Error("Invalid public key: not on curve");
+  }
+
+  if(!signerPubKey.checkLowOrder()) throw new Error("Invalid public key: low order");
+
   const G: Point = curve.GtoPoint(); // curve generator
   // compute H(R|m|[r*G + c*K]) (R is empty or signerPubkey). Return true if the result is equal to c
   const point = G.mult(signature.r).add(signerPubKey.mult(signature.c));
@@ -79,12 +88,12 @@ export function verifySchnorrSignature(
   const h = modulo(
     BigInt(
       "0x" +
-        hash(
-          (keyPrefixing ? signerPubKey.serializePoint() : "") +
-            message +
-            point.serializePoint(),
-          config?.hash,
-        ),
+      hash(
+        (keyPrefixing ? signerPubKey.serializePoint() : "") +
+        message +
+        point.serializePoint(),
+        config?.hash,
+      ),
     ),
     curve.N,
   );
