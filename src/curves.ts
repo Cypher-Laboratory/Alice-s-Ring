@@ -126,8 +126,6 @@ export class Curve {
       y = point[1];
     }
 
-    if (x === 0n || y === 0n)
-      throw invalidParams("Point is not on curve: " + point);
     switch (this.name) {
       case CurveName.SECP256K1: {
         if (x > this.P || y > this.P) return false;
