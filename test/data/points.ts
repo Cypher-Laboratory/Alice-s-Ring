@@ -92,10 +92,16 @@ export const publicKeys_secp256k1 = privateKey.map((privKey) =>
   (a, b) => a.x < b.x ? -1 : a.x > b.x ? 1 : 0,
 );
 
-
-export const publicKeys_ed25519 = privateKey.map((key) => {
-  return ED25519.GtoPoint().mult(
-    ed.utils.getExtendedPublicKey(key.toString(16)).scalar,
+export const publicKeys_ed25519 = privateKey
+  .map((key) => {
+    return ED25519.GtoPoint().mult(
+      ed.utils.getExtendedPublicKey(key.toString(16)).scalar,
+    );
+  })
+  .concat([signerPubKey_ed25519])
+  .sort(
+    // sort by x ascending
+    (a, b) => (a.x < b.x ? -1 : a.x > b.x ? 1 : 0),
   );
 }).sort(// sort by x ascending
   (a, b) => a.x < b.x ? -1 : a.x > b.x ? 1 : 0,
@@ -155,4 +161,3 @@ export const randomResponses = [
   74091150300363372893247715377341913096446778788031541336871110197911481146359n,
   29896340703093012145909022712244181911546003092922234877958412520719305671945n,
 ];
-

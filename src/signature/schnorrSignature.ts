@@ -35,14 +35,14 @@ export function schnorrSignature(
   const c = modulo(
     BigInt(
       "0x" +
-      hash(
-        (keyPrefixing
-          ? derivePubKey(signerPrivKey, curve).serializePoint()
-          : "") +
-        message +
-        curve.GtoPoint().mult(alpha).serializePoint(),
-        config?.hash,
-      ),
+        hash(
+          (keyPrefixing
+            ? derivePubKey(signerPrivKey, curve).serializePoint()
+            : "") +
+            message +
+            curve.GtoPoint().mult(alpha).serializePoint(),
+          config?.hash,
+        ),
     ),
     curve.N,
   );
@@ -72,14 +72,20 @@ export function verifySchnorrSignature(
   config?: SignatureConfig,
   keyPrefixing = true,
 ): boolean {
-  if (signature.c < 0n || signature.c >= curve.N || signature.r < 0n || signature.r >= curve.N)
+  if (
+    signature.c < 0n ||
+    signature.c >= curve.N ||
+    signature.r < 0n ||
+    signature.r >= curve.N
+  )
     throw new Error("Invalid signature");
 
-  if(curve.isOnCurve([signerPubKey.x, signerPubKey.y]) === false) {
+  if (curve.isOnCurve([signerPubKey.x, signerPubKey.y]) === false) {
     throw new Error("Invalid public key: not on curve");
   }
 
-  if(!signerPubKey.checkLowOrder()) throw new Error("Invalid public key: low order");
+  if (!signerPubKey.checkLowOrder())
+    throw new Error("Invalid public key: low order");
 
   const G: Point = curve.GtoPoint(); // curve generator
   // compute H(R|m|[r*G + c*K]) (R is empty or signerPubkey). Return true if the result is equal to c
@@ -88,12 +94,12 @@ export function verifySchnorrSignature(
   const h = modulo(
     BigInt(
       "0x" +
-      hash(
-        (keyPrefixing ? signerPubKey.serializePoint() : "") +
-        message +
-        point.serializePoint(),
-        config?.hash,
-      ),
+        hash(
+          (keyPrefixing ? signerPubKey.serializePoint() : "") +
+            message +
+            point.serializePoint(),
+          config?.hash,
+        ),
     ),
     curve.N,
   );

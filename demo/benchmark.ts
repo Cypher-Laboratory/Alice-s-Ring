@@ -16,14 +16,24 @@ if (!fs.existsSync("./demo/benchmark.json")) {
   fs.writeFileSync("./demo/benchmark.json", JSON.stringify({})); // reset it
 }
 
-const timings: { ringSize: number, generation: number, verification: number }[] = [];
+const timings: {
+  ringSize: number;
+  generation: number;
+  verification: number;
+}[] = [];
 
 for (let i = 1; i < 2001; i += 100) {
   // update ring
   ring = ring.concat(randomRing(i - ring.length));
   // sign
   const init_sign = Date.now();
-  const signature = RingSignature.sign(ring, signerPrivKey, message, curve, config);
+  const signature = RingSignature.sign(
+    ring,
+    signerPrivKey,
+    message,
+    curve,
+    config,
+  );
   const end_sign = Date.now();
 
   // verify
@@ -37,29 +47,28 @@ for (let i = 1; i < 2001; i += 100) {
     verification: end_verify - end_sign,
   });
 
-  console.log("ring size: ", i, "\tgeneration timing: ", end_sign - init_sign, "\tverification timing: ", end_verify - end_sign);
+  console.log(
+    "ring size: ",
+    i,
+    "\tgeneration timing: ",
+    end_sign - init_sign,
+    "\tverification timing: ",
+    end_verify - end_sign,
+  );
 }
 
 // save timings
-const benchmark = JSON.parse(fs.readFileSync("./demo/benchmark.json").toString());
-timings.forEach(timing => {
-  benchmark[timing.ringSize] = { generation: timing.generation, verification: timing.verification };
+const benchmark = JSON.parse(
+  fs.readFileSync("./demo/benchmark.json").toString(),
+);
+timings.forEach((timing) => {
+  benchmark[timing.ringSize] = {
+    generation: timing.generation,
+    verification: timing.verification,
+  };
 });
 
 fs.writeFileSync("./demo/benchmark.json", JSON.stringify(benchmark));
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 function randomRing(size: number): Point[] {
   const ring = [];

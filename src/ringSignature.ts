@@ -1,10 +1,4 @@
-import {
-  randomBigint,
-  modulo,
-  serializeRing,
-  hash,
-  base64Regex,
-} from "./utils";
+import { randomBigint, modulo, hash, base64Regex } from "./utils";
 import { piSignature } from "./signature/piSignature";
 import { derivePubKey } from "./curves";
 import { Curve, Point } from ".";
@@ -206,7 +200,7 @@ export class RingSignature {
   toJsonString(): string {
     return JSON.stringify({
       message: this.message,
-      ring: this.ring.map((point: Point) => point.toString()),
+      ring: serializeRing(this.ring),
       c: this.c.toString(),
       responses: this.responses.map((response) => response.toString()),
       curve: this.curve.toString(),
@@ -533,12 +527,12 @@ export class RingSignature {
       return modulo(
         BigInt(
           "0x" +
-          hash(
-            serializeRing(ring) +
-            messageDigest +
-            G.mult(params.alpha).serializePoint(),
-            config?.hash,
-          ),
+            hash(
+              serializeRing(ring).toString() +
+                messageDigest +
+                G.mult(params.alpha).serializePoint(),
+              config?.hash,
+            ),
         ),
         N,
       );
@@ -551,14 +545,14 @@ export class RingSignature {
       return modulo(
         BigInt(
           "0x" +
-          hash(
-            serializeRing(ring) +
-            messageDigest +
-            G.mult(params.previousR)
-              .add(ring[params.previousIndex].mult(params.previousC))
-              .serializePoint(),
-            config?.hash,
-          ),
+            hash(
+              serializeRing(ring).toString() +
+                messageDigest +
+                G.mult(params.previousR)
+                  .add(ring[params.previousIndex].mult(params.previousC))
+                  .serializePoint(),
+              config?.hash,
+            ),
         ),
         N,
       );
@@ -587,7 +581,7 @@ export function checkRing(ring: Point[], ref?: Curve, emptyRing = false): void {
   if (ring.length === 0 && !emptyRing) throw err.noEmptyRing;
 
   // check for duplicates using a set
-  if (new Set(serializeRingPoints(ring)).size !== ring.length)
+  if (new Set(serializeRing(ring)).size !== ring.length)
     throw err.noDuplicates("ring");
 
   // check if all the points are valid
@@ -607,7 +601,7 @@ export function checkRing(ring: Point[], ref?: Curve, emptyRing = false): void {
  *
  * @returns The serialized ring as a string array
  */
-function serializeRingPoints(ring: Point[]): string[] {
+export function serializeRing(ring: Point[]): string[] {
   const serializedPoints: string[] = [];
   for (const point of ring) {
     serializedPoints.push(point.serializePoint()); // Call serializePoint() on each 'point' object

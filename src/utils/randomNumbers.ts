@@ -26,39 +26,3 @@ export function randomBigint(max: bigint): bigint {
     }
   }
 }
-
-/**
- * generate a random number in [min, max]
- *
- * @param min the min value of the random number
- * @param max the max value of the random number
- * @returns the random number
- */
-export function getRandomNumber(min: number, max: number): number {
-  if (min > max) {
-    throw new Error("Min value should be less than or equal to max value.");
-  }
-  if (min < 0) {
-    throw tooSmall("min", min);
-  }
-  if (max < 0) {
-    throw tooSmall("Max", max);
-  }
-  if (min === max) {
-    return min;
-  }
-
-  const range = max - min + 1;
-  const byteSize = Math.ceil(Math.log2(range) / 8);
-
-  //we use a while loop as a safeguard against the case where the random number is greater than the max value
-  // eslint-disable-next-line no-constant-condition
-  while (true) {
-    const array = randomBytes(byteSize);
-    const value = array.readUIntBE(0, byteSize);
-
-    if (value < range) {
-      return value + min;
-    }
-  }
-}

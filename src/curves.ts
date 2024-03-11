@@ -5,7 +5,7 @@ import {
   mod,
   P as ED25519P,
   N as ED25519N,
-  CURVE as ED25519Constants
+  CURVE as ED25519Constants,
 } from "./utils/noble-libraries/noble-ED25519";
 import {
   P as SECP256K1P,
@@ -15,7 +15,7 @@ import {
 } from "./utils/noble-libraries/noble-SECP256k1";
 import { Point } from "./point";
 import { modulo } from "./utils";
-import { invalidParams, unknownCurve } from "./errors";
+import { unknownCurve } from "./errors";
 
 // SECP256K1 curve constants
 const SECP256K1 = {
