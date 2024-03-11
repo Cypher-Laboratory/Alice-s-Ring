@@ -1,9 +1,4 @@
-import {
-  randomBigint,
-  modulo,
-  hash,
-  base64Regex,
-} from "./utils";
+import { randomBigint, modulo, hash, base64Regex } from "./utils";
 import { piSignature } from "./signature/piSignature";
 import { derivePubKey } from "./curves";
 import { Curve, Point } from ".";
@@ -270,8 +265,10 @@ export class RingSignature {
     const signerPubKey: Point = derivePubKey(signerPrivateKey, curve);
 
     // check if the signer public key is in the ring and if it is sorted by x ascending coordinate (and y ascending if x's are equal)
-    if (!isRingSorted(ring, signerPubKey)) throw err.invalidRing("The ring is not sorted and/or does not contains teh signer public key");
-
+    if (!isRingSorted(ring, signerPubKey))
+      throw err.invalidRing(
+        "The ring is not sorted and/or does not contains teh signer public key",
+      );
 
     // set the signer position in the ring from its position in the ordered ring
     const signerIndex = ring.findIndex((point) => point.equals(signerPubKey));
@@ -517,12 +514,12 @@ export class RingSignature {
       return modulo(
         BigInt(
           "0x" +
-          hash(
-            serializeRing(ring).toString() +
-            messageDigest +
-            G.mult(params.alpha).serializePoint(),
-            config?.hash,
-          ),
+            hash(
+              serializeRing(ring).toString() +
+                messageDigest +
+                G.mult(params.alpha).serializePoint(),
+              config?.hash,
+            ),
         ),
         N,
       );
@@ -535,14 +532,14 @@ export class RingSignature {
       return modulo(
         BigInt(
           "0x" +
-          hash(
-            serializeRing(ring).toString()+
-            messageDigest +
-            G.mult(params.previousR)
-              .add(ring[params.previousIndex].mult(params.previousC))
-              .serializePoint(),
-            config?.hash,
-          ),
+            hash(
+              serializeRing(ring).toString() +
+                messageDigest +
+                G.mult(params.previousR)
+                  .add(ring[params.previousIndex].mult(params.previousC))
+                  .serializePoint(),
+              config?.hash,
+            ),
         ),
         N,
       );
