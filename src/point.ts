@@ -288,14 +288,16 @@ export class Point {
   checkLowOrder(): boolean {
     switch (this.curve.name) {
       // secp256k1 has a cofactor of 1 so no need to check for low order or hybrid points
+      // we check if the point is not the point at infinity (0,0) in affine coordinates
       case CurveName.SECP256K1: {
-        return true;
+        return this.equals(new Point(this.curve, [0n, 0n]))===false;
       }
       // ed25519 has a cofactor of 8 so we need to check for low order points
       // we check if (N-1)*P = -P (where P is the point and N is the order of the curve)
+      // we check if the point is not the point at infinity (0,1) in affine coordinates
       // if true, the point is not low order or hybrid
       case CurveName.ED25519: {
-        return this.mult(this.curve.N - 1n).equals(this.negate());
+        return (this.mult(this.curve.N - 1n).equals(this.negate()) && this.equals(new Point(this.curve, [0n, 1n]))===false);
       }
       default: {
         throw unknownCurve(this.curve.name);
