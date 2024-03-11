@@ -226,17 +226,7 @@ export class RingSignature {
     if (!base64Regex.test(base64)) throw err.invalidBase64();
 
     const decoded = Buffer.from(base64, "base64").toString("ascii");
-    const json = JSON.parse(decoded);
-    const ring = json.ring.map((point: string) => Point.fromString(point));
-
-    return new RingSignature(
-      json.message,
-      ring,
-      BigInt(json.c),
-      json.responses.map((response: string) => BigInt(response)),
-      Curve.fromString(json.curve),
-      json.config,
-    );
+    return RingSignature.fromJsonString(decoded);
   }
 
   /**
