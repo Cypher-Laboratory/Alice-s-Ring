@@ -11,6 +11,7 @@ import { Curve, Point } from ".";
 import { SignatureConfig } from "./interfaces";
 import { hashFunction } from "./utils/hashFunction";
 import * as err from "./errors";
+import { isRingSorted } from "./utils/isRingSorted";
 
 /**
  * Ring signature class.
@@ -279,18 +280,9 @@ export class RingSignature {
     // get the signer public key
     const signerPubKey: Point = derivePubKey(signerPrivateKey, curve);
 
-    // add the signer public key to the ring
-    ring = ring.concat([signerPubKey]);
+    // check if the signer public key is in the ring and if it is sorted by x ascending coordinate (and y ascending if x's are equal)
+    if (!isRingSorted(ring, signerPubKey)) throw err.invalidRing("The ring is not sorted and/or does not contains teh signer public key");
 
-    // order ring by x coordinate ascending
-    ring.sort((a, b) => {
-      if (a.x < b.x) return -1;
-      if (a.x > b.x) return 1;
-      // if x are equal, order by y coordinate ascending
-      if (a.y < b.y) return -1;
-      if (a.y > b.y) return 1;
-      return 0;
-    });
 
     // set the signer position in the ring from its position in the ordered ring
     const signerIndex = ring.findIndex((point) => point.equals(signerPubKey));
@@ -536,12 +528,12 @@ export class RingSignature {
       return modulo(
         BigInt(
           "0x" +
-            hash(
-              serializeRing(ring) +
-                messageDigest +
-                G.mult(params.alpha).serializePoint(),
-              config?.hash,
-            ),
+          hash(
+            serializeRing(ring) +
+            messageDigest +
+            G.mult(params.alpha).serializePoint(),
+            config?.hash,
+          ),
         ),
         N,
       );
@@ -554,14 +546,14 @@ export class RingSignature {
       return modulo(
         BigInt(
           "0x" +
-            hash(
-              serializeRing(ring) +
-                messageDigest +
-                G.mult(params.previousR)
-                  .add(ring[params.previousIndex].mult(params.previousC))
-                  .serializePoint(),
-              config?.hash,
-            ),
+          hash(
+            serializeRing(ring) +
+            messageDigest +
+            G.mult(params.previousR)
+              .add(ring[params.previousIndex].mult(params.previousC))
+              .serializePoint(),
+            config?.hash,
+          ),
         ),
         N,
       );
