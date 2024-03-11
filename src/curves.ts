@@ -5,6 +5,7 @@ import {
   mod,
   P as ED25519P,
   N as ED25519N,
+  CURVE as ED25519Constants
 } from "./utils/noble-libraries/noble-ED25519";
 import {
   P as SECP256K1P,
@@ -134,8 +135,7 @@ export class Curve {
       }
       case CurveName.ED25519: {
         if (x > this.P || y > this.P) return false;
-        const d =
-          -4513249062541557337682894930092624173785641285191125241628941591882900924598840740n;
+        const d = ED25519Constants.d;
         return (
           modulo(y ** 2n - x ** 2n - 1n - d * x ** 2n * y ** 2n, this.P) === 0n
         );
