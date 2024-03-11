@@ -113,15 +113,9 @@ The verifier computes the following:
 
 This method is designed to compute a ring signature by directly utilizing a private key as input. It's tailored for scenarios where you do not use a wallet for key management. The RingSignature.sign function needs the private key to generate the ring signature.
 
-#### 1. Generate a random number $\pi$
-It will be use as the signer index.
-- **Function:** `getRandomNumber`
-- **Location:** `src/utils/randomNumber.ts`
-- **Description:** Generates a random number in [min, max].
+#### 1. Sort the ring by x ascending (and y ascending if x is equal)
+Let $\pi$ be the signer position in the group. This is an integer in the range $[0, n]$.
 
-```typescript
-export function getRandomNumber(min: number, max: number): number
-```
 #### 2. Generate Random Number $\alpha$
 It will be use as the nonce.
 - **Function:** `randomBigint`

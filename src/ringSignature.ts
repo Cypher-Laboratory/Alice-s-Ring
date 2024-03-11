@@ -286,6 +286,9 @@ export class RingSignature {
     ring.sort((a, b) => {
       if (a.x < b.x) return -1;
       if (a.x > b.x) return 1;
+      // if x are equal, order by y coordinate ascending
+      if (a.y < b.y) return -1;
+      if (a.y > b.y) return 1;
       return 0;
     });
 
