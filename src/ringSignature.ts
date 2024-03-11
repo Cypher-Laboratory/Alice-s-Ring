@@ -1,7 +1,6 @@
 import {
   randomBigint,
   modulo,
-  serializeRing,
   hash,
   base64Regex,
 } from "./utils";
@@ -519,7 +518,7 @@ export class RingSignature {
         BigInt(
           "0x" +
           hash(
-            serializeRing(ring) +
+            serializeRing(ring).toString() +
             messageDigest +
             G.mult(params.alpha).serializePoint(),
             config?.hash,
@@ -537,7 +536,7 @@ export class RingSignature {
         BigInt(
           "0x" +
           hash(
-            serializeRing(ring) +
+            serializeRing(ring).toString()+
             messageDigest +
             G.mult(params.previousR)
               .add(ring[params.previousIndex].mult(params.previousC))
@@ -572,7 +571,7 @@ export function checkRing(ring: Point[], ref?: Curve, emptyRing = false): void {
   if (ring.length === 0 && !emptyRing) throw err.noEmptyRing;
 
   // check for duplicates using a set
-  if (new Set(serializeRingPoints(ring)).size !== ring.length)
+  if (new Set(serializeRing(ring)).size !== ring.length)
     throw err.noDuplicates("ring");
 
   // check if all the points are valid
@@ -592,7 +591,7 @@ export function checkRing(ring: Point[], ref?: Curve, emptyRing = false): void {
  *
  * @returns The serialized ring as a string array
  */
-function serializeRingPoints(ring: Point[]): string[] {
+function serializeRing(ring: Point[]): string[] {
   const serializedPoints: string[] = [];
   for (const point of ring) {
     serializedPoints.push(point.serializePoint()); // Call serializePoint() on each 'point' object
