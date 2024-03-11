@@ -128,7 +128,7 @@ export class Curve {
 
     switch (this.name) {
       case CurveName.SECP256K1: {
-        if (x > this.P || y > this.P) return false;
+        if (x >= this.P || y >= this.P || x <= 0n || y <= 0n) return false;
         return modulo(x ** 3n + 7n - y ** 2n, this.P) === 0n;
       }
       case CurveName.ED25519: {
