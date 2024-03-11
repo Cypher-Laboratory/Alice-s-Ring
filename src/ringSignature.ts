@@ -205,7 +205,7 @@ export class RingSignature {
   toJsonString(): string {
     return JSON.stringify({
       message: this.message,
-      ring: this.ring.map((point: Point) => point.toString()),
+      ring: serializeRing(this.ring),
       c: this.c.toString(),
       responses: this.responses.map((response) => response.toString()),
       curve: this.curve.toString(),
@@ -591,7 +591,7 @@ export function checkRing(ring: Point[], ref?: Curve, emptyRing = false): void {
  *
  * @returns The serialized ring as a string array
  */
-function serializeRing(ring: Point[]): string[] {
+export function serializeRing(ring: Point[]): string[] {
   const serializedPoints: string[] = [];
   for (const point of ring) {
     serializedPoints.push(point.serializePoint()); // Call serializePoint() on each 'point' object
