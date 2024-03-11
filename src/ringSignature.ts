@@ -291,7 +291,6 @@ export class RingSignature {
       }
     }
     if(ring.length === 0) ring = [signerPubKey];
-    console.log('ringLength: ', ring.length);
 
     // compute cpi+1
     const cpi1 = RingSignature.computeC(
