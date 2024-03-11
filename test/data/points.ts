@@ -70,16 +70,39 @@ export const privateKey = [
   ),
 ];
 
+/* -------------SIGNER KEYS------------- */
+export const signerPrivKey = ed.utils.getExtendedPublicKey(
+  BigInt(
+    "0x" +
+      hash(
+        "4705133659738916056634998425092693862103756529453934308865022401716",
+      ),
+  ).toString(16),
+).scalar;
+
+export const signerPubKey_secp256k1 = derivePubKey(signerPrivKey, SECP256K1);
+export const signerPubKey_ed25519 = derivePubKey(signerPrivKey, ED25519);
+/* --------------------------------------- */
+
 export const zeroPivateKey = 0n;
 
 export const publicKeys_secp256k1 = privateKey.map((privKey) =>
   SECP256K1.GtoPoint().mult(privKey),
+).concat([signerPubKey_secp256k1]).sort(// sort by x ascending
+  (a, b) => a.x < b.x ? -1 : a.x > b.x ? 1 : 0,
 );
+
+
 export const publicKeys_ed25519 = privateKey.map((key) => {
   return ED25519.GtoPoint().mult(
     ed.utils.getExtendedPublicKey(key.toString(16)).scalar,
   );
-});
+}).concat([signerPubKey_ed25519]).sort(// sort by x ascending
+  (a, b) => a.x < b.x ? -1 : a.x > b.x ? 1 : 0,
+);
+console.log(publicKeys_ed25519);
+
+
 export const valid_coordinates_ed25519: [bigint, bigint] = [
   18692818425924056284077361575286289503472634786144083983260241244353871635402n,
   25130982270725351492078080917244946694662105954296899228585440574429183004137n,
@@ -134,15 +157,3 @@ export const randomResponses = [
   29896340703093012145909022712244181911546003092922234877958412520719305671945n,
 ];
 
-/* -------------SIGNER KEYS------------- */
-export const signerPrivKey = ed.utils.getExtendedPublicKey(
-  BigInt(
-    "0x" +
-      hash(
-        "4705133659738916056634998425092693862103756529453934308865022401716",
-      ),
-  ).toString(16),
-).scalar;
-
-export const signerPubKey_secp256k1 = derivePubKey(signerPrivKey, SECP256K1);
-export const signerPubKey_ed25519 = derivePubKey(signerPrivKey, ED25519);

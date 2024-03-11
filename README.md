@@ -12,7 +12,7 @@ We used the implementation proposed in [Zero to Monero](https://www.getmonero.or
 ## Usage
 
 ```typescript
-import { RingSignature } from '@cypherlab/types-ring-signature';
+import { RingSignature , Curve , CurveName , Point } from '@cypherlab/types-ring-signature';
 
 const curve: Curve = new Curve(CurveName.SECP256K1);
 const ring: Point[] = []; // your ring of public keys
@@ -71,7 +71,7 @@ When setting up a group for cryptographic purposes, such as for a Spontaneous An
 ### Signature Generation
 Let $l$ be the number of members in the group.  
 Let $R$ be a set of public keys of the group members such as $R$ = { $K_{0}$ , $K_{1}$ , ..., $K_{n}$ } where n be the number of members in the group minus 1 ($l = n + 1$).   
-Let $m$ be the message to be signed.   
+Let $m$ be the digest of the message to be signed.   
 Let $H$ be a hash function.   
 Let $k$ be a random integer in the range $[1, N-1]$. This is the private key of the signer.  
 Let $\pi$ be the signer position in the group. This is a random integer in the range $[0, n]$.  
@@ -83,12 +83,12 @@ The signer computes the following:
 - For $j$ in $[\pi + 1, l + \pi]$ computes the following:
     - $i = mod(j, l)$ -> allows to loop over the group members
     - $s = i - 1$ if $i > 0$ else $l - 1$ -> $s = i - 1$ except when $i = 0$. In this case, $s = l - 1$
-    - $c_{i+1} = H(R, m, [r_{s}G - c_{s}K_{s}])$
-- Define the signer's response to verify $\alpha = r_{\pi} - c_{\pi}k$ ($mod$ $N$)
+    - $c_{i+1} = H(R, m, [r_{s}G + c_{s}K_{s}])$
+- Define the signer's response to verify $\alpha = r_{\pi} + c_{\pi}k$ ($mod$ $N$)
 
 The signature contains the following:
 - the ring of public keys $R$
-- the seed $c_{0}$
+- the challenge $c_{1}$
 - the responses $r$ = { $r_{0}$ , $r_{1}$ , ... , $r_{n}$ }
   
 
@@ -102,9 +102,9 @@ Known data:
 The signature is valid if and only if the signature has been generated using one of the group member's private keys.
 
 The verifier computes the following:
-- For $i = 1$ to $n$, with $i$ wrapping around to 0 after $n$:
-    - $c_{i}$' = $H( R, m, [ r_{i-1} G$  - $c_{i-1}$' $K_{i-1}$]) if $i ≠ 0$ else $c_{i}$' = $H(R, m, [r_{0}G - c_{0}K_{0}])$
-- If $c_{i}$' = $c_{0}$ then the signature is valid, else it is invalid.
+- For $i = 2$ to $n$, with $i$ wrapping around to 1 after $n$:
+    - $c_{i}$' = $H( R, m, [ r_{i-1} G$  + $c_{i-1}$' $K_{i-1}$]) if $i ≠ 1$ else $c_{i}$' = $H(R, m, [r_{1}G + c_{1}K_{1}])$
+- If $c_{1}$' = $c_{1}$ then the signature is valid, else it is invalid.
 
 
 ## Detailed implementation 
@@ -150,7 +150,7 @@ export function randomBigint(max: bigint): bigint
   ): bigint 
 ```
 #### 4. Compute the challenges.
-Generates random responses *r* = { $r_{0}$ , $r_{1}$, ... , $r_{\pi-1}$, $r_{\pi+1}$, ... , $r_{n}$ } where $r_{i}$ ($0 <= i <= n$ excluding $\pi$) is a random integer in the range $[1, N-1]$  
+Generates random responses *r* = {$r_{1}$, ... , $r_{\pi-1}$, $r_{\pi+1}$, ... , $r_{n}$ } where $r_{i}$ ($0 <= i <= n$ excluding $\pi$) is a random integer in the range $[1, N-1]$  
 For i = ${\pi+1}$, ${\pi+2}$ , ..., n, 1, 2, ..., ${\pi-1}$ calculate, replacing n + 1 → 1,
 
 $c_{i+1} = H(R, m, [r_{s}G - c_{s}K_{s}])$

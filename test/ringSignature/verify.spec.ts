@@ -72,7 +72,7 @@ describe("Test verify()", () => {
 
   it("Should return true if the signature is valid and ringSize = 1 - secp256k1", () => {
     const signature = RingSignature.sign(
-      [],
+      [data.signerPubKey_secp256k1],
       data.signerPrivKey,
       data.message,
       secp256k1,
@@ -101,7 +101,7 @@ describe("Test verify()", () => {
 
   it("Should return true if the signature is valid and ringSize = 1 - ed25519", () => {
     const signature = RingSignature.sign(
-      [],
+      [data.signerPubKey_ed25519],
       data.signerPrivKey,
       data.message,
       ed25519,
