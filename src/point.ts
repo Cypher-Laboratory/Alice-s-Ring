@@ -48,7 +48,8 @@ export class Point {
    * @returns the result of the multiplication
    */
   mult(scalar: bigint): Point {
-    if (scalar > this.curve.N)
+    if(scalar < 0n) throw invalidParams(`Scalar must be >= 0, but got ${scalar}`);
+    if (scalar >= this.curve.N)
       throw invalidParams(
         `Scalar must be < N ${this.curve.N}, but got ${scalar}`,
       );
