@@ -291,7 +291,7 @@ export class Point {
       // secp256k1 has a cofactor of 1 so no need to check for low order or hybrid points
       // we check if the point is not the point at infinity (0,0) in affine coordinates
       case CurveName.SECP256K1: {
-        return this.equals(new Point(this.curve, [0n, 0n])) === false;
+        return this.equals(new Point(this.curve, [0n, 0n], false)) === false;
       }
       // ed25519 has a cofactor of 8 so we need to check for low order points
       // we check if (N-1)*P = -P (where P is the point and N is the order of the curve)
