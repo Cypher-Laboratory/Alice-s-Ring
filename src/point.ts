@@ -300,7 +300,7 @@ export class Point {
       case CurveName.ED25519: {
         return (
           this.mult(this.curve.N - 1n).equals(this.negate()) &&
-          this.equals(new Point(this.curve, [0n, 1n])) === false
+          this.equals(new Point(this.curve, [0n, 1n], false)) === false
         );
       }
       default: {
