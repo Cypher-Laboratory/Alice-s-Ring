@@ -97,9 +97,7 @@ export const publicKeys_ed25519 = privateKey
     return ED25519.GtoPoint().mult(
       ed.utils.getExtendedPublicKey(key.toString(16)).scalar,
     );
-  })
-  .concat([signerPubKey_ed25519])
-  .sort(
+  }).sort(
     // sort by x ascending
     (a, b) => (a.x < b.x ? -1 : a.x > b.x ? 1 : 0),
   );
