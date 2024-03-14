@@ -253,18 +253,14 @@ export class Point {
 
   isValid(): boolean {
     try {
-      this.curve.isOnCurve(this);
+      return this.curve.isOnCurve(this);
     } catch (error) {
       return false;
     }
-    return true;
   }
 
   /**
-   * Format a point according to the selected config
-   *
-   * @remarks
-   * Default value is Point.toString()
+   * serialize a point to a hex string
    *
    * @param point - the point to format
    *
@@ -277,6 +273,22 @@ export class Point {
     const yBytes = this.y.toString(16).padStart(64, "0");
     return xBytes + yBytes;
   }
+
+  /**
+   * deserialize a point from a hex string
+   * 
+   * @param hex - the hex string to deserialize
+   * 
+   * @returns the deserialized point
+   */
+  static deserializePoint(hex: string, curve: Curve): Point {
+    // get x and y values from hex string
+    const x = BigInt("0x" + hex.slice(0, 64));
+    const y = BigInt("0x" + hex.slice(64, 128));
+    return new Point(curve, [x, y]);
+  }
+
+
 
   /**
    * Check if a point is a low order point

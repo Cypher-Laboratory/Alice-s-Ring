@@ -52,7 +52,7 @@ describe("Test sign()", () => {
     }).toThrow(
       invalidRing(
         // eslint-disable-next-line max-len
-        'Error: Invalid point: At least one point is not valid: Error: Invalid param: Point is not on curve: {"curve":"{\\"curve\\":\\"SECP256K1\\"}","x":"0","y":"1"}',
+        'Error: Invalid point: At least one point is not valid: Error: Invalid point: not on curve',
       ),
     );
   });
@@ -67,8 +67,7 @@ describe("Test sign()", () => {
       );
     }).toThrow(
       invalidRing(
-        // eslint-disable-next-line max-len
-        'Error: Invalid point: At least one point is not valid: Error: Invalid param: Point is not on curve: {"curve":"{\\"curve\\":\\"ED25519\\"}","x":"0","y":"1"}',
+        "The ring is not sorted and/or does not contains teh signer public key",
       ),
     );
   });

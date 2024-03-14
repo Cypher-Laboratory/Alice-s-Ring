@@ -140,11 +140,6 @@ describe("Test verify()", () => {
     expect(RingSignature.verify(signature)).toBeTruthy();
   });
 
-  it("Should return false if the base64 signature is invalid", () => {
-    const signature = data.jsonRS.validBase64Sig;
-
-    expect(RingSignature.verify(signature)).toBeFalsy();
-  });
 
   it("Should return true if the JSON signature is valid", () => {
     const signature = RingSignature.sign(

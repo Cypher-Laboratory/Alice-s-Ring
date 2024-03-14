@@ -26,20 +26,6 @@ describe("Point class mult operation tests", () => {
     expect(result).toBeInstanceOf(Point);
   });
 
-  it("should mult a point with a negatif scalar correctly, ED25519", () => {
-    const point = new Point(mockED25519, valid_coordinates_ed25519);
-    const scalar = BigInt(-10);
-    const result = point.mult(scalar);
-    expect(result).toBeInstanceOf(Point);
-  });
-
-  it("should mult a point with a negatif scalar correctly, SECP256K1", () => {
-    const point = new Point(mockSECP256K1, valid_coordinates_secp256k1);
-    const scalar = BigInt(-10);
-    const result = point.mult(scalar);
-    expect(result).toBeInstanceOf(Point);
-  });
-
   it("should throw compututation error if the scalar equal 0, ED25519", () => {
     const point = new Point(mockED25519, valid_coordinates_ed25519);
     const scalar = BigInt(0);

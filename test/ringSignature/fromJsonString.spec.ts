@@ -38,16 +38,14 @@ describe("Test fromJsonString()", () => {
     expect(() => {
       RingSignature.fromJsonString(data.jsonRS.invalidPoint);
     }).toThrow(
-      invalidJson(
-        "Error: Invalid param: Point is not on curve: 0,20165396248642806335661137158563863822683438728408180285542980607824890485122",
-      ),
+      "Point is not on curve: [9859698416037759026562372103299, 46835398937525857424678912804713110217248423408711238708095319128726301404767]"
     );
   });
 
   it("Should throw if the curve is not valid (invalid G)", () => {
     expect(() => {
       RingSignature.fromJsonString(data.jsonRS.invalidCurve);
-    }).toThrow(invalidJson("Error: Unknown curve: invalid curve"));
+    }).toThrow("Unknown curve: invalid curve");
   });
 
   it("Should throw if the message is not a string", () => {
@@ -65,16 +63,14 @@ describe("Test fromJsonString()", () => {
   it("Should throw if the randomResponses is not valid", () => {
     expect(() => {
       RingSignature.fromJsonString(data.jsonRS.invalidRandomResponses);
-    }).toThrow(invalidJson("TypeError: sig.responses.map is not a function"));
+    }).toThrow("sig.responses.map is not a function");
   });
 
   it("Should throw if at least one argument is undefined", () => {
     expect(() => {
       RingSignature.fromJsonString(data.jsonRS.undefinedResponses);
     }).toThrow(
-      invalidJson(
-        "TypeError: Cannot read properties of undefined (reading 'map')",
-      ),
+      "Cannot read properties of undefined (reading 'map')",
     );
   });
 

@@ -179,12 +179,13 @@ export class RingSignature {
         curve: string;
         config?: SignatureConfig;
       };
+      const curve = Curve.fromString(sig.curve)
       return new RingSignature(
         sig.message,
-        sig.ring.map((point: string) => Point.fromString(point)),
+        sig.ring.map((point: string) => Point.deserializePoint(point, curve)),
         BigInt(sig.c),
         sig.responses.map((response: string) => BigInt(response)),
-        Curve.fromString(sig.curve),
+        curve,
         sig.config,
       );
     } catch (e) {

@@ -92,7 +92,7 @@ describe("Test Constructor", () => {
             data.randomResponses,
             ed25519,
           ),
-      ).toThrow(invalidParams("Point is not on curve: 0,0"));
+      ).toThrow("Point is not on curve: [0, 0]");
     });
     it("Should throw if one point is (0, 0) - secp256k1", () => {
       const ring = data.publicKeys_secp256k1.slice(1);
@@ -106,7 +106,7 @@ describe("Test Constructor", () => {
             data.randomResponses,
             secp256k1,
           ),
-      ).toThrow(invalidParams("Point is not on curve: 0,0"));
+      ).toThrow("Point is not on curve: [0, 0]");
     });
 
     /* -------------TEST INVALID RING<->RESPONSES CORRELATION------------- */

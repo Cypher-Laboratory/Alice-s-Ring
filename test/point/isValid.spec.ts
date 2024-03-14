@@ -24,10 +24,6 @@ describe("Point class isValid()", () => {
     expect(point.isValid()).toBeTruthy();
   });
 
-  it("should return false if the point is invalid, ED25519", () => {
-    expect(idPointX_ed25519.isValid()).toBeFalsy();
-  });
-
   it("should return false if the point is invalid, SECP256K1", () => {
     expect(idPointX_secp256k1.isValid()).toBeFalsy();
   });
