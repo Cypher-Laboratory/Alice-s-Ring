@@ -252,11 +252,11 @@ export class RingSignature {
       throw err.invalidParams("Signer private key cannot be 0 and must be < N");
 
     // check if ring is valid
-    try {
+    // try {
       checkRing(ring, curve, true);
-    } catch (e) {
-      throw err.invalidRing(e as string);
-    }
+    // } catch (e) {
+    //   throw err.invalidRing(e as string);
+    // }
 
     const messageDigest = BigInt("0x" + hash(message, config?.hash));
 
@@ -268,24 +268,30 @@ export class RingSignature {
     // check if the signer public key is in the ring and if it is sorted by x ascending coordinate (and y ascending if x's are equal)
     if (!isRingSorted(ring)) throw err.invalidRing("The ring is not sorted and/or does not contains teh signer public key");
 
-    // insert the user public key at the right place (sorted by x ascending coordinate)
-    let signerIndex = 0;
-    for (let i = 0; i < ring.length; i++) {
-      if (signerPubKey.x < ring[i].x) {
-        ring.splice(i, 0, signerPubKey);
-        signerIndex = i;
-        break;
-      }
-      if (signerPubKey.x === ring[i].x) {
-        // order by y ascending
-        if (signerPubKey.y < ring[i].y) {
+    // if needed, insert the user public key at the right place (sorted by x ascending coordinate)
+    let signerIndex = ring.findIndex((point) => point.x === signerPubKey.x && point.y === signerPubKey.y);
+    if (signerIndex === -1) {
+      signerIndex = 0;
+      for (let i = 0; i < ring.length; i++) {
+        if (signerPubKey.x < ring[i].x) {
           ring.splice(i, 0, signerPubKey);
           signerIndex = i;
           break;
         }
+        if (signerPubKey.x === ring[i].x) {
+          // order by y ascending
+          if (signerPubKey.y < ring[i].y) {
+            ring.splice(i, 0, signerPubKey);
+            signerIndex = i;
+            break;
+          }
+        }
       }
     }
-    if(ring.length === 0) ring = [signerPubKey];
+    if (ring.length === 0) {
+      ring = [signerPubKey];
+      signerIndex = 0;
+    };
 
     // compute cpi+1
     const cpi1 = RingSignature.computeC(
@@ -528,12 +534,12 @@ export class RingSignature {
       return modulo(
         BigInt(
           "0x" +
-            hash(
-              serializeRing(ring).toString() +
-                messageDigest +
-                G.mult(params.alpha).serializePoint(),
-              config?.hash,
-            ),
+          hash(
+            serializeRing(ring).toString() +
+            messageDigest +
+            G.mult(params.alpha).serializePoint(),
+            config?.hash,
+          ),
         ),
         N,
       );
@@ -546,14 +552,14 @@ export class RingSignature {
       return modulo(
         BigInt(
           "0x" +
-            hash(
-              serializeRing(ring).toString() +
-                messageDigest +
-                G.mult(params.previousR)
-                  .add(ring[params.previousIndex].mult(params.previousC))
-                  .serializePoint(),
-              config?.hash,
-            ),
+          hash(
+            serializeRing(ring).toString() +
+            messageDigest +
+            G.mult(params.previousR)
+              .add(ring[params.previousIndex].mult(params.previousC))
+              .serializePoint(),
+            config?.hash,
+          ),
         ),
         N,
       );
@@ -576,10 +582,10 @@ export class RingSignature {
  * @throws Error if at least one of the points is invalid
  */
 export function checkRing(ring: Point[], ref?: Curve, emptyRing = false): void {
-  if (!ref) ref = ring[0].curve;
 
   // check if the ring is empty
   if (ring.length === 0 && !emptyRing) throw err.noEmptyRing;
+  if (!ref) ref = ring[0].curve;
 
   // check for duplicates using a set
   if (new Set(serializeRing(ring)).size !== ring.length)

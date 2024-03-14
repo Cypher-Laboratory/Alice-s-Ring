@@ -50,10 +50,7 @@ describe("Test sign()", () => {
         secp256k1,
       );
     }).toThrow(
-      invalidRing(
-        // eslint-disable-next-line max-len
-        'Error: Invalid point: At least one point is not valid: Error: Invalid point: not on curve',
-      ),
+      "Invalid point: At least one point is not valid: Error: Invalid point: not on curve"
     );
   });
 
