@@ -46,10 +46,7 @@ describe("test checkRing()", () => {
     expect(() =>
       checkRing(data.publicKeys_secp256k1.concat([invalid]), secp256k1),
     ).toThrow(
-      invalidPoint(
-        // eslint-disable-next-line max-len
-        'At least one point is not valid: Error: Invalid param: Point is not on curve: {"curve":"{\\"curve\\":\\"SECP256K1\\",\\"Gx\\":\\"55066263022277343669578718895168534326250603453777594175500187360389116729240\\",\\"Gy\\":\\"32670510020758816978083085130507043184471273380659243275938904335757337482424\\",\\"N\\":\\"115792089237316195423570985008687907852837564279074904382605163141518161494337\\",\\"P\\":\\"115792089237316195423570985008687907853269984665640564039457584007908834671663\\"}","x":"0","y":"32670510020758816978083085130507043184471273380659243275938904335757337482424"}',
-      ),
+      "Invalid point: At least one point is not valid: Error: Invalid point: not on curve",
     );
   });
 });

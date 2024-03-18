@@ -49,7 +49,8 @@ class Point {
   static readonly BASE = new Point(Gx, Gy, 1n); // Generator / base point
   static readonly ZERO = new Point(0n, 1n, 0n); // Identity / zero point
   static fromAffine(p: AffinePoint) {
-    return new Point(p.x, p.y, 1n);
+    if (p.x == 0n && p.y == 0n) return new Point(0n, 1n, 0n);
+    else return new Point(p.x, p.y, 1n);
   }
   static fromHex(hex: Hex): Point {
     // Convert Uint8Array or hex string to Point
@@ -157,7 +158,8 @@ class Point {
       f = G; // init result point & fake point
     for (let d: Point = this; n > 0n; d = d.double(), n >>= 1n) {
       // double-and-add ladder
-      if (n & 1n) p = p.add(d); // if bit is present, add to point
+      if (n & 1n)
+        p = p.add(d); // if bit is present, add to point
       else if (safe) f = f.add(d); // if not, add to fake for timing safety
     }
     return p;
@@ -654,4 +656,8 @@ export {
   utils,
   Point as ProjectivePoint,
   Signature,
+  P,
+  N,
+  Gx,
+  Gy,
 }; // envs like browser console

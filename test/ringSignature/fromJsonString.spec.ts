@@ -16,8 +16,6 @@ import * as data from "../data";
  * - the method throws an error if at least one argument is undefined
  * - the method throws an error if at least one argument is null
  * - the method throws an error if the config is not an object
- * - the method throws an error if config.safeMode is not a boolean
- * - the method throws an error if config.evmCompatibility is not a boolean
  * - the method throws an error if config.hash is not in the list of supported hash functions
  */
 describe("Test fromJsonString()", () => {
@@ -40,34 +38,20 @@ describe("Test fromJsonString()", () => {
     expect(() => {
       RingSignature.fromJsonString(data.jsonRS.invalidPoint);
     }).toThrow(
-      invalidJson(
-        "Error: Invalid param: Point is not on curve: 0,20165396248642806335661137158563863822683438728408180285542980607824890485122",
-      ),
+      "Point is not on curve: [9859698416037759026562372103299, 46835398937525857424678912804713110217248423408711238708095319128726301404767]"
     );
   });
 
   it("Should throw if the curve is not valid (invalid G)", () => {
     expect(() => {
       RingSignature.fromJsonString(data.jsonRS.invalidCurve);
-    }).toThrow(invalidJson("Error: Unknown curve: invalid curve"));
+    }).toThrow("Unknown curve: invalid curve");
   });
 
-  it("Should throw if the message is empty", () => {
-    expect(() => {
-      RingSignature.fromJsonString(data.jsonRS.emptyMessage);
-    }).toThrow(invalidJson("Error: Cannot sign empty message"));
-  });
-
-  it("Should throw if the message is not a string or a number", () => {
+  it("Should throw if the message is not a string", () => {
     expect(() => {
       RingSignature.fromJsonString(data.jsonRS.msgNotString);
-    }).toThrow(invalidJson("Message must be a string or a number"));
-  });
-
-  it("Should throw if the c is 0 ", () => {
-    expect(() => {
-      RingSignature.fromJsonString(data.jsonRS.cEquals0);
-    }).toThrow(invalidJson("Error: Invalid param: c"));
+    }).toThrow(invalidJson("Message must be a string "));
   });
 
   it("Should throw if c is not a string or a number ", () => {
@@ -79,43 +63,27 @@ describe("Test fromJsonString()", () => {
   it("Should throw if the randomResponses is not valid", () => {
     expect(() => {
       RingSignature.fromJsonString(data.jsonRS.invalidRandomResponses);
-    }).toThrow(invalidJson("TypeError: sig.responses.map is not a function"));
+    }).toThrow("sig.responses.map is not a function");
   });
 
   it("Should throw if at least one argument is undefined", () => {
     expect(() => {
       RingSignature.fromJsonString(data.jsonRS.undefinedResponses);
     }).toThrow(
-      invalidJson(
-        "TypeError: Cannot read properties of undefined (reading 'map')",
-      ),
+      "Cannot read properties of undefined (reading 'map')",
     );
   });
 
   it("Should throw if at least one argument is null", () => {
     expect(() => {
       RingSignature.fromJsonString(data.jsonRS.nullMessage);
-    }).toThrow(invalidJson("Message must be a string or a number"));
+    }).toThrow(invalidJson("Message must be a string "));
   });
 
   it("Should throw if the config is not an object", () => {
     expect(() => {
       RingSignature.fromJsonString(data.jsonRS.configNotObject);
     }).toThrow(invalidJson("Config must be an object"));
-  });
-
-  it("Should throw if config.safeMode is not a boolean", () => {
-    expect(() => {
-      RingSignature.fromJsonString(data.jsonRS.configSafeModeNotBoolean);
-    }).toThrow(invalidJson("Config.safeMode must be a boolean"));
-  });
-
-  it("Should throw if config.evmCompatibility is not a boolean", () => {
-    expect(() => {
-      RingSignature.fromJsonString(
-        data.jsonRS.configEvmCompatibilityNotBoolean,
-      );
-    }).toThrow(invalidJson("Config.evmCompatibility must be a boolean"));
   });
 
   it("Should throw if config.hash is not in the list of supported hash functions", () => {

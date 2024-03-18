@@ -3,7 +3,7 @@ import {
   valid_coordinates_ed25519,
   valid_coordinates_secp256k1,
 } from "../data";
-describe("Point class toAffine()", () => {
+describe("Point class toCoordinates()", () => {
   let mockED25519: Curve;
   let mockSECP256K1: Curve;
 
@@ -14,7 +14,7 @@ describe("Point class toAffine()", () => {
 
   it("should return a [bigint, bigint], ED25519", () => {
     const point = new Point(mockED25519, valid_coordinates_ed25519);
-    const affine = point.toAffine();
+    const affine = point.toCoordinates();
     expect(affine).toBeInstanceOf(Array);
     expect(affine[0]).toEqual(valid_coordinates_ed25519[0]);
     expect(affine[1]).toEqual(valid_coordinates_ed25519[1]);
@@ -22,7 +22,7 @@ describe("Point class toAffine()", () => {
 
   it("should return a [bigint, bigint], SECP256K1", () => {
     const point = new Point(mockSECP256K1, valid_coordinates_secp256k1);
-    const affine = point.toAffine();
+    const affine = point.toCoordinates();
     expect(affine).toBeInstanceOf(Array);
     expect(affine[0]).toEqual(valid_coordinates_secp256k1[0]);
     expect(affine[1]).toEqual(valid_coordinates_secp256k1[1]);

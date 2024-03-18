@@ -1,28 +1,39 @@
 import {
   ExtendedPoint,
-  Gx,
-  Gy,
+  Gx as ED25519Gx,
+  Gy as ED25519Gy,
   mod,
+  P as ED25519P,
+  N as ED25519N,
+  CURVE as ED25519Constants,
 } from "./utils/noble-libraries/noble-ED25519";
+import {
+  P as SECP256K1P,
+  N as SECP256K1N,
+  Gx as SECP256K1Gx,
+  Gy as SECP256K1Gy,
+} from "./utils/noble-libraries/noble-SECP256k1";
 import { Point } from "./point";
 import { modulo } from "./utils";
-import { invalidParams, unknownCurve } from "./errors";
+import { unknownCurve } from "./errors";
 
 // SECP256K1 curve constants
 const SECP256K1 = {
-  P: 2n ** 256n - 2n ** 32n - 977n,
-  N: 2n ** 256n - 0x14551231950b75fc4402da1732fc9bebfn,
-  G: [
-    55066263022277343669578718895168534326250603453777594175500187360389116729240n,
-    32670510020758816978083085130507043184471273380659243275938904335757337482424n,
-  ] as [bigint, bigint],
+  P: SECP256K1P,
+  N: SECP256K1N,
+  G: [SECP256K1Gx, SECP256K1Gy] as [bigint, bigint],
 };
 
 // ED25519 curve constants
-const GED25519 = new ExtendedPoint(Gx, Gy, 1n, mod(Gx * Gy));
+const GED25519 = new ExtendedPoint(
+  ED25519Gx,
+  ED25519Gy,
+  1n,
+  mod(ED25519Gx * ED25519Gy),
+);
 const ED25519 = {
-  P: 2n ** 255n - 19n,
-  N: 2n ** 252n + 27742317777372353535851937790883648493n, // curve's (group) order
+  P: ED25519P,
+  N: ED25519N, // curve's (group) order
   G: [GED25519.toAffine().x, GED25519.toAffine().y] as [bigint, bigint],
 };
 
@@ -81,10 +92,6 @@ export class Curve {
   toString(): string {
     return JSON.stringify({
       curve: this.name,
-      Gx: this.G[0].toString(),
-      Gy: this.G[1].toString(),
-      N: this.N.toString(),
-      P: this.P.toString(),
     });
   }
 
@@ -119,16 +126,14 @@ export class Curve {
       y = point[1];
     }
 
-    if (x === 0n || y === 0n)
-      throw invalidParams("Point is not on curve: " + point);
-
     switch (this.name) {
       case CurveName.SECP256K1: {
+        if (x >= this.P || y >= this.P || x <= 0n || y <= 0n) return false;
         return modulo(x ** 3n + 7n - y ** 2n, this.P) === 0n;
       }
       case CurveName.ED25519: {
-        const d =
-          -4513249062541557337682894930092624173785641285191125241628941591882900924598840740n;
+        if (x > this.P || y > this.P) return false;
+        const d = ED25519Constants.d;
         return (
           modulo(y ** 2n - x ** 2n - 1n - d * x ** 2n * y ** 2n, this.P) === 0n
         );

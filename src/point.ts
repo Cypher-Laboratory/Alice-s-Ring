@@ -2,7 +2,6 @@ import { Curve, CurveName } from "./curves";
 import { ProjectivePoint as SECP256K1Point } from "./utils/noble-libraries/noble-SECP256k1";
 import { ExtendedPoint as ED25519Point } from "./utils/noble-libraries/noble-ED25519";
 import { modulo } from "./utils";
-import { checkPoint } from "./ringSignature";
 import {
   differentCurves,
   invalidParams,
@@ -49,15 +48,20 @@ export class Point {
    * @returns the result of the multiplication
    */
   mult(scalar: bigint): Point {
-    if (scalar === BigInt(0)) throw invalidParams("invalid scalar : 0");
+    if (scalar < 0n)
+      throw invalidParams(`Scalar must be >= 0, but got ${scalar}`);
+    if (scalar >= this.curve.N)
+      throw invalidParams(
+        `Scalar must be < N ${this.curve.N}, but got ${scalar}`,
+      );
     switch (this.curve.name) {
       case CurveName.SECP256K1: {
         const result = SECP256K1Point.fromAffine({
           x: this.x,
           y: this.y,
         }).mul(modulo(scalar, this.curve.N));
-
-        return new Point(this.curve, [result.x, result.y]);
+        const affine = result.toAffine();
+        return new Point(this.curve, [affine.x, affine.y], false);
       }
       case CurveName.ED25519: {
         const result = ED25519Point.fromAffine({
@@ -65,7 +69,8 @@ export class Point {
           y: this.y,
         }).mul(modulo(scalar, this.curve.N));
 
-        return new Point(this.curve, [result.x, result.y]);
+        const affine = result.toAffine();
+        return new Point(this.curve, [affine.x, affine.y], false);
       }
       default: {
         throw unknownCurve(this.curve.name);
@@ -95,7 +100,8 @@ export class Point {
           }),
         );
 
-        return new Point(this.curve, [result.x, result.y]);
+        const affine = result.toAffine();
+        return new Point(this.curve, [affine.x, affine.y], false);
       }
       case CurveName.ED25519: {
         const result = ED25519Point.fromAffine({
@@ -108,7 +114,8 @@ export class Point {
           }),
         );
 
-        return new Point(this.curve, [result.x, result.y]);
+        const affine = result.toAffine();
+        return new Point(this.curve, [affine.x, affine.y], false);
       }
       default: {
         throw unknownCurve(this.curve.name);
@@ -171,7 +178,8 @@ export class Point {
           y: this.y,
         }).negate();
 
-        return new Point(this.curve, [result.x, result.y]);
+        const affine = result.toAffine();
+        return new Point(this.curve, [affine.x, affine.y], false);
       }
       case CurveName.ED25519: {
         const result = ED25519Point.fromAffine({
@@ -179,7 +187,8 @@ export class Point {
           y: this.y,
         }).negate();
 
-        return new Point(this.curve, [result.x, result.y]);
+        const affine = result.toAffine();
+        return new Point(this.curve, [affine.x, affine.y], false);
       }
       default: {
         throw unknownCurve("Cannot negate point");
@@ -192,7 +201,7 @@ export class Point {
    *
    * @returns the affine representation of the point
    */
-  toAffine(): [bigint, bigint] {
+  toCoordinates(): [bigint, bigint] {
     return [this.x, this.y];
   }
 
@@ -227,13 +236,7 @@ export class Point {
    * Converts a point to its base64 string representation.
    */
   toBase64(): string {
-    // save x, y and curve in json and encode it
-    const json = JSON.stringify({
-      x: this.x.toString(),
-      y: this.y.toString(),
-      curve: this.curve.toString(),
-    });
-    return Buffer.from(json).toString("base64");
+    return Buffer.from(this.toString()).toString("base64");
   }
 
   /**
@@ -245,17 +248,76 @@ export class Point {
   static fromBase64(base64: string): Point {
     // decode base64
     const json = Buffer.from(base64, "base64").toString("ascii");
-    const { x, y, curve } = JSON.parse(json);
-    const retrievedCurve = Curve.fromString(curve);
-    return new Point(retrievedCurve, [BigInt(x), BigInt(y)]);
+    return Point.fromString(json);
   }
 
   isValid(): boolean {
     try {
-      checkPoint(this);
+      return this.curve.isOnCurve(this);
     } catch (error) {
       return false;
     }
-    return true;
+  }
+
+  /**
+   * serialize a point to a hex string
+   *
+   * @param point - the point to format
+   *
+   * @returns the formatted point
+   */
+  serializePoint(): string {
+    // convert x value to bytes and pad with 0 to 32 bytes
+    const xBytes = this.x.toString(16).padStart(64, "0");
+    // convert y value to bytes and pad with 0 to 32 bytes
+    const yBytes = this.y.toString(16).padStart(64, "0");
+    return xBytes + yBytes;
+  }
+
+  /**
+   * deserialize a point from a hex string
+   * 
+   * @param hex - the hex string to deserialize
+   * 
+   * @returns the deserialized point
+   */
+  static deserializePoint(hex: string, curve: Curve): Point {
+    // get x and y values from hex string
+    const x = BigInt("0x" + hex.slice(0, 64));
+    const y = BigInt("0x" + hex.slice(64, 128));
+    return new Point(curve, [x, y]);
+  }
+
+
+
+  /**
+   * Check if a point is a low order point
+   *
+   * @remarks
+   * This function checks if the point is a low order point or a hybrid point
+   *
+   * @returns true if the point is not a low order point, false otherwise
+   */
+  checkLowOrder(): boolean {
+    switch (this.curve.name) {
+      // secp256k1 has a cofactor of 1 so no need to check for low order or hybrid points
+      // we check if the point is not the point at infinity (0,0) in affine coordinates
+      case CurveName.SECP256K1: {
+        return this.equals(new Point(this.curve, [0n, 0n], false)) === false;
+      }
+      // ed25519 has a cofactor of 8 so we need to check for low order points
+      // we check if (N-1)*P = -P (where P is the point and N is the order of the curve)
+      // we check if the point is not the point at infinity (0,1) in affine coordinates
+      // if true, the point is not low order or hybrid
+      case CurveName.ED25519: {
+        return (
+          this.mult(this.curve.N - 1n).equals(this.negate()) &&
+          this.equals(new Point(this.curve, [0n, 1n], false)) === false
+        );
+      }
+      default: {
+        throw unknownCurve(this.curve.name);
+      }
+    }
   }
 }

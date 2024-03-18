@@ -1,20 +1,11 @@
-import {
-  randomBigint,
-  getRandomSecuredNumber,
-  modulo,
-  formatRing,
-  formatPoint,
-  hash,
-  base64Regex,
-} from "./utils";
+import { randomBigint, modulo, hash, base64Regex } from "./utils";
 import { piSignature } from "./signature/piSignature";
 import { derivePubKey } from "./curves";
-import { Curve, PartialSignature, Point } from ".";
+import { Curve, Point } from ".";
 import { SignatureConfig } from "./interfaces";
 import { hashFunction } from "./utils/hashFunction";
 import * as err from "./errors";
-import { encrypt } from "./encryption/encryption";
-import { EthEncryptedData } from "@metamask/eth-sig-util";
+import { isRingSorted } from "./utils/isRingSorted";
 
 /**
  * Ring signature class.
@@ -34,10 +25,9 @@ export class RingSignature {
    *
    * @param message - Clear message to sign
    * @param ring - Ring of public keys
-   * @param cees - c values
+   * @param c - c value
    * @param responses - Responses for each public key in the ring
    * @param curve - Curve used for the signature
-   * @param safeMode - If true, check if all the points are on the same curve
    * @param config - The config params to use (optional)
    */
   constructor(
@@ -48,21 +38,20 @@ export class RingSignature {
     curve: Curve,
     config?: SignatureConfig,
   ) {
-    if (!message || message === "") throw err.noEmptyMsg;
-
     if (ring.length === 0) throw err.noEmptyRing;
 
     if (ring.length != responses.length)
       throw err.lengthMismatch("ring", "responses");
+
+    if (c >= curve.N) throw err.invalidParams("c must be a < N");
 
     // check if config is an object
     if (config && typeof config !== "object")
       throw err.invalidParams("Config must be an object");
 
     // check ring, c and responses validity
-    checkRing(ring, curve, true);
+    checkRing(ring, curve);
 
-    if (c === 0n) throw err.invalidParams("c");
     for (const response of responses) {
       if (response >= curve.N || response === 0n) throw err.invalidResponses;
     }
@@ -76,9 +65,9 @@ export class RingSignature {
   }
 
   /**
-   * Get the message
+   * Get the Ring
    *
-   * @returns The message
+   * @returns The Ring
    */
   getRing(): Point[] {
     return this.ring;
@@ -160,24 +149,19 @@ export class RingSignature {
       parsedJson = json;
     }
     // check if message is stored as array or object. If so, throw an error
-    if (
-      parsedJson.message instanceof Array ||
-      typeof parsedJson.message === "object"
-    )
-      throw err.invalidJson("Message must be a string or a number");
+    if (typeof parsedJson.message !== "string")
+      throw err.invalidJson("Message must be a string ");
+
     // check if c is stored as array or object. If so, throw an error
-    if (parsedJson.c instanceof Array || typeof parsedJson.c === "object")
+    if (typeof parsedJson.c !== "string" && typeof parsedJson.c !== "number")
       throw err.invalidJson("c must be a string or a number");
+    // if c is a number, convert it to a string
+    if (typeof parsedJson.c === "number")
+      parsedJson.c = parsedJson.c.toString();
+
     // check if config is an object
     if (parsedJson.config && typeof parsedJson.config !== "object")
       throw err.invalidJson("Config must be an object");
-    // check if config.safeMode is a boolean. If not, throw an error
-    if (
-      parsedJson.config &&
-      parsedJson.config.safeMode &&
-      typeof parsedJson.config.safeMode !== "boolean"
-    )
-      throw err.invalidJson("Config.safeMode must be a boolean");
     // check if config.hash is an element from hashFunction. If not, throw an error
     if (
       parsedJson.config &&
@@ -185,13 +169,6 @@ export class RingSignature {
       !Object.values(hashFunction).includes(parsedJson.config.hash)
     )
       throw err.invalidJson("Config.hash must be an element from hashFunction");
-    // check if config.evmCompatibility is a boolean. If not, throw an error
-    if (
-      parsedJson.config &&
-      parsedJson.config.evmCompatibility &&
-      typeof parsedJson.config.evmCompatibility !== "boolean"
-    )
-      throw err.invalidJson("Config.evmCompatibility must be a boolean");
 
     try {
       const sig = parsedJson as {
@@ -202,12 +179,13 @@ export class RingSignature {
         curve: string;
         config?: SignatureConfig;
       };
+      const curve = Curve.fromString(sig.curve)
       return new RingSignature(
         sig.message,
-        sig.ring.map((point: string) => Point.fromString(point)),
+        sig.ring.map((point: string) => Point.deserializePoint(point, curve)),
         BigInt(sig.c),
         sig.responses.map((response: string) => BigInt(response)),
-        Curve.fromString(sig.curve),
+        curve,
         sig.config,
       );
     } catch (e) {
@@ -223,7 +201,7 @@ export class RingSignature {
   toJsonString(): string {
     return JSON.stringify({
       message: this.message,
-      ring: this.ring.map((point: Point) => point.toString()),
+      ring: serializeRing(this.ring),
       c: this.c.toString(),
       responses: this.responses.map((response) => response.toString()),
       curve: this.curve.toString(),
@@ -243,17 +221,7 @@ export class RingSignature {
     if (!base64Regex.test(base64)) throw err.invalidBase64();
 
     const decoded = Buffer.from(base64, "base64").toString("ascii");
-    const json = JSON.parse(decoded);
-    const ring = json.ring.map((point: string) => Point.fromString(point));
-
-    return new RingSignature(
-      json.message,
-      ring,
-      BigInt(json.c),
-      json.responses.map((response: string) => BigInt(response)),
-      Curve.fromString(json.curve),
-      json.config,
-    );
+    return RingSignature.fromJsonString(decoded);
   }
 
   /**
@@ -274,39 +242,56 @@ export class RingSignature {
    * @returns A RingSignature
    */
   static sign(
-    ring: Point[], // ring.length = n+1
+    ring: Point[], // ring.length = n
     signerPrivateKey: bigint,
     message: string,
     curve: Curve,
     config?: SignatureConfig,
   ): RingSignature {
-    if (signerPrivateKey === 0n)
-      throw err.invalidParams("Signer private key cannot be 0");
+    if (signerPrivateKey === 0n || signerPrivateKey >= curve.N)
+      throw err.invalidParams("Signer private key cannot be 0 and must be < N");
 
-    if (message === "") throw err.noEmptyMsg;
+    // check if ring is valid
+    // try {
+      checkRing(ring, curve, true);
+    // } catch (e) {
+    //   throw err.invalidRing(e as string);
+    // }
 
     const messageDigest = BigInt("0x" + hash(message, config?.hash));
 
-    // check if ring is valid
-    try {
-      checkRing(ring, curve, true);
-    } catch (e) {
-      throw err.invalidRing(e as string);
-    }
-
     const alpha = randomBigint(curve.N);
-
-    // set the signer position in the ring
-    const signerIndex = // pi
-      ring.length === 0 ? 0 : getRandomSecuredNumber(0, ring.length - 1);
 
     // get the signer public key
     const signerPubKey: Point = derivePubKey(signerPrivateKey, curve);
 
-    // add the signer public key to the ring
-    ring = ring
-      .slice(0, signerIndex)
-      .concat([signerPubKey], ring.slice(signerIndex)) as Point[];
+    // check if the signer public key is in the ring and if it is sorted by x ascending coordinate (and y ascending if x's are equal)
+    if (!isRingSorted(ring)) throw err.invalidRing("The ring is not sorted and/or does not contains teh signer public key");
+
+    // if needed, insert the user public key at the right place (sorted by x ascending coordinate)
+    let signerIndex = ring.findIndex((point) => point.x === signerPubKey.x && point.y === signerPubKey.y);
+    if (signerIndex === -1) {
+      signerIndex = 0;
+      for (let i = 0; i < ring.length; i++) {
+        if (signerPubKey.x < ring[i].x) {
+          ring.splice(i, 0, signerPubKey);
+          signerIndex = i;
+          break;
+        }
+        if (signerPubKey.x === ring[i].x) {
+          // order by y ascending
+          if (signerPubKey.y < ring[i].y) {
+            ring.splice(i, 0, signerPubKey);
+            signerIndex = i;
+            break;
+          }
+        }
+      }
+    }
+    if (ring.length === 0) {
+      ring = [signerPubKey];
+      signerIndex = 0;
+    };
 
     // compute cpi+1
     const cpi1 = RingSignature.computeC(
@@ -351,117 +336,6 @@ export class RingSignature {
   }
 
   /**
-   * Sign a message using ring signatures
-   * Allow the user to use its private key from an external software (external software/hardware wallet)
-   *
-   * @param ring - Ring of public keys (does not contain the signer public key)
-   * @param message - Clear message to sign
-   * @param signerPubKey - Public key of the signer
-   * @param config - The config params to use
-   *
-   * @returns An encrypted PartialSignature
-   */
-  static partialSign(
-    ring: Point[], // ring.length = n + 1
-    message: string,
-    signerPubKey: Point,
-    curve: Curve,
-    encryptionPubKey: string,
-    config?: SignatureConfig,
-  ): EthEncryptedData {
-    const messageDigest = BigInt("0x" + hash(message, config?.hash));
-
-    const alpha = randomBigint(curve.N);
-
-    // set the signer position in the ring
-    const signerIndex = // pi
-      ring.length === 0 ? 0 : getRandomSecuredNumber(0, ring.length - 1);
-
-    // add the signer public key to the ring
-    ring = ring
-      .slice(0, signerIndex)
-      .concat([signerPubKey], ring.slice(signerIndex)) as Point[];
-
-    // compute cpi+1
-    const cpi1 = RingSignature.computeC(
-      ring,
-      messageDigest,
-      { alpha: alpha },
-      curve,
-      config,
-    );
-
-    const rawSignature = RingSignature.signature(
-      curve,
-      ring,
-      cpi1,
-      signerIndex,
-      messageDigest,
-      config,
-    );
-
-    const partialSig = {
-      message,
-      ring: rawSignature.ring,
-      c: rawSignature.cees[0],
-      cpi: rawSignature.cees[rawSignature.signerIndex],
-      responses: rawSignature.responses,
-      pi: rawSignature.signerIndex,
-      alpha: alpha,
-      curve: curve,
-      config: config,
-    } as PartialSignature;
-
-    const encryptedPartialSig = encrypt(
-      RingSignature.partialSigToBase64(partialSig),
-      encryptionPubKey,
-    );
-
-    return encryptedPartialSig;
-  }
-
-  /**
-   * Combine partial signatures into a RingSignature
-   *
-   * @param partialSig - Partial signatures to combine
-   * @param signerResponse - Response of the signer
-   *
-   * @returns A RingSignature
-   */
-  static combine(
-    partialSig: PartialSignature,
-    signerResponse: bigint,
-  ): RingSignature {
-    // check pi value
-    if (partialSig.pi < 0) throw err.invalidParams("pi must be >= 0");
-    if (partialSig.pi >= partialSig.ring.length)
-      throw err.invalidParams("pi must be < ring.length");
-    // check cpi value
-    if (partialSig.cpi >= partialSig.curve.N)
-      throw err.invalidParams("cpi must be < curve.N");
-    if (partialSig.cpi <= 0) throw err.invalidParams("cpi must be > 0");
-    // check alpha value
-    if (partialSig.alpha >= partialSig.curve.N)
-      throw err.invalidParams("alpha must be < curve.N");
-    if (partialSig.alpha <= 0) throw err.invalidParams("alpha must be > 0");
-
-    return new RingSignature(
-      partialSig.message,
-      partialSig.ring,
-      partialSig.c,
-      // insert the signer response
-      partialSig.responses
-        .slice(0, partialSig.pi)
-        .concat(
-          [signerResponse],
-          partialSig.responses.slice(partialSig.pi + 1),
-        ),
-      partialSig.curve,
-      partialSig.config,
-    );
-  }
-
-  /**
    * Verify a RingSignature
    *
    * @remarks
@@ -481,38 +355,27 @@ export class RingSignature {
     // then, for each ci (1 < i < n), compute ci' = Hash(Ring, message, [riG + ciKi])
     // (G = generator, K = ring public key)
     // finally, if we substitute lastC for lastC' and c0' == c0, the signature is valid
-    if (this.ring.length === 0) throw err.noEmptyRing;
-
-    if (this.ring.length !== this.responses.length) {
-      throw err.lengthMismatch("ring", "responses");
-    }
 
     // hash the message
-    const messageDigest = BigInt("0x" + hash(this.message, this.config?.hash));
+    for (const point of this.ring) {
+      if (point.checkLowOrder() === false) {
+        throw `The public key ${point} is not valid`;
+      }
+    }
+    const messageDigest = this.messageDigest;
 
-    // computes the cees
-    let lastComputedCp = RingSignature.computeC(
-      // c1'
-      this.ring,
-      messageDigest,
-      {
-        previousR: this.responses[0],
-        previousC: this.c,
-        previousPubKey: this.ring[0],
-      },
-      this.curve,
-      this.config,
-    );
-
-    // compute the c values: c2', c3', ..., cn', c0'
-    for (let i = 1; i < this.ring.length; i++) {
+    // NOTE : the loop has at least one iteration since the ring
+    // is ensured to be not empty
+    let lastComputedCp = this.c;
+    // compute the c values : c1 ’, c2 ’, ... , cn ’, c0 ’
+    for (let i = 0; i < this.ring.length; i++) {
       lastComputedCp = RingSignature.computeC(
         this.ring,
         messageDigest,
         {
           previousR: this.responses[i],
           previousC: lastComputedCp,
-          previousPubKey: this.ring[i],
+          previousIndex: i,
         },
         this.curve,
         this.config,
@@ -532,7 +395,7 @@ export class RingSignature {
   static verify(signature: string): boolean {
     // check if the signature is a json or a base64 string
     if (base64Regex.test(signature)) {
-      signature = Buffer.from(signature, "base64").toString("ascii");
+      signature = RingSignature.fromBase64(signature).toJsonString();
     }
     const ringSignature: RingSignature =
       RingSignature.fromJsonString(signature);
@@ -546,7 +409,7 @@ export class RingSignature {
    * @param ring - The ring of public keys
    * @param ceePiPlusOne - The Cpi+1 value
    * @param signerIndex - The signer index in the ring
-   * @param message - The message to sign
+   * @param messageDigest - The message digest
    * @param config - The config params to use
    *
    * @returns An incomplete ring signature
@@ -564,19 +427,9 @@ export class RingSignature {
     signerIndex: number;
     responses: bigint[];
   } {
-    if (
-      messageDigest === 0n ||
-      messageDigest === BigInt("0x" + hash("", config?.hash))
-    )
-      throw err.noEmptyMsg;
-
-    // check ring and responses validity
-    if (ring.length !== ring.length)
-      throw err.lengthMismatch("ring", "responses");
-
     // check if ring is valid
     try {
-      checkRing(ring, curve, true);
+      checkRing(ring, curve);
     } catch (e) {
       throw err.invalidRing(e as string);
     }
@@ -606,7 +459,7 @@ export class RingSignature {
         params = {
           previousR: responses[indexMinusOne],
           previousC: cees[indexMinusOne],
-          previousPubKey: ring[indexMinusOne],
+          previousIndex: indexMinusOne,
         };
 
         // compute the c value
@@ -654,7 +507,7 @@ export class RingSignature {
     params: {
       previousR?: bigint;
       previousC?: bigint;
-      previousPubKey?: Point;
+      previousIndex?: number;
       alpha?: bigint;
     },
     curve: Curve,
@@ -662,103 +515,58 @@ export class RingSignature {
   ): bigint {
     const G = curve.GtoPoint();
     const N = curve.N;
-
-    let hashFct = hashFunction.KECCAK256;
-    if (config?.hash) hashFct = config.hash;
-
+    const hasAlphaWithoutPrevious =
+      params.alpha &&
+      params.previousR === undefined &&
+      params.previousC === undefined &&
+      params.previousIndex === undefined;
+    const hasPreviousWithoutAlpha =
+      !params.alpha &&
+      params.previousR !== undefined &&
+      params.previousC !== undefined &&
+      params.previousIndex !== undefined;
+    if (!(hasAlphaWithoutPrevious || hasPreviousWithoutAlpha)) {
+      throw err.missingParams(
+        "Either 'alpha' or all the others params must be set",
+      );
+    }
     if (params.alpha) {
       return modulo(
         BigInt(
           "0x" +
-            hash(
-              formatRing(ring) +
-                messageDigest +
-                formatPoint(G.mult(params.alpha)),
-              hashFct,
-            ),
+          hash(
+            serializeRing(ring).toString() +
+            messageDigest +
+            G.mult(params.alpha).serializePoint(),
+            config?.hash,
+          ),
         ),
         N,
       );
     }
-    if (params.previousR && params.previousC && params.previousPubKey) {
+    if (
+      params.previousR &&
+      params.previousC &&
+      params.previousIndex !== undefined
+    ) {
       return modulo(
         BigInt(
           "0x" +
-            hash(
-              formatRing(ring) +
-                messageDigest +
-                formatPoint(
-                  G.mult(params.previousR).add(
-                    params.previousPubKey.mult(params.previousC),
-                  ),
-                ),
-              hashFct,
-            ),
+          hash(
+            serializeRing(ring).toString() +
+            messageDigest +
+            G.mult(params.previousR)
+              .add(ring[params.previousIndex].mult(params.previousC))
+              .serializePoint(),
+            config?.hash,
+          ),
         ),
         N,
       );
     }
-
     throw err.missingParams(
       "Either 'alpha' or all the others params must be set",
     );
-  }
-
-  /**
-   * Convert a partial signature to a base64 string
-   *
-   * @param partialSig - The partial signature to convert
-   * @returns A base64 string
-   */
-  static partialSigToBase64(partialSig: PartialSignature): string {
-    let configStr: string | undefined = undefined;
-    if (partialSig.config) {
-      configStr = JSON.stringify(partialSig.config);
-    }
-    const strPartialSig = {
-      message: partialSig.message,
-      ring: partialSig.ring.map((point: Point) => point.toString()),
-      c: partialSig.c.toString(),
-      cpi: partialSig.cpi.toString(),
-      responses: partialSig.responses.map((response) => response.toString()),
-      pi: partialSig.pi.toString(),
-      alpha: partialSig.alpha.toString(),
-      curve: partialSig.curve.toString(),
-      config: configStr,
-    };
-    return Buffer.from(JSON.stringify(strPartialSig)).toString("base64");
-  }
-
-  /**
-   * Convert a base64 string to a partial signature
-   *
-   * @param base64 - The base64 string to convert
-   * @returns A partial signature
-   */
-  static base64ToPartialSig(base64: string): PartialSignature {
-    // check if the base64 string is valid
-    if (!base64Regex.test(base64)) throw err.invalidBase64();
-
-    try {
-      const decoded = Buffer.from(base64, "base64").toString("ascii");
-      const json = JSON.parse(decoded);
-      if (json.config && json.config != "undefined") {
-        json.config = JSON.parse(json.config);
-      }
-      return {
-        message: json.message,
-        ring: json.ring.map((point: string) => Point.fromString(point)),
-        c: BigInt(json.c),
-        cpi: BigInt(json.cpi),
-        responses: json.responses.map((response: string) => BigInt(response)),
-        pi: Number(json.pi),
-        alpha: BigInt(json.alpha),
-        curve: Curve.fromString(json.curve),
-        config: json.config as SignatureConfig,
-      };
-    } catch (e) {
-      throw err.invalidBase64();
-    }
   }
 }
 
@@ -774,13 +582,14 @@ export class RingSignature {
  * @throws Error if at least one of the points is invalid
  */
 export function checkRing(ring: Point[], ref?: Curve, emptyRing = false): void {
-  if (!ref) ref = ring[0].curve;
 
   // check if the ring is empty
   if (ring.length === 0 && !emptyRing) throw err.noEmptyRing;
+  if (!ref) ref = ring[0].curve;
 
   // check for duplicates using a set
-  if (new Set(ring).size !== ring.length) throw err.noDuplicates("ring");
+  if (new Set(serializeRing(ring)).size !== ring.length)
+    throw err.noDuplicates("ring");
 
   // check if all the points are valid
   try {
@@ -793,6 +602,21 @@ export function checkRing(ring: Point[], ref?: Curve, emptyRing = false): void {
 }
 
 /**
+ * Serialize a ring, i.e., serialize each point in the ring
+ *
+ * @param ring - The ring to serialize
+ *
+ * @returns The serialized ring as a string array
+ */
+export function serializeRing(ring: Point[]): string[] {
+  const serializedPoints: string[] = [];
+  for (const point of ring) {
+    serializedPoints.push(point.serializePoint()); // Call serializePoint() on each 'point' object
+  }
+  return serializedPoints;
+}
+
+/**
  * Check if a point is valid
  *
  * @param point - The point to check
@@ -802,12 +626,11 @@ export function checkRing(ring: Point[], ref?: Curve, emptyRing = false): void {
  * @throws Error if at least 1 coordinate is not valid (= 0 or >= curve order)
  */
 export function checkPoint(point: Point, curve?: Curve): void {
+  if (curve && !curve.equals(point.curve)) {
+    throw err.curveMismatch();
+  }
   // check if the point is on the reference curve
   if (!point.curve.isOnCurve(point)) {
     throw err.notOnCurve();
-  }
-
-  if (curve && !curve.equals(point.curve)) {
-    throw err.curveMismatch();
   }
 }

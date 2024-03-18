@@ -148,7 +148,8 @@ class Point {
       f = G; // init result point & fake point
     for (let d: Point = this; n > 0n; d = d.double(), n >>= 1n) {
       // double-and-add ladder
-      if (n & 1n) p = p.add(d); // if bit is present, add to point
+      if (n & 1n)
+        p = p.add(d); // if bit is present, add to point
       else if (safe) f = f.add(d); // if not, add to fake for timing safety
     }
     return p;
@@ -171,7 +172,7 @@ class Point {
   toAffine(): AffinePoint {
     // converts point to 2d xy affine point
     const { ex: x, ey: y, ez: z } = this; // (x, y, z, t) ∋ (x=x/z, y=y/z, t=xy)
-    if (this.is0()) return { x: 0n, y: 0n }; // fast-path for zero point
+    if (this.equals(I)) return { x: 0n, y: 1n }; // affine zero point (0 , 1)
     const iz = invert(z); // z^-1: invert z
     if (mod(z * iz) !== 1n) err("invalid inverse"); // (z * z^-1) must be 1, otherwise bad math
     return { x: mod(x * iz), y: mod(y * iz) }; // x = x*z^-1; y = y*z^-1
@@ -508,5 +509,7 @@ export {
   CURVE,
   etc,
   utils,
+  P,
+  N,
   Point as ExtendedPoint,
 }; // envs like browser console

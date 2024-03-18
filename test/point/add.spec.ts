@@ -25,24 +25,4 @@ describe("Point class add operation tests", () => {
     const result = point1.add(point2);
     expect(result).toBeInstanceOf(Point);
   });
-
-  it("should throw if a point is add to an invalid point, ED25519", () => {
-    const point = new Point(mockED25519, valid_coordinates_ed25519);
-    const point2 = new Point(mockED25519, valid_coordinates_ed25519);
-    point2.x = BigInt(0);
-    point2.y = BigInt(0);
-    expect(() => point.add(point2)).toThrow(
-      "Invalid param: Point is not on curve: 0,0",
-    );
-  });
-
-  it("should throw if a point is add to an invalid point, SECP256K1", () => {
-    const point = new Point(mockSECP256K1, valid_coordinates_secp256k1);
-    const point2 = new Point(mockSECP256K1, valid_coordinates_secp256k1);
-    point2.x = BigInt(0);
-    point2.y = BigInt(0);
-    expect(() => point.add(point2)).toThrow(
-      "Point is not on curve: [85233149523113904332707955280867077860042581461353909305027039188512353390508, 80204508462965011230184082696946080788176686703993204897380531731384489208742]",
-    );
-  });
 });

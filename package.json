@@ -18,7 +18,6 @@
   "author": "Elli610 && LeJamon",
   "license": "ISC",
   "dependencies": {
-    "@metamask/eth-sig-util": "^7.0.1",
     "@noble/hashes": "^1.3.2",
     "ts-node": "^10.9.1"
   },

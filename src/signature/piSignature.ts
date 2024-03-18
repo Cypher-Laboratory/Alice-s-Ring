@@ -27,9 +27,10 @@ export function piSignature(
 ): bigint {
   if (
     alpha === BigInt(0) ||
-    c === BigInt(0) ||
     signerPrivKey === BigInt(0) ||
-    curve.N === BigInt(0)
+    c >= curve.N ||
+    alpha >= curve.N ||
+    signerPrivKey >= curve.N
   )
     throw invalidParams();
 

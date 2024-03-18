@@ -3,7 +3,7 @@
   and is exclusively reserved for the use of gemWallet. Any form of commercial use, including but 
   not limited to selling, licensing, or generating revenue from this code, is strictly prohibited.
 */
-import { modulo, hash, formatPoint, randomBigint } from "../utils";
+import { modulo, hash, randomBigint } from "../utils";
 import { Point } from "../point";
 import { Curve, derivePubKey } from "../curves";
 import { SignatureConfig } from "../interfaces";
@@ -27,7 +27,9 @@ export function schnorrSignature(
   alpha?: bigint,
   config?: SignatureConfig,
   keyPrefixing = true,
-): { messageDigest: bigint; c: bigint; r: bigint; ring?: Point[] } {
+): { messageDigest: bigint; c: bigint; r: bigint } {
+  if (signerPrivKey < 0n || signerPrivKey >= curve.N)
+    throw new Error("Invalid private key");
   if (!alpha) alpha = randomBigint(curve.N);
 
   const c = modulo(
@@ -35,10 +37,10 @@ export function schnorrSignature(
       "0x" +
         hash(
           (keyPrefixing
-            ? formatPoint(derivePubKey(signerPrivKey, curve))
+            ? derivePubKey(signerPrivKey, curve).serializePoint()
             : "") +
             message +
-            formatPoint(curve.GtoPoint().mult(alpha)),
+            curve.GtoPoint().mult(alpha).serializePoint(),
           config?.hash,
         ),
     ),
@@ -53,7 +55,7 @@ export function schnorrSignature(
 /**
  * Verify a signature generated with the `schnorrSignature` function
  *
- * @param message - The message (as bigint) (= c[pi] in our ring signature scheme)
+ * @param message - The message (as bigint)
  * @param signerPubKey - The signer public key
  * @param signature - The signature { c, r }
  * @param curve - The curve to use
@@ -70,6 +72,21 @@ export function verifySchnorrSignature(
   config?: SignatureConfig,
   keyPrefixing = true,
 ): boolean {
+  if (
+    signature.c < 0n ||
+    signature.c >= curve.N ||
+    signature.r < 0n ||
+    signature.r >= curve.N
+  )
+    throw new Error("Invalid signature");
+
+  if (curve.isOnCurve([signerPubKey.x, signerPubKey.y]) === false) {
+    throw new Error("Invalid public key: not on curve");
+  }
+
+  if (!signerPubKey.checkLowOrder())
+    throw new Error("Invalid public key: low order");
+
   const G: Point = curve.GtoPoint(); // curve generator
   // compute H(R|m|[r*G + c*K]) (R is empty or signerPubkey). Return true if the result is equal to c
   const point = G.mult(signature.r).add(signerPubKey.mult(signature.c));
@@ -78,13 +95,14 @@ export function verifySchnorrSignature(
     BigInt(
       "0x" +
         hash(
-          (keyPrefixing ? formatPoint(signerPubKey) : "") +
+          (keyPrefixing ? signerPubKey.serializePoint() : "") +
             message +
-            formatPoint(point),
+            point.serializePoint(),
           config?.hash,
         ),
     ),
     curve.N,
   );
+
   return h === signature.c;
 }

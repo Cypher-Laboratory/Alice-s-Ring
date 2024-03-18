@@ -29,12 +29,6 @@ describe("test piSignature()", () => {
     ).toThrow(invalidParams());
   });
 
-  it("Should throw if c = 0", () => {
-    expect(() =>
-      piSignature(BigInt(123456789), BigInt(0), BigInt(123456789), secp256k1),
-    ).toThrow(invalidParams());
-  });
-
   it("Should throw if signerPrivKey = 0", () => {
     expect(() =>
       piSignature(BigInt(123456789), BigInt(123456789), BigInt(0), secp256k1),
