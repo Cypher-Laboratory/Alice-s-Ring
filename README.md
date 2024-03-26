@@ -10,8 +10,7 @@ We used the implementation proposed in [Zero to Monero](https://www.getmonero.or
 
 ## Audit
 
-The audit of this library was conducted by the company CryptoExperts [https://www.cryptoexperts.com/](https://www.cryptoexperts.com/) on March 13th, 2024.  
-
+The audit of this library was conducted by the company CryptoExperts [https://www.cryptoexperts.com/](https://www.cryptoexperts.com/) on March 13th, 2024. All vulnerabilities identified in the course of the audit have been fixed in agreement and under the supervision of CryptoExperts.  
 
 ## Usage
 
