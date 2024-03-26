@@ -8,6 +8,10 @@ The implementation is based on the [SAG algorithm](https://eprint.iacr.org/2004/
 
 We used the implementation proposed in [Zero to Monero](https://www.getmonero.org/library/Zero-to-Monero-2-0-0.pdf) (p.36) as a reference.
 
+## Audit
+
+The audit of this library was conducted by the company CryptoExperts [https://www.cryptoexperts.com/](https://www.cryptoexperts.com/) on March 13th, 2024.  
+
 
 ## Usage
 
@@ -217,3 +221,7 @@ This method verifies if a ring signature is valid.
 ```typescript
   verify(): boolean
 ```
+
+## Sponsors
+
+We would like to thank the XRPL Foundation [https://xrpl.org/](https://xrpl.org/) for their support and funding, which have allowed this audited library to be developed for the benefit of many.  
