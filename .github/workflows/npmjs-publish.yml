@@ -4,6 +4,10 @@ on:
   release:
     types: [created]
 
+  push:
+    branches:
+      - main
+
 jobs:
   test:
     uses: ./.github/workflows/linter&test.yml
