@@ -2,7 +2,6 @@ import { Curve, CurveName, Point } from "../../src";
 import {
   valid_coordinates_ed25519,
   valid_coordinates_secp256k1,
-  idPointX_ed25519,
   idPointX_secp256k1,
 } from "../data";
 describe("Point class isValid()", () => {

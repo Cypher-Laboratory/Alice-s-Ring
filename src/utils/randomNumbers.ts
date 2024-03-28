@@ -13,7 +13,7 @@ export function randomBigint(max: bigint): bigint {
     throw tooSmall("Max", max);
   }
 
-// +1 to ensure we can reach max value
+  // +1 to ensure we can reach max value
   const byteSize = (max.toString(16).length + 1) >> 1;
   // eslint-disable-next-line no-constant-condition
   while (true) {

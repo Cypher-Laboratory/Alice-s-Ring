@@ -140,7 +140,6 @@ describe("Test verify()", () => {
     expect(RingSignature.verify(signature)).toBeTruthy();
   });
 
-
   it("Should return true if the JSON signature is valid", () => {
     const signature = RingSignature.sign(
       data.publicKeys_secp256k1,

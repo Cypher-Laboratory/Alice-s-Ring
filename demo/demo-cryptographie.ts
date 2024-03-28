@@ -10,19 +10,7 @@ const signerPrivKey =
 
 const ring = data.publicKeys_secp256k1.slice(0, 3);
 
-const config = {
-  evmCompatibility: true,
-  debug: true,
-  linkable: { enabled: true },
-};
-
-const signature = RingSignature.sign(
-  ring,
-  signerPrivKey,
-  message,
-  curve,
-  config,
-);
+const signature = RingSignature.sign(ring, signerPrivKey, message, curve);
 
 const verified = signature.verify();
 

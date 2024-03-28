@@ -50,7 +50,7 @@ describe("Test sign()", () => {
         secp256k1,
       );
     }).toThrow(
-      "Invalid point: At least one point is not valid: Error: Invalid point: not on curve"
+      "Invalid point: At least one point is not valid: Error: Invalid point: not on curve",
     );
   });
 

@@ -1,12 +1,12 @@
 {
-  "name": "@cypherlab/types-ring-signature",
-  "version": "0.0.0",
-  "description": "A TypeScript implementation of ring signatures.",
+  "name": "@cypherlab/alicesring-sag",
+  "version": "0.1.0",
+  "description": "A TypeScript implementation of SAG ring signatures.",
   "main": "dist/src/index.js",
   "module": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
   "scripts": {
-    "build": "npm run fmt && rm -r ./dist && tsc",
+    "build": "npm run fmt && tsc",
     "test": "jest",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",

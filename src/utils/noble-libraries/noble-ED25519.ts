@@ -1,3 +1,5 @@
+/* eslint-disable no-alert */
+
 // taken from https://github.com/paulmillr/noble-ed25519/blob/main/index.ts
 /*! noble-ed25519 - MIT License (c) 2019 Paul Miller (paulmillr.com) */
 const P = 2n ** 255n - 19n; // ed25519 is twisted edwards curve
@@ -148,8 +150,7 @@ class Point {
       f = G; // init result point & fake point
     for (let d: Point = this; n > 0n; d = d.double(), n >>= 1n) {
       // double-and-add ladder
-      if (n & 1n)
-        p = p.add(d); // if bit is present, add to point
+      if (n & 1n) p = p.add(d); // if bit is present, add to point
       else if (safe) f = f.add(d); // if not, add to fake for timing safety
     }
     return p;

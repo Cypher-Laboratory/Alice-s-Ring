@@ -1,3 +1,4 @@
+/* eslint-disable no-alert */
 // taken from https://github.com/paulmillr/noble-secp256k1/blob/097b60b10805058355f49924d6a5c5746ee116c9/index.ts
 /*! noble-secp256k1 - MIT License (c) 2019 Paul Miller (paulmillr.com) */
 const B256 = 2n ** 256n; // secp256k1 is short weierstrass curve
@@ -158,8 +159,7 @@ class Point {
       f = G; // init result point & fake point
     for (let d: Point = this; n > 0n; d = d.double(), n >>= 1n) {
       // double-and-add ladder
-      if (n & 1n)
-        p = p.add(d); // if bit is present, add to point
+      if (n & 1n) p = p.add(d); // if bit is present, add to point
       else if (safe) f = f.add(d); // if not, add to fake for timing safety
     }
     return p;

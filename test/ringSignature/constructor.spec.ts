@@ -1,6 +1,5 @@
 import { Curve, CurveName, Point, RingSignature } from "../../src";
 import {
-  invalidParams,
   invalidResponses,
   lengthMismatch,
   noEmptyRing,
