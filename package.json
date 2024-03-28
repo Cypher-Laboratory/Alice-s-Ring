@@ -16,7 +16,7 @@
     "fmt": "npm run prettier:fix && npm run fmt:check"
   },
   "author": "Elli610 && LeJamon && maximedgr",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "@noble/hashes": "^1.3.2",
     "ts-node": "^10.9.1"
