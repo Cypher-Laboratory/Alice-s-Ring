@@ -1,5 +1,3 @@
-
-
 name: Publish Package to npmjs
 on:
   release:
@@ -21,9 +19,8 @@ jobs:
         node-version: '20.x'
         registry-url: 'https://registry.npmjs.org'
     - run: npm ci
-    # Ensure the publish script is executable
-    - run: chmod +x ./scripts/publish.sh
-    # Execute the publish script
-    - run: ./scripts/publish.sh stable
+    - run: npm publish
       env:
         NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
+
+        
