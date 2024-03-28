@@ -1,5 +1,5 @@
 {
-  "name": "@cypherlab/alicesring-sag",
+  "name": "@cypherlaboratory/alicesring-sag",
   "version": "0.1.0",
   "description": "A TypeScript implementation of SAG ring signatures.",
   "main": "dist/src/index.js",
