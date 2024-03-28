@@ -1,5 +1,16 @@
-import { randomBytes } from "node:crypto";
+let randomBytes: (size: number) => Buffer;
 import { tooSmall } from "../errors";
+
+if (
+  typeof require !== "undefined" &&
+  typeof require("crypto") !== "undefined"
+) {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  randomBytes = require("crypto").randomBytes;
+} else {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  randomBytes = require("crypto-browserify").randomBytes;
+}
 
 /**
  * generate a random bigint in [1,max]
@@ -7,7 +18,6 @@ import { tooSmall } from "../errors";
  * @param max the max value of the random number
  * @returns the random bigint
  */
-
 export function randomBigint(max: bigint): bigint {
   if (max <= 0n) {
     throw tooSmall("Max", max);

@@ -1,8 +1,17 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.randomBigint = void 0;
-const node_crypto_1 = require("node:crypto");
+let randomBytes;
 const errors_1 = require("../errors");
+if (typeof require !== "undefined" &&
+    typeof require("crypto") !== "undefined") {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    randomBytes = require("crypto").randomBytes;
+}
+else {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    randomBytes = require("crypto-browserify").randomBytes;
+}
 /**
  * generate a random bigint in [1,max]
  *
@@ -17,7 +26,7 @@ function randomBigint(max) {
     const byteSize = (max.toString(16).length + 1) >> 1;
     // eslint-disable-next-line no-constant-condition
     while (true) {
-        const array = (0, node_crypto_1.randomBytes)(byteSize);
+        const array = randomBytes(byteSize);
         const randomHex = array.toString("hex");
         const randomBig = BigInt("0x" + randomHex);
         if (randomBig < max) {
