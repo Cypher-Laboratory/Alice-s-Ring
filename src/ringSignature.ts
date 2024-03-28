@@ -179,7 +179,7 @@ export class RingSignature {
         curve: string;
         config?: SignatureConfig;
       };
-      const curve = Curve.fromString(sig.curve)
+      const curve = Curve.fromString(sig.curve);
       return new RingSignature(
         sig.message,
         sig.ring.map((point: string) => Point.deserializePoint(point, curve)),
@@ -253,7 +253,7 @@ export class RingSignature {
 
     // check if ring is valid
     // try {
-      checkRing(ring, curve, true);
+    checkRing(ring, curve, true);
     // } catch (e) {
     //   throw err.invalidRing(e as string);
     // }
@@ -266,10 +266,15 @@ export class RingSignature {
     const signerPubKey: Point = derivePubKey(signerPrivateKey, curve);
 
     // check if the signer public key is in the ring and if it is sorted by x ascending coordinate (and y ascending if x's are equal)
-    if (!isRingSorted(ring)) throw err.invalidRing("The ring is not sorted and/or does not contains teh signer public key");
+    if (!isRingSorted(ring))
+      throw err.invalidRing(
+        "The ring is not sorted and/or does not contains teh signer public key",
+      );
 
     // if needed, insert the user public key at the right place (sorted by x ascending coordinate)
-    let signerIndex = ring.findIndex((point) => point.x === signerPubKey.x && point.y === signerPubKey.y);
+    let signerIndex = ring.findIndex(
+      (point) => point.x === signerPubKey.x && point.y === signerPubKey.y,
+    );
     if (signerIndex === -1) {
       signerIndex = 0;
       for (let i = 0; i < ring.length; i++) {
@@ -291,7 +296,7 @@ export class RingSignature {
     if (ring.length === 0) {
       ring = [signerPubKey];
       signerIndex = 0;
-    };
+    }
 
     // compute cpi+1
     const cpi1 = RingSignature.computeC(
@@ -534,12 +539,12 @@ export class RingSignature {
       return modulo(
         BigInt(
           "0x" +
-          hash(
-            serializeRing(ring).toString() +
-            messageDigest +
-            G.mult(params.alpha).serializePoint(),
-            config?.hash,
-          ),
+            hash(
+              serializeRing(ring).toString() +
+                messageDigest +
+                G.mult(params.alpha).serializePoint(),
+              config?.hash,
+            ),
         ),
         N,
       );
@@ -552,14 +557,14 @@ export class RingSignature {
       return modulo(
         BigInt(
           "0x" +
-          hash(
-            serializeRing(ring).toString() +
-            messageDigest +
-            G.mult(params.previousR)
-              .add(ring[params.previousIndex].mult(params.previousC))
-              .serializePoint(),
-            config?.hash,
-          ),
+            hash(
+              serializeRing(ring).toString() +
+                messageDigest +
+                G.mult(params.previousR)
+                  .add(ring[params.previousIndex].mult(params.previousC))
+                  .serializePoint(),
+              config?.hash,
+            ),
         ),
         N,
       );
@@ -582,7 +587,6 @@ export class RingSignature {
  * @throws Error if at least one of the points is invalid
  */
 export function checkRing(ring: Point[], ref?: Curve, emptyRing = false): void {
-
   // check if the ring is empty
   if (ring.length === 0 && !emptyRing) throw err.noEmptyRing;
   if (!ref) ref = ring[0].curve;

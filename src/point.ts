@@ -276,9 +276,9 @@ export class Point {
 
   /**
    * deserialize a point from a hex string
-   * 
+   *
    * @param hex - the hex string to deserialize
-   * 
+   *
    * @returns the deserialized point
    */
   static deserializePoint(hex: string, curve: Curve): Point {
@@ -287,8 +287,6 @@ export class Point {
     const y = BigInt("0x" + hex.slice(64, 128));
     return new Point(curve, [x, y]);
   }
-
-
 
   /**
    * Check if a point is a low order point

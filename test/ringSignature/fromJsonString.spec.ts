@@ -38,7 +38,7 @@ describe("Test fromJsonString()", () => {
     expect(() => {
       RingSignature.fromJsonString(data.jsonRS.invalidPoint);
     }).toThrow(
-      "Point is not on curve: [9859698416037759026562372103299, 46835398937525857424678912804713110217248423408711238708095319128726301404767]"
+      "Point is not on curve: [9859698416037759026562372103299, 46835398937525857424678912804713110217248423408711238708095319128726301404767]",
     );
   });
 
@@ -69,9 +69,7 @@ describe("Test fromJsonString()", () => {
   it("Should throw if at least one argument is undefined", () => {
     expect(() => {
       RingSignature.fromJsonString(data.jsonRS.undefinedResponses);
-    }).toThrow(
-      "Cannot read properties of undefined (reading 'map')",
-    );
+    }).toThrow("Cannot read properties of undefined (reading 'map')");
   });
 
   it("Should throw if at least one argument is null", () => {
