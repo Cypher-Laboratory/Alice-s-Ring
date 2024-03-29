@@ -62,11 +62,7 @@ describe("Test sign()", () => {
         data.message,
         ed25519,
       );
-    }).toThrow(
-      invalidRing(
-        "The ring is not sorted",
-      ),
-    );
+    }).toThrow(invalidRing("The ring is not sorted"));
   });
 
   it("Should return a valid signature if the ring is empty - secp256k1", () => {
