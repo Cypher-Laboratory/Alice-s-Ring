@@ -1,6 +1,6 @@
 {
   "name": "@cypherlaboratory/alicesring-sag",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A TypeScript implementation of SAG ring signatures.",
   "main": "dist/src/index.js",
   "module": "dist/src/index.js",
