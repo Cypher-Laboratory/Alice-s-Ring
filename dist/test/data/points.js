@@ -23,7 +23,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.randomResponses = exports.randomC = exports.idPointY_ed25519 = exports.idPointX_ed25519 = exports.idPoint_ed25519 = exports.idPointY_secp256k1 = exports.idPointX_secp256k1 = exports.idPoint_secp256k1 = exports.invalid_string_point_ed25519 = exports.invalid_string_point_secp256k1 = exports.valid_string_point_secp256k1 = exports.valid_string_point_ed25519 = exports.valid_coordinates_secp256k1 = exports.valid_coordinates_ed25519 = exports.publicKeys_ed25519 = exports.publicKeys_secp256k1 = exports.zeroPivateKey = exports.signerPubKey_ed25519 = exports.signerPubKey_secp256k1 = exports.signerPrivKey = exports.privateKey = void 0;
+exports.randomResponses = exports.randomC = exports.idPointY_ed25519 = exports.idPointX_ed25519 = exports.idPoint_ed25519 = exports.idPointY_secp256k1 = exports.idPointX_secp256k1 = exports.idPoint_secp256k1 = exports.invalid_string_point_ed25519 = exports.invalid_string_point_secp256k1 = exports.valid_string_point_secp256k1 = exports.valid_string_point_ed25519 = exports.valid_coordinates_secp256k1 = exports.valid_coordinates_ed25519 = exports.publicKeys_ed25519 = exports.unsortedPublicKeys_ed25519 = exports.publicKeys_secp256k1 = exports.unsortedPublicKeys_secp256k1 = exports.zeroPivateKey = exports.signerPubKey_ed25519 = exports.signerPubKey_secp256k1 = exports.signerPrivKey = exports.privateKey = void 0;
 const src_1 = require("../../src");
 const utils_1 = require("../../src/utils");
 const curves_1 = require("./curves");
@@ -61,11 +61,15 @@ exports.signerPubKey_secp256k1 = (0, curves_2.derivePubKey)(exports.signerPrivKe
 exports.signerPubKey_ed25519 = (0, curves_2.derivePubKey)(exports.signerPrivKey, curves_1.ED25519);
 /* --------------------------------------- */
 exports.zeroPivateKey = 0n;
+exports.unsortedPublicKeys_secp256k1 = exports.privateKey.map((privKey) => curves_1.SECP256K1.GtoPoint().mult(privKey));
 exports.publicKeys_secp256k1 = exports.privateKey
     .map((privKey) => curves_1.SECP256K1.GtoPoint().mult(privKey))
     .sort(
 // sort by x ascending
 (a, b) => (a.x < b.x ? -1 : a.x > b.x ? 1 : 0));
+exports.unsortedPublicKeys_ed25519 = exports.privateKey.map((key) => {
+    return curves_1.ED25519.GtoPoint().mult(ed.utils.getExtendedPublicKey(key.toString(16)).scalar);
+});
 exports.publicKeys_ed25519 = exports.privateKey
     .map((key) => {
     return curves_1.ED25519.GtoPoint().mult(ed.utils.getExtendedPublicKey(key.toString(16)).scalar);

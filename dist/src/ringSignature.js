@@ -23,7 +23,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.checkPoint = exports.serializeRing = exports.checkRing = exports.RingSignature = void 0;
+exports.sortRing = exports.checkPoint = exports.serializeRing = exports.checkRing = exports.RingSignature = void 0;
 const utils_1 = require("./utils");
 const piSignature_1 = require("./signature/piSignature");
 const curves_1 = require("./curves");
@@ -501,3 +501,18 @@ function checkPoint(point, curve) {
     }
 }
 exports.checkPoint = checkPoint;
+/**
+ * Sort a ring by x ascending coordinate (and y ascending if x's are equal)
+ *
+ * @param ring the ring to sort
+ * @returns the sorted ring
+ */
+function sortRing(ring) {
+    return ring.sort((a, b) => {
+        if (a.x !== b.x) {
+            return a.x < b.x ? -1 : 1;
+        }
+        return a.y < b.y ? -1 : 1;
+    });
+}
+exports.sortRing = sortRing;
