@@ -638,3 +638,18 @@ export function checkPoint(point: Point, curve?: Curve): void {
     throw err.notOnCurve();
   }
 }
+
+/**
+ * Sort a ring by x ascending coordinate (and y ascending if x's are equal)
+ * 
+ * @param ring the ring to sort
+ * @returns the sorted ring
+ */
+export function sortRing(ring:Point[]): Point[] {
+  return ring.sort((a, b) => {
+    if (a.x !== b.x) {
+      return a.x < b.x ? -1 : 1;
+    }
+    return a.y < b.y ? -1 : 1;
+  });
+}
