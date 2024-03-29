@@ -64,7 +64,7 @@ describe("Test sign()", () => {
       );
     }).toThrow(
       invalidRing(
-        "The ring is not sorted and/or does not contains teh signer public key",
+        "The ring is not sorted",
       ),
     );
   });
