@@ -9,6 +9,12 @@ export { Curve, CurveName } from "./curves";
 
 export { randomBigint } from "./utils";
 
-export { RingSignature } from "./ringSignature";
+export {
+  RingSignature,
+  checkPoint,
+  checkRing,
+  sortRing,
+  serializeRing,
+} from "./ringSignature";
 
 export { SignatureConfig } from "./interfaces";

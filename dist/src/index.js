@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.RingSignature = exports.randomBigint = exports.CurveName = exports.Curve = exports.Point = exports.piSignature = exports.verifySchnorrSignature = exports.schnorrSignature = void 0;
+exports.serializeRing = exports.sortRing = exports.checkRing = exports.checkPoint = exports.RingSignature = exports.randomBigint = exports.CurveName = exports.Curve = exports.Point = exports.piSignature = exports.verifySchnorrSignature = exports.schnorrSignature = void 0;
 var schnorrSignature_1 = require("./signature/schnorrSignature");
 Object.defineProperty(exports, "schnorrSignature", { enumerable: true, get: function () { return schnorrSignature_1.schnorrSignature; } });
 Object.defineProperty(exports, "verifySchnorrSignature", { enumerable: true, get: function () { return schnorrSignature_1.verifySchnorrSignature; } });
@@ -15,3 +15,7 @@ var utils_1 = require("./utils");
 Object.defineProperty(exports, "randomBigint", { enumerable: true, get: function () { return utils_1.randomBigint; } });
 var ringSignature_1 = require("./ringSignature");
 Object.defineProperty(exports, "RingSignature", { enumerable: true, get: function () { return ringSignature_1.RingSignature; } });
+Object.defineProperty(exports, "checkPoint", { enumerable: true, get: function () { return ringSignature_1.checkPoint; } });
+Object.defineProperty(exports, "checkRing", { enumerable: true, get: function () { return ringSignature_1.checkRing; } });
+Object.defineProperty(exports, "sortRing", { enumerable: true, get: function () { return ringSignature_1.sortRing; } });
+Object.defineProperty(exports, "serializeRing", { enumerable: true, get: function () { return ringSignature_1.serializeRing; } });

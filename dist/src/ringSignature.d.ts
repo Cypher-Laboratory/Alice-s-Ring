@@ -195,3 +195,10 @@ export declare function serializeRing(ring: Point[]): string[];
  * @throws Error if at least 1 coordinate is not valid (= 0 or >= curve order)
  */
 export declare function checkPoint(point: Point, curve?: Curve): void;
+/**
+ * Sort a ring by x ascending coordinate (and y ascending if x's are equal)
+ *
+ * @param ring the ring to sort
+ * @returns the sorted ring
+ */
+export declare function sortRing(ring: Point[]): Point[];
