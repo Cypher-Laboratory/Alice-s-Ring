@@ -7,7 +7,7 @@ const secp256k1 = new Curve(CurveName.SECP256K1);
 
 const config = {
   // hash: HashFunction.SHA512,
-  evmCompatibility: true,
+  // evmCompatibility: true,
 } satisfies SignatureConfig;
 
 const signature = RingSignature.sign(
@@ -20,6 +20,8 @@ const signature = RingSignature.sign(
 
 console.log(signature.verify());
 
-// const b64 = signature.toBase64();
+// console.log(signature.toJsonString());
 
-// console.log(RingSignature.verify(b64));
+const b64 = signature.toBase64();
+
+console.log(RingSignature.verify(b64));

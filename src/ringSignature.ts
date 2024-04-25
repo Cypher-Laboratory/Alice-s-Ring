@@ -1,6 +1,6 @@
 import { randomBigint, modulo, hash, base64Regex } from "./utils";
 import { piSignature } from "./signature/piSignature";
-import { derivePubKey } from "./curves";
+import { CurveName, derivePubKey } from "./curves";
 import { Curve, Point } from ".";
 import { SignatureConfig } from "./interfaces";
 import { HashFunction } from "./utils/hashFunction";
@@ -48,6 +48,10 @@ export class RingSignature {
     // check if config is an object
     if (config && typeof config !== "object")
       throw err.invalidParams("Config must be an object");
+
+    // evm compatibility does not work with ed25519
+    if (curve.name === CurveName.ED25519 && config?.evmCompatibility)
+      throw err.invalidParams("EVM compatibility is not available for ed25519");
 
     // check ring, c and responses validity
     checkRing(ring, curve);
@@ -182,7 +186,7 @@ export class RingSignature {
       const curve = Curve.fromString(sig.curve);
       return new RingSignature(
         sig.message,
-        sig.ring.map((point: string) => Point.deserialize(point, curve)),
+        sig.ring.map((point: string) => Point.deserialize(bigIntToPublicKey(BigInt(point)))),
         BigInt(sig.c),
         sig.responses.map((response: string) => BigInt(response)),
         curve,
@@ -201,7 +205,7 @@ export class RingSignature {
   toJsonString(): string {
     return JSON.stringify({
       message: this.message,
-      ring: serializeRing(this.ring),
+      ring: serializeRing(this.ring).map((bi) => bi.toString()),
       c: this.c.toString(),
       responses: this.responses.map((response) => response.toString()),
       curve: this.curve.toString(),
@@ -611,7 +615,7 @@ export function checkRing(ring: Point[], ref?: Curve, emptyRing = false): void {
 export function serializeRing(ring: Point[]): bigint[] {
   const serializedPoints: bigint[] = [];
   for (const point of ring) {
-    serializedPoints.push(BigInt("0x" + point.serialize())); // Call serialize() on each 'point' object
+    serializedPoints.push(publicKeyToBigInt(point.serialize())); // Call serialize() on each 'point' object
   }
   return serializedPoints;
 }
@@ -648,4 +652,38 @@ export function sortRing(ring: Point[]): Point[] {
     }
     return a.y < b.y ? -1 : 1;
   });
+}
+
+
+// convert a compressed ethereum public key to a BigInt
+function publicKeyToBigInt(publicKeyHex: string): bigint {
+
+  // Ensure the key is stripped of the prefix and is valid
+  if (!publicKeyHex.startsWith('02') && !publicKeyHex.startsWith('03')) {
+    throw new Error('Invalid compressed public key');
+  }
+
+  // Remove the prefix (0x02 or 0x03) and convert the remaining hex to BigInt
+  const bigint = BigInt('0x' + publicKeyHex.slice(2));
+
+  // add an extra 1 if the y coordinate is odd and 2 if it is even
+  if (publicKeyHex.startsWith('03')) {
+    return BigInt(bigint.toString() + '1');
+  } else {
+    return BigInt(bigint.toString() + '2');
+  }
+}
+
+// convert a BigInt to a compressed ethereum public key
+function bigIntToPublicKey(bigint: bigint): string {
+  const parity = bigint.toString().slice(-1);
+  const prefix = parity === '1' ? '03' : '02';
+
+  bigint = BigInt(bigint.toString().slice(0, -1));
+  // Convert BigInt to a hex string and pad with zeros if necessary
+  let hex = bigint.toString(16);
+  hex = hex.padStart(64, '0');  // Pad to ensure the hex is 64 characters long
+
+  // Return the compressed public key with the correct prefix
+  return prefix + hex;
 }
