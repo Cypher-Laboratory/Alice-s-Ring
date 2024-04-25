@@ -16,6 +16,3 @@ export function uint8ArrayToHex(array: Uint8Array): string {
   }
   return hex;
 }
-
-
-

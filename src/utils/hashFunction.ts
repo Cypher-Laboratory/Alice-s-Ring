@@ -1,7 +1,5 @@
 import { keccak_256 as keccak256 } from "@noble/hashes/sha3";
 import { sha512 } from "@noble/hashes/sha512";
-import { Curve } from "../curves";
-import { Point } from "../point";
 import { SignatureConfig } from "../interfaces";
 import { uint8ArrayToHex } from ".";
 
@@ -20,7 +18,10 @@ export enum HashFunction {
  *
  * @returns - The hash of the data
  */
-export function hash(data: (string | bigint)[], config?: SignatureConfig): string {
+export function hash(
+  data: (string | bigint)[],
+  config?: SignatureConfig,
+): string {
   let fct = config?.hash;
   if (!config) fct = HashFunction.KECCAK256;
   switch (fct) {
@@ -43,7 +44,10 @@ export function hash(data: (string | bigint)[], config?: SignatureConfig): strin
  *
  * @returns - The hash of the data as an hex string
  */
-export function keccak_256(input: (string | bigint)[], evmCompatible?: boolean): string {
+export function keccak_256(
+  input: (string | bigint)[],
+  evmCompatible?: boolean,
+): string {
   // if evmCompatibility is true, pad all elements to 32 bytes, concat them and hash as the evm verifier does
   if (evmCompatible) {
     try {
@@ -51,10 +55,14 @@ export function keccak_256(input: (string | bigint)[], evmCompatible?: boolean):
       const hash = keccak256(data);
       return BigInt("0x" + uint8ArrayToHex(hash)).toString();
     } catch (error) {
-      throw new Error("evm compatibility is true. All elements must be of type bigint.");
+      throw new Error(
+        "evm compatibility is true. All elements must be of type bigint.",
+      );
     }
   }
-  const serialized = input.map((x) => (typeof x === "bigint" ? x.toString() : x)).join("");
+  const serialized = input
+    .map((x) => (typeof x === "bigint" ? x.toString() : x))
+    .join("");
   return Buffer.from(keccak256(serialized)).toString("hex");
 }
 
@@ -66,7 +74,9 @@ export function keccak_256(input: (string | bigint)[], evmCompatible?: boolean):
  * @returns - The hash of the data  as an hex string
  */
 export function sha_512(input: (string | bigint)[]): string {
-  const serialized = input.map((x) => (typeof x === "bigint" ? x.toString() : x)).join("");
+  const serialized = input
+    .map((x) => (typeof x === "bigint" ? x.toString() : x))
+    .join("");
   return Buffer.from(sha512(serialized)).toString("hex");
 }
 

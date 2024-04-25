@@ -268,7 +268,10 @@ const pow_2_252_3 = (x: bigint) => {
 };
 const RM1 =
   19681161376707505956807079304988542015446066515923890162744021073123829784752n; // √-1
-export const uvRatio = (u: bigint, v: bigint): { isValid: boolean; value: bigint } => {
+export const uvRatio = (
+  u: bigint,
+  v: bigint,
+): { isValid: boolean; value: bigint } => {
   // for sqrt comp
   const v3 = mod(v * v * v); // v³
   const v7 = mod(v3 * v3 * v); // v⁷

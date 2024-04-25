@@ -1,6 +1,9 @@
 import { Curve, CurveName } from "./curves";
 import { ProjectivePoint as SECP256K1Point } from "./utils/noble-libraries/noble-SECP256k1";
-import { ExtendedPoint as ED25519Point, uvRatio } from "./utils/noble-libraries/noble-ED25519";
+import {
+  ExtendedPoint as ED25519Point,
+  uvRatio,
+} from "./utils/noble-libraries/noble-ED25519";
 import { modPow, modulo } from "./utils";
 import {
   differentCurves,

@@ -186,7 +186,9 @@ export class RingSignature {
       const curve = Curve.fromString(sig.curve);
       return new RingSignature(
         sig.message,
-        sig.ring.map((point: string) => Point.deserialize(bigIntToPublicKey(BigInt(point)))),
+        sig.ring.map((point: string) =>
+          Point.deserialize(bigIntToPublicKey(BigInt(point))),
+        ),
         BigInt(sig.c),
         sig.responses.map((response: string) => BigInt(response)),
         curve,
@@ -384,7 +386,7 @@ export class RingSignature {
         this.curve,
         this.config,
       );
-      console.log("c" + (i + 1) % this.ring.length + "' = " + lastComputedCp);
+      console.log("c" + ((i + 1) % this.ring.length) + "' = " + lastComputedCp);
     }
 
     // return true if c0 === c0'
@@ -541,31 +543,36 @@ export class RingSignature {
       const alphaG = G.mult(params.alpha);
       // if !config.evmCompatibility, the ring is not added to the hash
       // if config.evmCompatibility, the message is only added in the first iteration
-      const hashContent = (config?.evmCompatibility ? [] : serializeRing(ring)).concat(
-        (config?.evmCompatibility && params.index === 1) ? [messageDigest] : [],
-      ).concat(
-        [
-          config?.evmCompatibility ? BigInt(alphaG.toEthAddress()) : BigInt("0x" + alphaG.serialize()),
-        ]
-      )
+      const hashContent = (config?.evmCompatibility ? [] : serializeRing(ring))
+        .concat(
+          config?.evmCompatibility && params.index === 1 ? [messageDigest] : [],
+        )
+        .concat([
+          config?.evmCompatibility
+            ? BigInt(alphaG.toEthAddress())
+            : BigInt("0x" + alphaG.serialize()),
+        ]);
 
-      return modulo(BigInt("0x" + hash(hashContent, config)), N,);
+      return modulo(BigInt("0x" + hash(hashContent, config)), N);
     }
     if (
       params.previousR &&
       params.previousC &&
       params.previousIndex !== undefined
     ) {
-      const point = G.mult(params.previousR)
-        .add(ring[params.previousIndex].mult(params.previousC))
+      const point = G.mult(params.previousR).add(
+        ring[params.previousIndex].mult(params.previousC),
+      );
 
-      const hashContent = (config?.evmCompatibility ? [] : serializeRing(ring)).concat(
-        (config?.evmCompatibility && params.index === 1) ? [messageDigest] : [],
-      ).concat(
-        [
-          config?.evmCompatibility ? BigInt(point.toEthAddress()) : BigInt("0x" + point.serialize()),
-        ]
-      )
+      const hashContent = (config?.evmCompatibility ? [] : serializeRing(ring))
+        .concat(
+          config?.evmCompatibility && params.index === 1 ? [messageDigest] : [],
+        )
+        .concat([
+          config?.evmCompatibility
+            ? BigInt(point.toEthAddress())
+            : BigInt("0x" + point.serialize()),
+        ]);
 
       return modulo(BigInt("0x" + hash(hashContent, config)), N);
     }
@@ -654,35 +661,33 @@ export function sortRing(ring: Point[]): Point[] {
   });
 }
 
-
 // convert a compressed ethereum public key to a BigInt
 function publicKeyToBigInt(publicKeyHex: string): bigint {
-
   // Ensure the key is stripped of the prefix and is valid
-  if (!publicKeyHex.startsWith('02') && !publicKeyHex.startsWith('03')) {
-    throw new Error('Invalid compressed public key');
+  if (!publicKeyHex.startsWith("02") && !publicKeyHex.startsWith("03")) {
+    throw new Error("Invalid compressed public key");
   }
 
   // Remove the prefix (0x02 or 0x03) and convert the remaining hex to BigInt
-  const bigint = BigInt('0x' + publicKeyHex.slice(2));
+  const bigint = BigInt("0x" + publicKeyHex.slice(2));
 
   // add an extra 1 if the y coordinate is odd and 2 if it is even
-  if (publicKeyHex.startsWith('03')) {
-    return BigInt(bigint.toString() + '1');
+  if (publicKeyHex.startsWith("03")) {
+    return BigInt(bigint.toString() + "1");
   } else {
-    return BigInt(bigint.toString() + '2');
+    return BigInt(bigint.toString() + "2");
   }
 }
 
 // convert a BigInt to a compressed ethereum public key
 function bigIntToPublicKey(bigint: bigint): string {
   const parity = bigint.toString().slice(-1);
-  const prefix = parity === '1' ? '03' : '02';
+  const prefix = parity === "1" ? "03" : "02";
 
   bigint = BigInt(bigint.toString().slice(0, -1));
   // Convert BigInt to a hex string and pad with zeros if necessary
   let hex = bigint.toString(16);
-  hex = hex.padStart(64, '0');  // Pad to ensure the hex is 64 characters long
+  hex = hex.padStart(64, "0"); // Pad to ensure the hex is 64 characters long
 
   // Return the compressed public key with the correct prefix
   return prefix + hex;
