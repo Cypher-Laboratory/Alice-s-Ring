@@ -124,7 +124,7 @@ export class RingSignature {
    * @returns The message digest
    */
   get messageDigest(): bigint {
-    return BigInt("0x" + hash(this.message, this.config?.hash));
+    return BigInt("0x" + hash([this.message], this.config));
   }
 
   /**
@@ -182,7 +182,7 @@ export class RingSignature {
       const curve = Curve.fromString(sig.curve);
       return new RingSignature(
         sig.message,
-        sig.ring.map((point: string) => Point.deserializePoint(point, curve)),
+        sig.ring.map((point: string) => Point.deserialize(point, curve)),
         BigInt(sig.c),
         sig.responses.map((response: string) => BigInt(response)),
         curve,
@@ -252,13 +252,9 @@ export class RingSignature {
       throw err.invalidParams("Signer private key cannot be 0 and must be < N");
 
     // check if ring is valid
-    // try {
     checkRing(ring, curve, true);
-    // } catch (e) {
-    //   throw err.invalidRing(e as string);
-    // }
 
-    const messageDigest = BigInt("0x" + hash(message, config?.hash));
+    const messageDigest = BigInt("0x" + hash([message], config));
 
     const alpha = randomBigint(curve.N);
 
@@ -290,6 +286,7 @@ export class RingSignature {
         }
       }
     }
+    console.log("signerIndex = " + signerIndex);
     if (ring.length === 0) {
       ring = [signerPubKey];
       signerIndex = 0;
@@ -299,7 +296,7 @@ export class RingSignature {
     const cpi1 = RingSignature.computeC(
       ring,
       messageDigest,
-      { alpha: alpha },
+      { index: (signerIndex + 1) % ring.length, alpha: alpha },
       curve,
       config,
     );
@@ -320,7 +317,7 @@ export class RingSignature {
       signerPrivateKey,
       curve,
     );
-
+    console.log(rawSignature.cees.map((c, index) => "c" + index + " = " + c));
     return new RingSignature(
       message,
       rawSignature.ring,
@@ -375,6 +372,7 @@ export class RingSignature {
         this.ring,
         messageDigest,
         {
+          index: (i + 1) % this.ring.length,
           previousR: this.responses[i],
           previousC: lastComputedCp,
           previousIndex: i,
@@ -382,6 +380,7 @@ export class RingSignature {
         this.curve,
         this.config,
       );
+      console.log("c" + (i + 1) % this.ring.length + "' = " + lastComputedCp);
     }
 
     // return true if c0 === c0'
@@ -454,11 +453,11 @@ export class RingSignature {
       const indexMinusOne =
         index - 1 >= 0n ? index - 1 : index - 1 + ring.length;
 
-      let params = {};
       if (index === (signerIndex + 1) % ring.length)
         cees[index] = ceePiPlusOne; // params = { alpha: alpha };
       else {
-        params = {
+        const params = {
+          index: index,
           previousR: responses[indexMinusOne],
           previousC: cees[indexMinusOne],
           previousIndex: indexMinusOne,
@@ -496,6 +495,7 @@ export class RingSignature {
    * @param params - The params to use
    * @param config - The config params to use
    *
+   * @see params.index - The index of the public key in the ring
    * @see params.previousR - The previous response which will be used to compute the new c value
    * @see params.previousC - The previous c value which will be used to compute the new c value
    * @see params.previousPubKey - The previous public key which will be used to compute the new c value
@@ -507,6 +507,7 @@ export class RingSignature {
     ring: Point[],
     messageDigest: bigint,
     params: {
+      index: number;
       previousR?: bigint;
       previousC?: bigint;
       previousIndex?: number;
@@ -533,38 +534,36 @@ export class RingSignature {
       );
     }
     if (params.alpha) {
-      return modulo(
-        BigInt(
-          "0x" +
-            hash(
-              serializeRing(ring).toString() +
-                messageDigest +
-                G.mult(params.alpha).serializePoint(),
-              config?.hash,
-            ),
-        ),
-        N,
-      );
+      const alphaG = G.mult(params.alpha);
+      // if !config.evmCompatibility, the ring is not added to the hash
+      // if config.evmCompatibility, the message is only added in the first iteration
+      const hashContent = (config?.evmCompatibility ? [] : serializeRing(ring)).concat(
+        (config?.evmCompatibility && params.index === 1) ? [messageDigest] : [],
+      ).concat(
+        [
+          config?.evmCompatibility ? BigInt(alphaG.toEthAddress()) : BigInt("0x" + alphaG.serialize()),
+        ]
+      )
+
+      return modulo(BigInt("0x" + hash(hashContent, config)), N,);
     }
     if (
       params.previousR &&
       params.previousC &&
       params.previousIndex !== undefined
     ) {
-      return modulo(
-        BigInt(
-          "0x" +
-            hash(
-              serializeRing(ring).toString() +
-                messageDigest +
-                G.mult(params.previousR)
-                  .add(ring[params.previousIndex].mult(params.previousC))
-                  .serializePoint(),
-              config?.hash,
-            ),
-        ),
-        N,
-      );
+      const point = G.mult(params.previousR)
+        .add(ring[params.previousIndex].mult(params.previousC))
+
+      const hashContent = (config?.evmCompatibility ? [] : serializeRing(ring)).concat(
+        (config?.evmCompatibility && params.index === 1) ? [messageDigest] : [],
+      ).concat(
+        [
+          config?.evmCompatibility ? BigInt(point.toEthAddress()) : BigInt("0x" + point.serialize()),
+        ]
+      )
+
+      return modulo(BigInt("0x" + hash(hashContent, config)), N);
     }
     throw err.missingParams(
       "Either 'alpha' or all the others params must be set",
@@ -609,10 +608,10 @@ export function checkRing(ring: Point[], ref?: Curve, emptyRing = false): void {
  *
  * @returns The serialized ring as a string array
  */
-export function serializeRing(ring: Point[]): string[] {
-  const serializedPoints: string[] = [];
+export function serializeRing(ring: Point[]): bigint[] {
+  const serializedPoints: bigint[] = [];
   for (const point of ring) {
-    serializedPoints.push(point.serializePoint()); // Call serializePoint() on each 'point' object
+    serializedPoints.push(BigInt("0x" + point.serialize())); // Call serialize() on each 'point' object
   }
   return serializedPoints;
 }

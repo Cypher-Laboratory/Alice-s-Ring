@@ -60,7 +60,7 @@ describe("Test sign()", () => {
     it("Should throw if the ring is not valid - ed25519", () => {
         expect(() => {
             src_1.RingSignature.sign(data.publicKeys_ed25519.slice(1).concat(data.idPointX_ed25519), data.signerPrivKey, data.message, ed25519);
-        }).toThrow((0, errors_1.invalidRing)("The ring is not sorted and/or does not contains teh signer public key"));
+        }).toThrow((0, errors_1.invalidRing)("The ring is not sorted"));
     });
     it("Should return a valid signature if the ring is empty - secp256k1", () => {
         const ringSignature = src_1.RingSignature.sign([], data.signerPrivKey, data.message, secp256k1);

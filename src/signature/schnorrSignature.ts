@@ -35,14 +35,15 @@ export function schnorrSignature(
   const c = modulo(
     BigInt(
       "0x" +
-        hash(
-          (keyPrefixing
-            ? derivePubKey(signerPrivKey, curve).serializePoint()
-            : "") +
-            message +
-            curve.GtoPoint().mult(alpha).serializePoint(),
-          config?.hash,
-        ),
+      hash(
+        [(keyPrefixing
+          ? derivePubKey(signerPrivKey, curve).serialize()
+          : ""),
+          message,
+        curve.GtoPoint().mult(alpha).serialize(),
+        ],
+        config,
+      ),
     ),
     curve.N,
   );
@@ -94,12 +95,14 @@ export function verifySchnorrSignature(
   const h = modulo(
     BigInt(
       "0x" +
-        hash(
-          (keyPrefixing ? signerPubKey.serializePoint() : "") +
-            message +
-            point.serializePoint(),
-          config?.hash,
-        ),
+      hash(
+        [
+          (keyPrefixing ? signerPubKey.serialize() : ""),
+          message,
+          point.serialize(),
+        ],
+        config,
+      ),
     ),
     curve.N,
   );

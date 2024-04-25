@@ -88,7 +88,7 @@ export declare class Point {
      *
      * @returns the formatted point
      */
-    serializePoint(): string;
+    serialize(): string;
     /**
      * deserialize a point from a hex string
      *
@@ -96,7 +96,7 @@ export declare class Point {
      *
      * @returns the deserialized point
      */
-    static deserializePoint(hex: string, curve: Curve): Point;
+    static deserialize(hex: string, curve: Curve): Point;
     /**
      * Check if a point is a low order point
      *

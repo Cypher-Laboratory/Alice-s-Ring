@@ -8,6 +8,7 @@ import {
   notOnCurve,
   unknownCurve,
 } from "./errors";
+import { keccak_256 } from "@noble/hashes/sha3";
 
 /**
  * A point on the elliptic curve.
@@ -266,7 +267,7 @@ export class Point {
    *
    * @returns the formatted point
    */
-  serializePoint(): string {
+  serialize(): string {
     // convert x value to bytes and pad with 0 to 32 bytes
     const xBytes = this.x.toString(16).padStart(64, "0");
     // convert y value to bytes and pad with 0 to 32 bytes
@@ -281,7 +282,7 @@ export class Point {
    *
    * @returns the deserialized point
    */
-  static deserializePoint(hex: string, curve: Curve): Point {
+  static deserialize(hex: string, curve: Curve): Point {
     // get x and y values from hex string
     const x = BigInt("0x" + hex.slice(0, 64));
     const y = BigInt("0x" + hex.slice(64, 128));
@@ -318,4 +319,26 @@ export class Point {
       }
     }
   }
+/**
+ * Get an Ethereum address from a point
+ *
+ * @returns an ethereum address
+ */
+toEthAddress(): string {
+  // Convert points (x, y) to Buffer
+  const xBuffer = Buffer.from(this.x.toString(16).padStart(64, "0"), "hex");
+  const yBuffer = Buffer.from(this.y.toString(16).padStart(64, "0"), "hex");
+
+  // Concatenate x and y to form public key
+  const publicKey = Buffer.concat([xBuffer, yBuffer]);
+
+  // Hash the public key with Keccak-256
+  const hash = Buffer.from(keccak_256(publicKey));
+
+  // Take the last 20 bytes of the hash and convert to an Ethereum address
+  const ethereumAddress = "0x" + hash.slice(-20).toString("hex");
+  console.log("ethereumAddress: ", ethereumAddress);
+  return ethereumAddress;
+}
+
 }

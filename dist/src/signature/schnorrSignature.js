@@ -27,10 +27,10 @@ function schnorrSignature(message, signerPrivKey, curve, alpha, config, keyPrefi
         alpha = (0, utils_1.randomBigint)(curve.N);
     const c = (0, utils_1.modulo)(BigInt("0x" +
         (0, utils_1.hash)((keyPrefixing
-            ? (0, curves_1.derivePubKey)(signerPrivKey, curve).serializePoint()
+            ? (0, curves_1.derivePubKey)(signerPrivKey, curve).serialize()
             : "") +
             message +
-            curve.GtoPoint().mult(alpha).serializePoint(), config?.hash)), curve.N);
+            curve.GtoPoint().mult(alpha).serialize(), config?.hash)), curve.N);
     const r = (0, utils_1.modulo)(alpha - c * signerPrivKey, curve.N);
     return { messageDigest: message, c, r };
 }
@@ -62,9 +62,9 @@ function verifySchnorrSignature(message, signerPubKey, signature, curve, config,
     // compute H(R|m|[r*G + c*K]) (R is empty or signerPubkey). Return true if the result is equal to c
     const point = G.mult(signature.r).add(signerPubKey.mult(signature.c));
     const h = (0, utils_1.modulo)(BigInt("0x" +
-        (0, utils_1.hash)((keyPrefixing ? signerPubKey.serializePoint() : "") +
+        (0, utils_1.hash)((keyPrefixing ? signerPubKey.serialize() : "") +
             message +
-            point.serializePoint(), config?.hash)), curve.N);
+            point.serialize(), config?.hash)), curve.N);
     return h === signature.c;
 }
 exports.verifySchnorrSignature = verifySchnorrSignature;

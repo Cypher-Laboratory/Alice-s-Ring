@@ -169,7 +169,7 @@ class RingSignature {
         try {
             const sig = parsedJson;
             const curve = _1.Curve.fromString(sig.curve);
-            return new RingSignature(sig.message, sig.ring.map((point) => _1.Point.deserializePoint(point, curve)), BigInt(sig.c), sig.responses.map((response) => BigInt(response)), curve, sig.config);
+            return new RingSignature(sig.message, sig.ring.map((point) => _1.Point.deserialize(point, curve)), BigInt(sig.c), sig.responses.map((response) => BigInt(response)), curve, sig.config);
         }
         catch (e) {
             throw err.invalidJson(e);
@@ -235,9 +235,9 @@ class RingSignature {
         const alpha = (0, utils_1.randomBigint)(curve.N);
         // get the signer public key
         const signerPubKey = (0, curves_1.derivePubKey)(signerPrivateKey, curve);
-        // check if the signer public key is in the ring and if it is sorted by x ascending coordinate (and y ascending if x's are equal)
+        // check if the ring is sorted by x ascending coordinate (and y ascending if x's are equal)
         if (!(0, isRingSorted_1.isRingSorted)(ring))
-            throw err.invalidRing("The ring is not sorted and/or does not contains teh signer public key");
+            throw err.invalidRing("The ring is not sorted");
         // if needed, insert the user public key at the right place (sorted by x ascending coordinate)
         let signerIndex = ring.findIndex((point) => point.x === signerPubKey.x && point.y === signerPubKey.y);
         if (signerIndex === -1) {
@@ -420,7 +420,7 @@ class RingSignature {
             return (0, utils_1.modulo)(BigInt("0x" +
                 (0, utils_1.hash)(serializeRing(ring).toString() +
                     messageDigest +
-                    G.mult(params.alpha).serializePoint(), config?.hash)), N);
+                    G.mult(params.alpha).serialize(), config?.hash)), N);
         }
         if (params.previousR &&
             params.previousC &&
@@ -430,7 +430,7 @@ class RingSignature {
                     messageDigest +
                     G.mult(params.previousR)
                         .add(ring[params.previousIndex].mult(params.previousC))
-                        .serializePoint(), config?.hash)), N);
+                        .serialize(), config?.hash)), N);
         }
         throw err.missingParams("Either 'alpha' or all the others params must be set");
     }
@@ -477,7 +477,7 @@ exports.checkRing = checkRing;
 function serializeRing(ring) {
     const serializedPoints = [];
     for (const point of ring) {
-        serializedPoints.push(point.serializePoint()); // Call serializePoint() on each 'point' object
+        serializedPoints.push(point.serialize()); // Call serialize() on each 'point' object
     }
     return serializedPoints;
 }

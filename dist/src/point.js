@@ -230,7 +230,7 @@ class Point {
      *
      * @returns the formatted point
      */
-    serializePoint() {
+    serialize() {
         // convert x value to bytes and pad with 0 to 32 bytes
         const xBytes = this.x.toString(16).padStart(64, "0");
         // convert y value to bytes and pad with 0 to 32 bytes
@@ -244,7 +244,7 @@ class Point {
      *
      * @returns the deserialized point
      */
-    static deserializePoint(hex, curve) {
+    static deserialize(hex, curve) {
         // get x and y values from hex string
         const x = BigInt("0x" + hex.slice(0, 64));
         const y = BigInt("0x" + hex.slice(64, 128));
