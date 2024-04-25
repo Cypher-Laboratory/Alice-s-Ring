@@ -1,4 +1,4 @@
-export declare enum hashFunction {
+export declare enum HashFunction {
     KECCAK256 = "keccak256",
     SHA512 = "sha512"
 }
@@ -10,7 +10,7 @@ export declare enum hashFunction {
  *
  * @returns - The hash of the data
  */
-export declare function hash(data: string, fct?: hashFunction): string;
+export declare function hash(data: string, fct?: HashFunction): string;
 /**
  * Hash data using keccak256
  *

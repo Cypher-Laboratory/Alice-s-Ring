@@ -3,7 +3,7 @@ import { piSignature } from "./signature/piSignature";
 import { derivePubKey } from "./curves";
 import { Curve, Point } from ".";
 import { SignatureConfig } from "./interfaces";
-import { hashFunction } from "./utils/hashFunction";
+import { HashFunction } from "./utils/hashFunction";
 import * as err from "./errors";
 import { isRingSorted } from "./utils/isRingSorted";
 
@@ -162,13 +162,13 @@ export class RingSignature {
     // check if config is an object
     if (parsedJson.config && typeof parsedJson.config !== "object")
       throw err.invalidJson("Config must be an object");
-    // check if config.hash is an element from hashFunction. If not, throw an error
+    // check if config.hash is an element from HashFunction. If not, throw an error
     if (
       parsedJson.config &&
       parsedJson.config.hash &&
-      !Object.values(hashFunction).includes(parsedJson.config.hash)
+      !Object.values(HashFunction).includes(parsedJson.config.hash)
     )
-      throw err.invalidJson("Config.hash must be an element from hashFunction");
+      throw err.invalidJson("Config.hash must be an element from HashFunction");
 
     try {
       const sig = parsedJson as {

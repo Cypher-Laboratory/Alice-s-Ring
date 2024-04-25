@@ -28,7 +28,7 @@ const utils_1 = require("./utils");
 const piSignature_1 = require("./signature/piSignature");
 const curves_1 = require("./curves");
 const _1 = require(".");
-const hashFunction_1 = require("./utils/hashFunction");
+const HashFunction_1 = require("./utils/HashFunction");
 const err = __importStar(require("./errors"));
 const isRingSorted_1 = require("./utils/isRingSorted");
 /**
@@ -161,11 +161,11 @@ class RingSignature {
         // check if config is an object
         if (parsedJson.config && typeof parsedJson.config !== "object")
             throw err.invalidJson("Config must be an object");
-        // check if config.hash is an element from hashFunction. If not, throw an error
+        // check if config.hash is an element from HashFunction. If not, throw an error
         if (parsedJson.config &&
             parsedJson.config.hash &&
-            !Object.values(hashFunction_1.hashFunction).includes(parsedJson.config.hash))
-            throw err.invalidJson("Config.hash must be an element from hashFunction");
+            !Object.values(HashFunction_1.HashFunction).includes(parsedJson.config.hash))
+            throw err.invalidJson("Config.hash must be an element from HashFunction");
         try {
             const sig = parsedJson;
             const curve = _1.Curve.fromString(sig.curve);

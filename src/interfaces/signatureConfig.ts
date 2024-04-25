@@ -1,4 +1,4 @@
-import { hashFunction } from "../utils/hashFunction";
+import { HashFunction } from "../utils/hashFunction";
 
 /**
  * Signature config interface
@@ -14,5 +14,5 @@ import { hashFunction } from "../utils/hashFunction";
  */
 export interface SignatureConfig {
   evmCompatibility?: boolean;
-  hash?: hashFunction;
+  hash?: HashFunction;
 }

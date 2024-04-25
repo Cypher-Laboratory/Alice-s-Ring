@@ -95,6 +95,6 @@ describe("Test fromJsonString()", () => {
     it("Should throw if config.hash is not in the list of supported hash functions", () => {
         expect(() => {
             src_1.RingSignature.fromJsonString(data.jsonRS.configHashNotSupported);
-        }).toThrow((0, errors_1.invalidJson)("Config.hash must be an element from hashFunction"));
+        }).toThrow((0, errors_1.invalidJson)("Config.hash must be an element from HashFunction"));
     });
 });

@@ -1,13 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sha_512 = exports.keccak_256 = exports.hash = exports.hashFunction = void 0;
+exports.sha_512 = exports.keccak_256 = exports.hash = exports.HashFunction = void 0;
 const sha3_1 = require("@noble/hashes/sha3");
 const sha512_1 = require("@noble/hashes/sha512");
-var hashFunction;
-(function (hashFunction) {
-    hashFunction["KECCAK256"] = "keccak256";
-    hashFunction["SHA512"] = "sha512";
-})(hashFunction || (exports.hashFunction = hashFunction = {}));
+var HashFunction;
+(function (HashFunction) {
+    HashFunction["KECCAK256"] = "keccak256";
+    HashFunction["SHA512"] = "sha512";
+})(HashFunction || (exports.HashFunction = HashFunction = {}));
 /**
  * Hash data using the specified hash function (default: keccak256)
  *
@@ -18,12 +18,12 @@ var hashFunction;
  */
 function hash(data, fct) {
     if (!fct)
-        fct = hashFunction.KECCAK256;
+        fct = HashFunction.KECCAK256;
     switch (fct) {
-        case hashFunction.KECCAK256: {
+        case HashFunction.KECCAK256: {
             return keccak_256(data);
         }
-        case hashFunction.SHA512: {
+        case HashFunction.SHA512: {
             return sha_512(data);
         }
         default: {

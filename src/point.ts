@@ -337,7 +337,7 @@ toEthAddress(): string {
 
   // Take the last 20 bytes of the hash and convert to an Ethereum address
   const ethereumAddress = "0x" + hash.slice(-20).toString("hex");
-  console.log("ethereumAddress: ", ethereumAddress);
+
   return ethereumAddress;
 }
 

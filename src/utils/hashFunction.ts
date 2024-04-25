@@ -5,7 +5,7 @@ import { Point } from "../point";
 import { SignatureConfig } from "../interfaces";
 import { uint8ArrayToHex } from ".";
 
-export enum hashFunction {
+export enum HashFunction {
   KECCAK256 = "keccak256",
   SHA512 = "sha512",
 }
@@ -22,12 +22,12 @@ export enum hashFunction {
  */
 export function hash(data: (string | bigint)[], config?: SignatureConfig): string {
   let fct = config?.hash;
-  if (!config) fct = hashFunction.KECCAK256;
+  if (!config) fct = HashFunction.KECCAK256;
   switch (fct) {
-    case hashFunction.KECCAK256: {
+    case HashFunction.KECCAK256: {
       return keccak_256(data, config?.evmCompatibility);
     }
-    case hashFunction.SHA512: {
+    case HashFunction.SHA512: {
       return sha_512(data);
     }
     default: {
