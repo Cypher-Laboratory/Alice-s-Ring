@@ -25,7 +25,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const src_1 = require("../../src");
 const errors_1 = require("../../src/errors");
-const HashFunction_1 = require("../../src/utils/HashFunction");
+const hashFunction_1 = require("../../src/utils/hashFunction");
 const data = __importStar(require("../data"));
 const ed25519 = new src_1.Curve(src_1.CurveName.ED25519);
 const secp256k1 = new src_1.Curve(src_1.CurveName.SECP256K1);
@@ -85,10 +85,10 @@ describe("Test Constructor", () => {
         });
         /* -------------TEST CONFIG.HASH------------- */
         it("Should pass if config.hash is keccack256", () => {
-            expect(() => new src_1.RingSignature(data.message, data.publicKeys_ed25519, data.randomC, data.randomResponses, ed25519, { hash: HashFunction_1.HashFunction.KECCAK256 }));
+            expect(() => new src_1.RingSignature(data.message, data.publicKeys_ed25519, data.randomC, data.randomResponses, ed25519, { hash: hashFunction_1.HashFunction.KECCAK256 }));
         });
         it("Should pass if config.hash is sha512", () => {
-            expect(() => new src_1.RingSignature(data.message, data.publicKeys_ed25519, data.randomC, data.randomResponses, ed25519, { hash: HashFunction_1.HashFunction.SHA512 }));
+            expect(() => new src_1.RingSignature(data.message, data.publicKeys_ed25519, data.randomC, data.randomResponses, ed25519, { hash: hashFunction_1.HashFunction.SHA512 }));
         });
         it("Should pass if config.hash is not undefined", () => {
             expect(() => new src_1.RingSignature(data.message, data.publicKeys_ed25519, data.randomC, data.randomResponses, ed25519, {}));

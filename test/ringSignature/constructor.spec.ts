@@ -6,7 +6,7 @@ import {
   notOnCurve,
   unknownCurve,
 } from "../../src/errors";
-import { HashFunction } from "../../src/utils/HashFunction";
+import { HashFunction } from "../../src/utils/hashFunction";
 import * as data from "../data";
 
 const ed25519 = new Curve(CurveName.ED25519);

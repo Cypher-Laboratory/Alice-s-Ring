@@ -32,7 +32,7 @@ export function hash(
       return sha_512(data);
     }
     default: {
-      return keccak_256(data);
+      return keccak_256(data, config?.evmCompatibility);
     }
   }
 }
@@ -52,8 +52,7 @@ export function keccak_256(
   if (evmCompatible) {
     try {
       const data = Buffer.concat((input as bigint[]).map(tobe256));
-      const hash = keccak256(data);
-      return BigInt("0x" + uint8ArrayToHex(hash)).toString();
+      return uint8ArrayToHex(keccak256(data));
     } catch (error) {
       throw new Error(
         "evm compatibility is true. All elements must be of type bigint.",

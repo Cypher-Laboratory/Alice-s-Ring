@@ -1,3 +1,5 @@
+/// <reference types="node" />
+import { SignatureConfig } from "../interfaces";
 export declare enum HashFunction {
     KECCAK256 = "keccak256",
     SHA512 = "sha512"
@@ -10,7 +12,7 @@ export declare enum HashFunction {
  *
  * @returns - The hash of the data
  */
-export declare function hash(data: string, fct?: HashFunction): string;
+export declare function hash(data: (string | bigint)[], config?: SignatureConfig): string;
 /**
  * Hash data using keccak256
  *
@@ -18,7 +20,7 @@ export declare function hash(data: string, fct?: HashFunction): string;
  *
  * @returns - The hash of the data as an hex string
  */
-export declare function keccak_256(input: string): string;
+export declare function keccak_256(input: (string | bigint)[], evmCompatible?: boolean): string;
 /**
  * Hash data using sha512
  *
@@ -26,4 +28,11 @@ export declare function keccak_256(input: string): string;
  *
  * @returns - The hash of the data  as an hex string
  */
-export declare function sha_512(input: string): string;
+export declare function sha_512(input: (string | bigint)[]): string;
+/**
+ * Convert a bigint to a buffer of 32 bytes (256 bits)
+ *
+ * @param v - The bigint to convert
+ * @returns - The buffer
+ */
+export declare function tobe256(v: bigint): Buffer;

@@ -45,6 +45,10 @@ declare class Point {
     toRawBytes(): Bytes;
     toHex(): string;
 }
+export declare const uvRatio: (u: bigint, v: bigint) => {
+    isValid: boolean;
+    value: bigint;
+};
 type Sha512FnSync = undefined | ((...messages: Bytes[]) => Bytes);
 type ExtK = {
     head: Bytes;

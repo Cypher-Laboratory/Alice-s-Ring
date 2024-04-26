@@ -26,7 +26,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const src_1 = require("../../src");
 const data = __importStar(require("../data"));
 const errors_1 = require("../../src/errors");
-const HashFunction_1 = require("../../src/utils/HashFunction");
+const hashFunction_1 = require("../../src/utils/hashFunction");
 const secp256k1 = new src_1.Curve(src_1.CurveName.SECP256K1);
 const ed25519 = new src_1.Curve(src_1.CurveName.ED25519);
 /**
@@ -86,12 +86,12 @@ describe("Test sign()", () => {
     });
     /* ------------CONFIG.HASH = SHA512------------ */
     it("Should return a valid ring signature if config.hash is SHA512 - secp256k1", () => {
-        const ringSignature = src_1.RingSignature.sign(data.publicKeys_secp256k1, data.signerPrivKey, data.message, secp256k1, { hash: HashFunction_1.HashFunction.SHA512 });
+        const ringSignature = src_1.RingSignature.sign(data.publicKeys_secp256k1, data.signerPrivKey, data.message, secp256k1, { hash: hashFunction_1.HashFunction.SHA512 });
         expect(ringSignature).toBeInstanceOf(src_1.RingSignature);
         expect(ringSignature.verify()).toBe(true);
     });
     it("Should return a valid ring signature if config.hash is SHA512 - ed25519", () => {
-        const ringSignature = src_1.RingSignature.sign(data.publicKeys_ed25519, data.signerPrivKey, data.message, ed25519, { hash: HashFunction_1.HashFunction.SHA512 });
+        const ringSignature = src_1.RingSignature.sign(data.publicKeys_ed25519, data.signerPrivKey, data.message, ed25519, { hash: hashFunction_1.HashFunction.SHA512 });
         expect(ringSignature).toBeInstanceOf(src_1.RingSignature);
         expect(ringSignature.verify()).toBe(true);
     });

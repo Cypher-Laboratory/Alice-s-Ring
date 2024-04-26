@@ -1,7 +1,7 @@
 import { Curve, CurveName, RingSignature } from "../../src";
 import * as data from "../data";
 import { invalidParams, invalidRing } from "../../src/errors";
-import { HashFunction } from "../../src/utils/HashFunction";
+import { HashFunction } from "../../src/utils/hashFunction";
 
 const secp256k1 = new Curve(CurveName.SECP256K1);
 const ed25519 = new Curve(CurveName.ED25519);
