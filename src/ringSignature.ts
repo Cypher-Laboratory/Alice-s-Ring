@@ -262,7 +262,7 @@ export class RingSignature {
 
     const messageDigest = BigInt("0x" + hash([message], config));
 
-    const alpha = randomBigint(curve.N);
+    const alpha = BigInt("0x" + hash(["000000000000"]));///// randomBigint(curve.N);
 
     // get the signer public key
     const signerPubKey: Point = derivePubKey(signerPrivateKey, curve);
@@ -323,6 +323,7 @@ export class RingSignature {
       signerPrivateKey,
       curve,
     );
+    console.log("signerResponse = " + signerResponse);
     console.log(rawSignature.cees.map((c, index) => "c" + index + " = " + c));
     return new RingSignature(
       message,
@@ -356,6 +357,7 @@ export class RingSignature {
    * @returns True if the signature is valid, false otherwise
    */
   verify(): boolean {
+    console.log("\nVerify:");
     // we compute c1' = Hash(Ring, m, [r0G, c0K0])
     // then, for each ci (1 < i < n), compute ci' = Hash(Ring, message, [riG + ciKi])
     // (G = generator, K = ring public key)
@@ -372,6 +374,7 @@ export class RingSignature {
     // NOTE : the loop has at least one iteration since the ring
     // is ensured to be not empty
     let lastComputedCp = this.c;
+    console.log("c0 = " + this.c);
     // compute the c values : c1 ’, c2 ’, ... , cn ’, c0 ’
     for (let i = 0; i < this.ring.length; i++) {
       lastComputedCp = RingSignature.computeC(
@@ -444,7 +447,7 @@ export class RingSignature {
     // generate random responses for every public key in the ring
     const responses: bigint[] = [];
     for (let i = 0; i < ring.length; i++) {
-      responses.push(randomBigint(curve.N));
+      responses.push(BigInt("0x" + hash(["1", i.toString()]))); ///// randomBigint(curve.N));
     }
 
     // contains all the cees from 0 to ring.length - 1 (0, 1, ..., pi, ..., ring.length - 1)
@@ -545,13 +548,25 @@ export class RingSignature {
       // if config.evmCompatibility, the message is only added in the first iteration
       const hashContent = (config?.evmCompatibility ? [] : serializeRing(ring))
         .concat(
-          config?.evmCompatibility && params.index === 1 ? [messageDigest] : [],
+          ((config?.evmCompatibility && params.index === 1) || !config?.evmCompatibility) ? [messageDigest] : [],
         )
         .concat([
           config?.evmCompatibility
             ? BigInt(alphaG.toEthAddress())
             : BigInt("0x" + alphaG.serialize()),
         ]);
+      console.log("hashContent = " + hashContent);
+      console.log("alpha: ", params.alpha);
+      console.log("signerPubkey: ", ring[0].serialize());
+      console.log("alphaG: ", alphaG.serialize());
+      // console.log("previousIndex: ", params.previousIndex);
+      // console.log("previousC = " + params.previousC);
+      // console.log("hash 0: ", config?.evmCompatibility ? [] : serializeRing(ring));
+      // console.log("hash 1: ", config?.evmCompatibility && params.index === 1 ? [messageDigest] : []);
+      // console.log("hash 2: ", [config?.evmCompatibility
+      //   ? BigInt(alphaG.toEthAddress())
+      //   : BigInt("0x" + alphaG.serialize())]);
+      // console.log("address = " + alphaG.toEthAddress());
 
       return modulo(BigInt("0x" + hash(hashContent, config)), N);
     }
@@ -560,20 +575,25 @@ export class RingSignature {
       params.previousC &&
       params.previousIndex !== undefined
     ) {
-      const point = G.mult(params.previousR).add(
-        ring[params.previousIndex].mult(params.previousC),
-      );
+      const point = G.mult(params.previousR).add(ring[params.previousIndex].mult(params.previousC));
+      
 
       const hashContent = (config?.evmCompatibility ? [] : serializeRing(ring))
         .concat(
-          config?.evmCompatibility && params.index === 1 ? [messageDigest] : [],
+          ((config?.evmCompatibility && params.index === 1) || !config?.evmCompatibility) ? [messageDigest] : [],
         )
         .concat([
           config?.evmCompatibility
             ? BigInt(point.toEthAddress())
             : BigInt("0x" + point.serialize()),
         ]);
-
+      console.log("hashContent = " + hashContent);
+      console.log("previousIndex: ", params.previousIndex);
+      console.log("previousC = " + params.previousC);
+      console.log("previousR = " + params.previousR);
+      console.log("previousPubkey = ", ring[params.previousIndex].serialize());
+      console.log("point: ", point.serialize());
+      // console.log("address = " + point.toEthAddress());
       return modulo(BigInt("0x" + hash(hashContent, config)), N);
     }
     throw err.missingParams(
