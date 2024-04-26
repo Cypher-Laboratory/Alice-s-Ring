@@ -40,22 +40,22 @@ console.log(signature.verify());
 // console.log("r\n", signature.getResponses());
 // console.log("c\n", signature.getChallenge());
 
-console.log("\n\n");
-const G = secp256k1.GtoPoint();
-const alpha = 93912359358129671531178796343875823858211554642024309756116746298411062756974n;
-const alphaG = G.mult(alpha);
+// console.log("\n");
+// const G = secp256k1.GtoPoint();
+// const alpha = 93912359358129671531178796343875823858211554642024309756116746298411062756974n;
+// const alphaG = G.mult(alpha);
 
-const c = 19585932915025998020433259902072340669390029872993675899087827356791044109318n;
-const r = 25477375032281159073555946492478238959315179779986193090141042957128390858320n;
-const K = data.signerPubKey_secp256k1;
-const point = G.mult(r).add(K.mult(c));
-
-
+// const c = 19585932915025998020433259902072340669390029872993675899087827356791044109318n;
+// const r = 25477375032281159073555946492478238959315179779986193090141042957128390858320n;
+// const K = data.signerPubKey_secp256k1;
+// const point = G.mult(r).add(K.mult(c));
 
 
 
-console.log("alphaG\n", alphaG.serialize());
-console.log("point\n", point.serialize());
+console.log("ring\n", signature.getRing().map((p) => p.serialize()));
+console.log("responses: ", signature.getResponses());
+// console.log("alphaG\n", alphaG.serialize());
+// console.log("point\n", point.serialize());
 
 
 

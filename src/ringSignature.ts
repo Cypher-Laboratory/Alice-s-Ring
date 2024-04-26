@@ -471,7 +471,8 @@ export class RingSignature {
           previousC: cees[indexMinusOne],
           previousIndex: indexMinusOne,
         };
-
+        // console.log("index = " + (indexMinusOne+1)%ring.length);
+        console.log("params = " + params.index, params.previousR, params.previousC, params.previousIndex);
         // compute the c value
         cees[index] = RingSignature.computeC(
           ring,
@@ -576,7 +577,11 @@ export class RingSignature {
       params.previousIndex !== undefined
     ) {
       const point = G.mult(params.previousR).add(ring[params.previousIndex].mult(params.previousC));
-      
+      // let point = G.mult(params.previousR).add(ring[params.previousIndex].mult(params.previousC));
+      // if(params.index === 1 ) {
+      //   return 54761444309399983298024854939651435849430927887491543606715291177314664336786n;
+      //   // point = G.mult(25477375032281159073555946492478238959315179779986193090141042957128390858320n,).add(Point.deserialize("0316d7da70ba247a6a40bb310187e8789b80c45fa6dc0061abb8ced49cbe7f887f").mult(19585932915025998020433259902072340669390029872993675899087827356791044109318n));
+      // }
 
       const hashContent = (config?.evmCompatibility ? [] : serializeRing(ring))
         .concat(
