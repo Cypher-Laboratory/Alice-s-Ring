@@ -176,7 +176,6 @@ export class RingSignature {
       !Object.values(HashFunction).includes(parsedJson.config.hash)
     )
       throw err.invalidJson("Config.hash must be an element from HashFunction");
-
     try {
       const sig = parsedJson as {
         message: string;
@@ -662,11 +661,16 @@ export function sortRing(ring: Point[]): Point[] {
   });
 }
 
-// convert a compressed ethereum public key to a BigInt
 function publicKeyToBigInt(publicKeyHex: string): bigint {
   // Ensure the key is stripped of the prefix and is valid
-  if (!publicKeyHex.startsWith("02") && !publicKeyHex.startsWith("03")) {
+  if (!publicKeyHex.startsWith("02") && !publicKeyHex.startsWith("03") && !publicKeyHex.startsWith("ED02") && !publicKeyHex.startsWith("ED03")){
     throw new Error("Invalid compressed public key");
+  }
+
+  let ed = false;
+  if(publicKeyHex.startsWith("ED02") || publicKeyHex.startsWith("ED03")){
+    publicKeyHex = publicKeyHex.slice(2);
+    ed = true;
   }
 
   // Remove the prefix (0x02 or 0x03) and convert the remaining hex to BigInt
@@ -674,14 +678,22 @@ function publicKeyToBigInt(publicKeyHex: string): bigint {
 
   // add an extra 1 if the y coordinate is odd and 2 if it is even
   if (publicKeyHex.startsWith("03")) {
-    return BigInt(bigint.toString() + "1");
+    return BigInt(bigint.toString() + "1" + (ed? "3" : ""));
   } else {
-    return BigInt(bigint.toString() + "2");
+    return BigInt(bigint.toString() + "2" + (ed? "3" : ""));
   }
 }
 
+
 // convert a BigInt to a compressed ethereum public key
 function bigIntToPublicKey(bigint: bigint): string {
+  // if the bigint.toString() ends with 3, the curve is ed25519
+  let ed = false;
+  if(bigint.toString().endsWith("3")){
+    bigint = BigInt(bigint.toString().slice(0, -1));
+    ed = true;
+  }
+
   const parity = bigint.toString().slice(-1);
   const prefix = parity === "1" ? "03" : "02";
 
@@ -691,5 +703,9 @@ function bigIntToPublicKey(bigint: bigint): string {
   hex = hex.padStart(64, "0"); // Pad to ensure the hex is 64 characters long
 
   // Return the compressed public key with the correct prefix
-  return prefix + hex;
+  if(ed){
+    return "ED" + prefix + hex;
+  }else{
+    return prefix + hex;
+  }
 }
