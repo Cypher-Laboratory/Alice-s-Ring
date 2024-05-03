@@ -60,7 +60,7 @@ describe("Test sign()", () => {
     it("Should throw if the ring is not valid - ed25519", () => {
         expect(() => {
             src_1.RingSignature.sign(data.publicKeys_ed25519.slice(1).concat(data.idPointX_ed25519), data.signerPrivKey, data.message, ed25519);
-        }).toThrow((0, errors_1.invalidRing)("The ring is not sorted and/or does not contains teh signer public key"));
+        }).toThrow((0, errors_1.invalidRing)("The ring is not sorted"));
     });
     it("Should return a valid signature if the ring is empty - secp256k1", () => {
         const ringSignature = src_1.RingSignature.sign([], data.signerPrivKey, data.message, secp256k1);
@@ -86,12 +86,12 @@ describe("Test sign()", () => {
     });
     /* ------------CONFIG.HASH = SHA512------------ */
     it("Should return a valid ring signature if config.hash is SHA512 - secp256k1", () => {
-        const ringSignature = src_1.RingSignature.sign(data.publicKeys_secp256k1, data.signerPrivKey, data.message, secp256k1, { hash: hashFunction_1.hashFunction.SHA512 });
+        const ringSignature = src_1.RingSignature.sign(data.publicKeys_secp256k1, data.signerPrivKey, data.message, secp256k1, { hash: hashFunction_1.HashFunction.SHA512 });
         expect(ringSignature).toBeInstanceOf(src_1.RingSignature);
         expect(ringSignature.verify()).toBe(true);
     });
     it("Should return a valid ring signature if config.hash is SHA512 - ed25519", () => {
-        const ringSignature = src_1.RingSignature.sign(data.publicKeys_ed25519, data.signerPrivKey, data.message, ed25519, { hash: hashFunction_1.hashFunction.SHA512 });
+        const ringSignature = src_1.RingSignature.sign(data.publicKeys_ed25519, data.signerPrivKey, data.message, ed25519, { hash: hashFunction_1.HashFunction.SHA512 });
         expect(ringSignature).toBeInstanceOf(src_1.RingSignature);
         expect(ringSignature.verify()).toBe(true);
     });

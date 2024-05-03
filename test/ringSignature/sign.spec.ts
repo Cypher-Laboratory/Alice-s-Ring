@@ -1,7 +1,7 @@
 import { Curve, CurveName, RingSignature } from "../../src";
 import * as data from "../data";
 import { invalidParams, invalidRing } from "../../src/errors";
-import { hashFunction } from "../../src/utils/hashFunction";
+import { HashFunction } from "../../src/utils/hashFunction";
 
 const secp256k1 = new Curve(CurveName.SECP256K1);
 const ed25519 = new Curve(CurveName.ED25519);
@@ -115,7 +115,7 @@ describe("Test sign()", () => {
       data.signerPrivKey,
       data.message,
       secp256k1,
-      { hash: hashFunction.SHA512 },
+      { hash: HashFunction.SHA512 },
     );
     expect(ringSignature).toBeInstanceOf(RingSignature);
     expect(ringSignature.verify()).toBe(true);
@@ -127,7 +127,7 @@ describe("Test sign()", () => {
       data.signerPrivKey,
       data.message,
       ed25519,
-      { hash: hashFunction.SHA512 },
+      { hash: HashFunction.SHA512 },
     );
     expect(ringSignature).toBeInstanceOf(RingSignature);
     expect(ringSignature.verify()).toBe(true);

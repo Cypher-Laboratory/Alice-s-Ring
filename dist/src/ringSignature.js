@@ -23,7 +23,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sortRing = exports.checkPoint = exports.serializeRing = exports.checkRing = exports.RingSignature = void 0;
+exports.bigIntToPublicKey = exports.publicKeyToBigInt = exports.sortRing = exports.checkPoint = exports.serializeRing = exports.checkRing = exports.RingSignature = void 0;
 const utils_1 = require("./utils");
 const piSignature_1 = require("./signature/piSignature");
 const curves_1 = require("./curves");
@@ -57,6 +57,9 @@ class RingSignature {
         // check if config is an object
         if (config && typeof config !== "object")
             throw err.invalidParams("Config must be an object");
+        // evm compatibility does not work with ed25519
+        if (curve.name === curves_1.CurveName.ED25519 && config?.evmCompatibility)
+            throw err.invalidParams("EVM compatibility is not available for ed25519");
         // check ring, c and responses validity
         checkRing(ring, curve);
         for (const response of responses) {
@@ -124,7 +127,8 @@ class RingSignature {
      * @returns The message digest
      */
     get messageDigest() {
-        return BigInt("0x" + (0, utils_1.hash)(this.message, this.config?.hash));
+        // Never hash the message with evmCompatibility = true
+        return BigInt("0x" + (0, utils_1.hash)([this.message], { ...this.config, evmCompatibility: false }));
     }
     /**
      * Create a RingSignature from a json object
@@ -161,15 +165,15 @@ class RingSignature {
         // check if config is an object
         if (parsedJson.config && typeof parsedJson.config !== "object")
             throw err.invalidJson("Config must be an object");
-        // check if config.hash is an element from hashFunction. If not, throw an error
+        // check if config.hash is an element from HashFunction. If not, throw an error
         if (parsedJson.config &&
             parsedJson.config.hash &&
-            !Object.values(hashFunction_1.hashFunction).includes(parsedJson.config.hash))
-            throw err.invalidJson("Config.hash must be an element from hashFunction");
+            !Object.values(hashFunction_1.HashFunction).includes(parsedJson.config.hash))
+            throw err.invalidJson("Config.hash must be an element from HashFunction");
         try {
             const sig = parsedJson;
             const curve = _1.Curve.fromString(sig.curve);
-            return new RingSignature(sig.message, sig.ring.map((point) => _1.Point.deserializePoint(point, curve)), BigInt(sig.c), sig.responses.map((response) => BigInt(response)), curve, sig.config);
+            return new RingSignature(sig.message, sig.ring.map((point) => _1.Point.deserialize(bigIntToPublicKey(BigInt(point)))), BigInt(sig.c), sig.responses.map((response) => BigInt(response)), curve, sig.config);
         }
         catch (e) {
             throw err.invalidJson(e);
@@ -183,7 +187,7 @@ class RingSignature {
     toJsonString() {
         return JSON.stringify({
             message: this.message,
-            ring: serializeRing(this.ring),
+            ring: serializeRing(this.ring).map((bi) => bi.toString()),
             c: this.c.toString(),
             responses: this.responses.map((response) => response.toString()),
             curve: this.curve.toString(),
@@ -226,44 +230,29 @@ class RingSignature {
         if (signerPrivateKey === 0n || signerPrivateKey >= curve.N)
             throw err.invalidParams("Signer private key cannot be 0 and must be < N");
         // check if ring is valid
-        // try {
         checkRing(ring, curve, true);
-        // } catch (e) {
-        //   throw err.invalidRing(e as string);
-        // }
-        const messageDigest = BigInt("0x" + (0, utils_1.hash)(message, config?.hash));
+        // Never hash the message with evmCompatibility = true
+        const messageDigest = BigInt("0x" + (0, utils_1.hash)([message], { ...config, evmCompatibility: false }));
         const alpha = (0, utils_1.randomBigint)(curve.N);
         // get the signer public key
         const signerPubKey = (0, curves_1.derivePubKey)(signerPrivateKey, curve);
-        // check if the signer public key is in the ring and if it is sorted by x ascending coordinate (and y ascending if x's are equal)
+        // check if the ring is sorted by x ascending coordinate (and y ascending if x's are equal)
         if (!(0, isRingSorted_1.isRingSorted)(ring))
-            throw err.invalidRing("The ring is not sorted and/or does not contains teh signer public key");
+            throw err.invalidRing("The ring is not sorted");
         // if needed, insert the user public key at the right place (sorted by x ascending coordinate)
         let signerIndex = ring.findIndex((point) => point.x === signerPubKey.x && point.y === signerPubKey.y);
         if (signerIndex === -1) {
-            signerIndex = 0;
-            for (let i = 0; i < ring.length; i++) {
-                if (signerPubKey.x < ring[i].x) {
-                    ring.splice(i, 0, signerPubKey);
-                    signerIndex = i;
-                    break;
-                }
-                if (signerPubKey.x === ring[i].x) {
-                    // order by y ascending
-                    if (signerPubKey.y < ring[i].y) {
-                        ring.splice(i, 0, signerPubKey);
-                        signerIndex = i;
-                        break;
-                    }
-                }
-            }
+            // todo: make it more efficient
+            ring = ring.concat([signerPubKey]);
+            ring = sortRing(ring);
+            signerIndex = ring.findIndex((point) => point.x === signerPubKey.x && point.y === signerPubKey.y);
         }
         if (ring.length === 0) {
             ring = [signerPubKey];
             signerIndex = 0;
         }
         // compute cpi+1
-        const cpi1 = RingSignature.computeC(ring, messageDigest, { alpha: alpha }, curve, config);
+        const cpi1 = RingSignature.computeC(ring, messageDigest, { index: (signerIndex + 1) % ring.length, alpha: alpha }, curve, config);
         const rawSignature = RingSignature.signature(curve, ring, cpi1, signerIndex, messageDigest, config);
         // compute the signer response
         const signerResponse = (0, piSignature_1.piSignature)(alpha, rawSignature.cees[rawSignature.signerIndex], signerPrivateKey, curve);
@@ -306,6 +295,7 @@ class RingSignature {
         // compute the c values : c1 ’, c2 ’, ... , cn ’, c0 ’
         for (let i = 0; i < this.ring.length; i++) {
             lastComputedCp = RingSignature.computeC(this.ring, messageDigest, {
+                index: (i + 1) % this.ring.length,
                 previousR: this.responses[i],
                 previousC: lastComputedCp,
                 previousIndex: i,
@@ -362,11 +352,11 @@ class RingSignature {
             */
             const index = i % ring.length;
             const indexMinusOne = index - 1 >= 0n ? index - 1 : index - 1 + ring.length;
-            let params = {};
             if (index === (signerIndex + 1) % ring.length)
                 cees[index] = ceePiPlusOne; // params = { alpha: alpha };
             else {
-                params = {
+                const params = {
+                    index: index,
                     previousR: responses[indexMinusOne],
                     previousC: cees[indexMinusOne],
                     previousIndex: indexMinusOne,
@@ -395,6 +385,7 @@ class RingSignature {
      * @param params - The params to use
      * @param config - The config params to use
      *
+     * @see params.index - The index of the public key in the ring
      * @see params.previousR - The previous response which will be used to compute the new c value
      * @see params.previousC - The previous c value which will be used to compute the new c value
      * @see params.previousPubKey - The previous public key which will be used to compute the new c value
@@ -417,20 +408,36 @@ class RingSignature {
             throw err.missingParams("Either 'alpha' or all the others params must be set");
         }
         if (params.alpha) {
-            return (0, utils_1.modulo)(BigInt("0x" +
-                (0, utils_1.hash)(serializeRing(ring).toString() +
-                    messageDigest +
-                    G.mult(params.alpha).serializePoint(), config?.hash)), N);
+            const alphaG = G.mult(params.alpha);
+            // if !config.evmCompatibility, the ring is not added to the hash
+            // if config.evmCompatibility, the message is only added in the first iteration
+            const hashContent = (config?.evmCompatibility ? [] : serializeRing(ring))
+                .concat((config?.evmCompatibility && params.index === 1) ||
+                !config?.evmCompatibility
+                ? [messageDigest]
+                : [])
+                .concat([
+                config?.evmCompatibility
+                    ? BigInt(alphaG.toEthAddress())
+                    : BigInt("0x" + alphaG.serialize()),
+            ]);
+            return (0, utils_1.modulo)(BigInt("0x" + (0, utils_1.hash)(hashContent, config)), N);
         }
         if (params.previousR &&
             params.previousC &&
             params.previousIndex !== undefined) {
-            return (0, utils_1.modulo)(BigInt("0x" +
-                (0, utils_1.hash)(serializeRing(ring).toString() +
-                    messageDigest +
-                    G.mult(params.previousR)
-                        .add(ring[params.previousIndex].mult(params.previousC))
-                        .serializePoint(), config?.hash)), N);
+            const point = G.mult(params.previousR).add(ring[params.previousIndex].mult(params.previousC));
+            const hashContent = (config?.evmCompatibility ? [] : serializeRing(ring))
+                .concat((config?.evmCompatibility && params.index === 1) ||
+                !config?.evmCompatibility
+                ? [messageDigest]
+                : [])
+                .concat([
+                config?.evmCompatibility
+                    ? BigInt(point.toEthAddress())
+                    : BigInt("0x" + point.serialize()),
+            ]);
+            return (0, utils_1.modulo)(BigInt("0x" + (0, utils_1.hash)(hashContent, config)), N);
         }
         throw err.missingParams("Either 'alpha' or all the others params must be set");
     }
@@ -477,7 +484,7 @@ exports.checkRing = checkRing;
 function serializeRing(ring) {
     const serializedPoints = [];
     for (const point of ring) {
-        serializedPoints.push(point.serializePoint()); // Call serializePoint() on each 'point' object
+        serializedPoints.push(publicKeyToBigInt(point.serialize())); // Call serialize() on each 'point' object
     }
     return serializedPoints;
 }
@@ -516,3 +523,50 @@ function sortRing(ring) {
     });
 }
 exports.sortRing = sortRing;
+function publicKeyToBigInt(publicKeyHex) {
+    // Ensure the key is stripped of the prefix and is valid
+    if (!publicKeyHex.startsWith("02") &&
+        !publicKeyHex.startsWith("03") &&
+        !publicKeyHex.startsWith("ED02") &&
+        !publicKeyHex.startsWith("ED03")) {
+        throw new Error("Invalid compressed public key");
+    }
+    let ed = false;
+    if (publicKeyHex.startsWith("ED02") || publicKeyHex.startsWith("ED03")) {
+        publicKeyHex = publicKeyHex.slice(2);
+        ed = true;
+    }
+    // Remove the prefix (0x02 or 0x03) and convert the remaining hex to BigInt
+    const bigint = BigInt("0x" + publicKeyHex.slice(2));
+    // add an extra 1 if the y coordinate is odd and 2 if it is even
+    if (publicKeyHex.startsWith("03")) {
+        return BigInt(bigint.toString() + "1" + (ed ? "3" : ""));
+    }
+    else {
+        return BigInt(bigint.toString() + "2" + (ed ? "3" : ""));
+    }
+}
+exports.publicKeyToBigInt = publicKeyToBigInt;
+// convert a BigInt to a compressed ethereum public key
+function bigIntToPublicKey(bigint) {
+    // if the bigint.toString() ends with 3, the curve is ed25519
+    let ed = false;
+    if (bigint.toString().endsWith("3")) {
+        bigint = BigInt(bigint.toString().slice(0, -1));
+        ed = true;
+    }
+    const parity = bigint.toString().slice(-1);
+    const prefix = parity === "1" ? "03" : "02";
+    bigint = BigInt(bigint.toString().slice(0, -1));
+    // Convert BigInt to a hex string and pad with zeros if necessary
+    let hex = bigint.toString(16);
+    hex = hex.padStart(64, "0"); // Pad to ensure the hex is 64 characters long
+    // Return the compressed public key with the correct prefix
+    if (ed) {
+        return "ED" + prefix + hex;
+    }
+    else {
+        return prefix + hex;
+    }
+}
+exports.bigIntToPublicKey = bigIntToPublicKey;

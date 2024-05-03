@@ -1,0 +1,7 @@
+LSAG: add evm support -> fit to audited sag
+- Point.compress -> Point.serialize
+
+SAG: add evm support
+- concatenation to hashcontent is done in the hash function, not in RingSignature.sign() when evm compatible
+- Point.serializePoint -> Point.serialize
+- 

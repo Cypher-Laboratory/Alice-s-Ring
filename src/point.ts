@@ -1,13 +1,17 @@
 import { Curve, CurveName } from "./curves";
 import { ProjectivePoint as SECP256K1Point } from "./utils/noble-libraries/noble-SECP256k1";
-import { ExtendedPoint as ED25519Point } from "./utils/noble-libraries/noble-ED25519";
-import { modulo } from "./utils";
+import {
+  ExtendedPoint as ED25519Point,
+  uvRatio,
+} from "./utils/noble-libraries/noble-ED25519";
+import { modPow, modulo } from "./utils";
 import {
   differentCurves,
   invalidParams,
   notOnCurve,
   unknownCurve,
 } from "./errors";
+import { keccak_256 } from "@noble/hashes/sha3";
 
 /**
  * A point on the elliptic curve.
@@ -266,12 +270,23 @@ export class Point {
    *
    * @returns the formatted point
    */
-  serializePoint(): string {
-    // convert x value to bytes and pad with 0 to 32 bytes
-    const xBytes = this.x.toString(16).padStart(64, "0");
-    // convert y value to bytes and pad with 0 to 32 bytes
-    const yBytes = this.y.toString(16).padStart(64, "0");
-    return xBytes + yBytes;
+  serialize(): string {
+    switch (this.curve.name) {
+      case CurveName.SECP256K1: {
+        return (
+          (this.y % 2n === 0n ? "02" : "03") +
+          this.x.toString(16).padStart(64, "0")
+        );
+      }
+      case CurveName.ED25519: {
+        return (
+          "ED" + (this.x % 2n === 0n ? "02" : "03") + this.y.toString(16) //.padStart(64, "0")
+        );
+      }
+      default: {
+        throw unknownCurve("Cannot compress point: unknown curve");
+      }
+    }
   }
 
   /**
@@ -281,11 +296,64 @@ export class Point {
    *
    * @returns the deserialized point
    */
-  static deserializePoint(hex: string, curve: Curve): Point {
-    // get x and y values from hex string
-    const x = BigInt("0x" + hex.slice(0, 64));
-    const y = BigInt("0x" + hex.slice(64, 128));
-    return new Point(curve, [x, y]);
+  static deserialize(compressed: string): Point {
+    let curveName: CurveName;
+    if (compressed.startsWith("ED")) {
+      curveName = CurveName.ED25519;
+    } else if (compressed.startsWith("02") || compressed.startsWith("03")) {
+      curveName = CurveName.SECP256K1;
+    } else {
+      throw unknownCurve("Cannot decompress point: unknown curve");
+    }
+
+    const curve = new Curve(curveName);
+
+    // compute y
+    switch (curve.name) {
+      case CurveName.SECP256K1: {
+        const x = BigInt("0x" + compressed.slice(2));
+
+        // since SECP256K1.P % 4 = 3, sqrt(x) = x ** ((P + 1) / 4) (mod P)
+        const y = modPow(
+          modulo(modPow(x, 3n, curve.P) + 7n, curve.P),
+          (curve.P + 1n) / 4n,
+          curve.P,
+        );
+        const prefix = compressed.slice(0, 2);
+        // check if y is even or odd
+        if (
+          (prefix === "02" && y % 2n === 1n) ||
+          (prefix === "03" && y % 2n === 0n)
+        ) {
+          return new Point(curve, [x, curve.P - y]);
+        } else {
+          return new Point(curve, [x, y]);
+        }
+      }
+      case CurveName.ED25519: {
+        const y = BigInt("0x" + compressed.slice(4));
+
+        // This part of the code is taken from noble-ed25519
+        const d =
+          -4513249062541557337682894930092624173785641285191125241628941591882900924598840740n;
+        const y2 = modulo(y * y, curve.P); // y²
+        const u = modulo(y2 - 1n, curve.P); // u=y²-1
+        const v = modulo(d * y2 + 1n, curve.P); // v=dy²+1
+        const { isValid, value } = uvRatio(u, v); // (uv³)(uv⁷)^(p-5)/8; square root
+        if (!isValid) throw new Error("bad y coordinate"); // not square root: bad point
+        // end of noble code
+
+        // check if y is even or odd
+        if (value % BigInt(2) ? "03" : "02" === compressed.slice(2, 4)) {
+          return new Point(curve, [value, y]);
+        } else {
+          return new Point(curve, [curve.P - value, y]);
+        }
+      }
+      default: {
+        throw unknownCurve("Cannot decompress point: unknown curve");
+      }
+    }
   }
 
   /**
@@ -317,5 +385,26 @@ export class Point {
         throw unknownCurve(this.curve.name);
       }
     }
+  }
+  /**
+   * Get an Ethereum address from a point
+   *
+   * @returns an ethereum address
+   */
+  toEthAddress(): string {
+    // Convert points (x, y) to Buffer
+    const xBuffer = Buffer.from(this.x.toString(16).padStart(64, "0"), "hex");
+    const yBuffer = Buffer.from(this.y.toString(16).padStart(64, "0"), "hex");
+
+    // Concatenate x and y to form public key
+    const publicKey = Buffer.concat([xBuffer, yBuffer]);
+
+    // Hash the public key with Keccak-256
+    const hash = Buffer.from(keccak_256(publicKey));
+
+    // Take the last 20 bytes of the hash and convert to an Ethereum address
+    const ethereumAddress = "0x" + hash.slice(-20).toString("hex");
+
+    return ethereumAddress;
   }
 }

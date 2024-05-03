@@ -1,9 +1,9 @@
 import { randomBigint, modulo, hash, base64Regex } from "./utils";
 import { piSignature } from "./signature/piSignature";
-import { derivePubKey } from "./curves";
+import { CurveName, derivePubKey } from "./curves";
 import { Curve, Point } from ".";
 import { SignatureConfig } from "./interfaces";
-import { hashFunction } from "./utils/hashFunction";
+import { HashFunction } from "./utils/hashFunction";
 import * as err from "./errors";
 import { isRingSorted } from "./utils/isRingSorted";
 
@@ -48,6 +48,10 @@ export class RingSignature {
     // check if config is an object
     if (config && typeof config !== "object")
       throw err.invalidParams("Config must be an object");
+
+    // evm compatibility does not work with ed25519
+    if (curve.name === CurveName.ED25519 && config?.evmCompatibility)
+      throw err.invalidParams("EVM compatibility is not available for ed25519");
 
     // check ring, c and responses validity
     checkRing(ring, curve);
@@ -124,7 +128,10 @@ export class RingSignature {
    * @returns The message digest
    */
   get messageDigest(): bigint {
-    return BigInt("0x" + hash(this.message, this.config?.hash));
+    // Never hash the message with evmCompatibility = true
+    return BigInt(
+      "0x" + hash([this.message], { ...this.config, evmCompatibility: false }),
+    );
   }
 
   /**
@@ -162,14 +169,13 @@ export class RingSignature {
     // check if config is an object
     if (parsedJson.config && typeof parsedJson.config !== "object")
       throw err.invalidJson("Config must be an object");
-    // check if config.hash is an element from hashFunction. If not, throw an error
+    // check if config.hash is an element from HashFunction. If not, throw an error
     if (
       parsedJson.config &&
       parsedJson.config.hash &&
-      !Object.values(hashFunction).includes(parsedJson.config.hash)
+      !Object.values(HashFunction).includes(parsedJson.config.hash)
     )
-      throw err.invalidJson("Config.hash must be an element from hashFunction");
-
+      throw err.invalidJson("Config.hash must be an element from HashFunction");
     try {
       const sig = parsedJson as {
         message: string;
@@ -182,7 +188,9 @@ export class RingSignature {
       const curve = Curve.fromString(sig.curve);
       return new RingSignature(
         sig.message,
-        sig.ring.map((point: string) => Point.deserializePoint(point, curve)),
+        sig.ring.map((point: string) =>
+          Point.deserialize(bigIntToPublicKey(BigInt(point))),
+        ),
         BigInt(sig.c),
         sig.responses.map((response: string) => BigInt(response)),
         curve,
@@ -201,7 +209,7 @@ export class RingSignature {
   toJsonString(): string {
     return JSON.stringify({
       message: this.message,
-      ring: serializeRing(this.ring),
+      ring: serializeRing(this.ring).map((bi) => bi.toString()),
       c: this.c.toString(),
       responses: this.responses.map((response) => response.toString()),
       curve: this.curve.toString(),
@@ -252,13 +260,12 @@ export class RingSignature {
       throw err.invalidParams("Signer private key cannot be 0 and must be < N");
 
     // check if ring is valid
-    // try {
     checkRing(ring, curve, true);
-    // } catch (e) {
-    //   throw err.invalidRing(e as string);
-    // }
 
-    const messageDigest = BigInt("0x" + hash(message, config?.hash));
+    // Never hash the message with evmCompatibility = true
+    const messageDigest = BigInt(
+      "0x" + hash([message], { ...config, evmCompatibility: false }),
+    );
 
     const alpha = randomBigint(curve.N);
 
@@ -273,23 +280,14 @@ export class RingSignature {
       (point) => point.x === signerPubKey.x && point.y === signerPubKey.y,
     );
     if (signerIndex === -1) {
-      signerIndex = 0;
-      for (let i = 0; i < ring.length; i++) {
-        if (signerPubKey.x < ring[i].x) {
-          ring.splice(i, 0, signerPubKey);
-          signerIndex = i;
-          break;
-        }
-        if (signerPubKey.x === ring[i].x) {
-          // order by y ascending
-          if (signerPubKey.y < ring[i].y) {
-            ring.splice(i, 0, signerPubKey);
-            signerIndex = i;
-            break;
-          }
-        }
-      }
+      // todo: make it more efficient
+      ring = ring.concat([signerPubKey]) as Point[];
+      ring = sortRing(ring);
+      signerIndex = ring.findIndex(
+        (point) => point.x === signerPubKey.x && point.y === signerPubKey.y,
+      );
     }
+
     if (ring.length === 0) {
       ring = [signerPubKey];
       signerIndex = 0;
@@ -299,7 +297,7 @@ export class RingSignature {
     const cpi1 = RingSignature.computeC(
       ring,
       messageDigest,
-      { alpha: alpha },
+      { index: (signerIndex + 1) % ring.length, alpha: alpha },
       curve,
       config,
     );
@@ -369,12 +367,14 @@ export class RingSignature {
     // NOTE : the loop has at least one iteration since the ring
     // is ensured to be not empty
     let lastComputedCp = this.c;
+
     // compute the c values : c1 ’, c2 ’, ... , cn ’, c0 ’
     for (let i = 0; i < this.ring.length; i++) {
       lastComputedCp = RingSignature.computeC(
         this.ring,
         messageDigest,
         {
+          index: (i + 1) % this.ring.length,
           previousR: this.responses[i],
           previousC: lastComputedCp,
           previousIndex: i,
@@ -454,16 +454,15 @@ export class RingSignature {
       const indexMinusOne =
         index - 1 >= 0n ? index - 1 : index - 1 + ring.length;
 
-      let params = {};
       if (index === (signerIndex + 1) % ring.length)
         cees[index] = ceePiPlusOne; // params = { alpha: alpha };
       else {
-        params = {
+        const params = {
+          index: index,
           previousR: responses[indexMinusOne],
           previousC: cees[indexMinusOne],
           previousIndex: indexMinusOne,
         };
-
         // compute the c value
         cees[index] = RingSignature.computeC(
           ring,
@@ -496,6 +495,7 @@ export class RingSignature {
    * @param params - The params to use
    * @param config - The config params to use
    *
+   * @see params.index - The index of the public key in the ring
    * @see params.previousR - The previous response which will be used to compute the new c value
    * @see params.previousC - The previous c value which will be used to compute the new c value
    * @see params.previousPubKey - The previous public key which will be used to compute the new c value
@@ -507,6 +507,7 @@ export class RingSignature {
     ring: Point[],
     messageDigest: bigint,
     params: {
+      index: number;
       previousR?: bigint;
       previousC?: bigint;
       previousIndex?: number;
@@ -533,38 +534,47 @@ export class RingSignature {
       );
     }
     if (params.alpha) {
-      return modulo(
-        BigInt(
-          "0x" +
-            hash(
-              serializeRing(ring).toString() +
-                messageDigest +
-                G.mult(params.alpha).serializePoint(),
-              config?.hash,
-            ),
-        ),
-        N,
-      );
+      const alphaG = G.mult(params.alpha);
+      // if !config.evmCompatibility, the ring is not added to the hash
+      // if config.evmCompatibility, the message is only added in the first iteration
+      const hashContent = (config?.evmCompatibility ? [] : serializeRing(ring))
+        .concat(
+          (config?.evmCompatibility && params.index === 1) ||
+            !config?.evmCompatibility
+            ? [messageDigest]
+            : [],
+        )
+        .concat([
+          config?.evmCompatibility
+            ? BigInt(alphaG.toEthAddress())
+            : BigInt("0x" + alphaG.serialize()),
+        ]);
+
+      return modulo(BigInt("0x" + hash(hashContent, config)), N);
     }
     if (
       params.previousR &&
       params.previousC &&
       params.previousIndex !== undefined
     ) {
-      return modulo(
-        BigInt(
-          "0x" +
-            hash(
-              serializeRing(ring).toString() +
-                messageDigest +
-                G.mult(params.previousR)
-                  .add(ring[params.previousIndex].mult(params.previousC))
-                  .serializePoint(),
-              config?.hash,
-            ),
-        ),
-        N,
+      const point = G.mult(params.previousR).add(
+        ring[params.previousIndex].mult(params.previousC),
       );
+
+      const hashContent = (config?.evmCompatibility ? [] : serializeRing(ring))
+        .concat(
+          (config?.evmCompatibility && params.index === 1) ||
+            !config?.evmCompatibility
+            ? [messageDigest]
+            : [],
+        )
+        .concat([
+          config?.evmCompatibility
+            ? BigInt(point.toEthAddress())
+            : BigInt("0x" + point.serialize()),
+        ]);
+
+      return modulo(BigInt("0x" + hash(hashContent, config)), N);
     }
     throw err.missingParams(
       "Either 'alpha' or all the others params must be set",
@@ -609,10 +619,10 @@ export function checkRing(ring: Point[], ref?: Curve, emptyRing = false): void {
  *
  * @returns The serialized ring as a string array
  */
-export function serializeRing(ring: Point[]): string[] {
-  const serializedPoints: string[] = [];
+export function serializeRing(ring: Point[]): bigint[] {
+  const serializedPoints: bigint[] = [];
   for (const point of ring) {
-    serializedPoints.push(point.serializePoint()); // Call serializePoint() on each 'point' object
+    serializedPoints.push(publicKeyToBigInt(point.serialize())); // Call serialize() on each 'point' object
   }
   return serializedPoints;
 }
@@ -649,4 +659,57 @@ export function sortRing(ring: Point[]): Point[] {
     }
     return a.y < b.y ? -1 : 1;
   });
+}
+
+export function publicKeyToBigInt(publicKeyHex: string): bigint {
+  // Ensure the key is stripped of the prefix and is valid
+  if (
+    !publicKeyHex.startsWith("02") &&
+    !publicKeyHex.startsWith("03") &&
+    !publicKeyHex.startsWith("ED02") &&
+    !publicKeyHex.startsWith("ED03")
+  ) {
+    throw new Error("Invalid compressed public key");
+  }
+
+  let ed = false;
+  if (publicKeyHex.startsWith("ED02") || publicKeyHex.startsWith("ED03")) {
+    publicKeyHex = publicKeyHex.slice(2);
+    ed = true;
+  }
+
+  // Remove the prefix (0x02 or 0x03) and convert the remaining hex to BigInt
+  const bigint = BigInt("0x" + publicKeyHex.slice(2));
+
+  // add an extra 1 if the y coordinate is odd and 2 if it is even
+  if (publicKeyHex.startsWith("03")) {
+    return BigInt(bigint.toString() + "1" + (ed ? "3" : ""));
+  } else {
+    return BigInt(bigint.toString() + "2" + (ed ? "3" : ""));
+  }
+}
+
+// convert a BigInt to a compressed ethereum public key
+export function bigIntToPublicKey(bigint: bigint): string {
+  // if the bigint.toString() ends with 3, the curve is ed25519
+  let ed = false;
+  if (bigint.toString().endsWith("3")) {
+    bigint = BigInt(bigint.toString().slice(0, -1));
+    ed = true;
+  }
+
+  const parity = bigint.toString().slice(-1);
+  const prefix = parity === "1" ? "03" : "02";
+
+  bigint = BigInt(bigint.toString().slice(0, -1));
+  // Convert BigInt to a hex string and pad with zeros if necessary
+  let hex = bigint.toString(16);
+  hex = hex.padStart(64, "0"); // Pad to ensure the hex is 64 characters long
+
+  // Return the compressed public key with the correct prefix
+  if (ed) {
+    return "ED" + prefix + hex;
+  } else {
+    return prefix + hex;
+  }
 }

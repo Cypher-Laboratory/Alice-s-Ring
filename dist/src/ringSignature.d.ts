@@ -156,6 +156,7 @@ export declare class RingSignature {
      * @param params - The params to use
      * @param config - The config params to use
      *
+     * @see params.index - The index of the public key in the ring
      * @see params.previousR - The previous response which will be used to compute the new c value
      * @see params.previousC - The previous c value which will be used to compute the new c value
      * @see params.previousPubKey - The previous public key which will be used to compute the new c value
@@ -184,7 +185,7 @@ export declare function checkRing(ring: Point[], ref?: Curve, emptyRing?: boolea
  *
  * @returns The serialized ring as a string array
  */
-export declare function serializeRing(ring: Point[]): string[];
+export declare function serializeRing(ring: Point[]): bigint[];
 /**
  * Check if a point is valid
  *
@@ -202,3 +203,5 @@ export declare function checkPoint(point: Point, curve?: Curve): void;
  * @returns the sorted ring
  */
 export declare function sortRing(ring: Point[]): Point[];
+export declare function publicKeyToBigInt(publicKeyHex: string): bigint;
+export declare function bigIntToPublicKey(bigint: bigint): string;

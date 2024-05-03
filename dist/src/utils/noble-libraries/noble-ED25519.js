@@ -1,7 +1,7 @@
 "use strict";
 /* eslint-disable no-alert */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ExtendedPoint = exports.N = exports.P = exports.utils = exports.etc = exports.CURVE = exports.verifyAsync = exports.signAsync = exports.verify = exports.sign = exports.getPublicKeyAsync = exports.getPublicKey = exports.mod = exports.Gy = exports.Gx = void 0;
+exports.ExtendedPoint = exports.N = exports.P = exports.utils = exports.etc = exports.CURVE = exports.verifyAsync = exports.signAsync = exports.verify = exports.sign = exports.getPublicKeyAsync = exports.getPublicKey = exports.uvRatio = exports.mod = exports.Gy = exports.Gx = void 0;
 // taken from https://github.com/paulmillr/noble-ed25519/blob/main/index.ts
 /*! noble-ed25519 - MIT License (c) 2019 Paul Miller (paulmillr.com) */
 const P = 2n ** 255n - 19n; // ed25519 is twisted edwards curve
@@ -65,7 +65,7 @@ class Point {
         const y2 = (0, exports.mod)(y * y); // y²
         const u = (0, exports.mod)(y2 - 1n); // u=y²-1
         const v = (0, exports.mod)(d * y2 + 1n); // v=dy²+1
-        let { isValid, value: x } = uvRatio(u, v); // (uv³)(uv⁷)^(p-5)/8; square root
+        let { isValid, value: x } = (0, exports.uvRatio)(u, v); // (uv³)(uv⁷)^(p-5)/8; square root
         if (!isValid)
             err("bad y coordinate 3"); // not square root: bad point
         const isXOdd = (x & 1n) === 1n; // adjust sign of x coordinate
@@ -287,6 +287,7 @@ const uvRatio = (u, v) => {
         x = (0, exports.mod)(-x); // edIsNegative
     return { isValid: useRoot1 || useRoot2, value: x };
 };
+exports.uvRatio = uvRatio;
 const modL_LE = (hash) => (0, exports.mod)(b2n_LE(hash), N); // modulo L; but little-endian
 let _shaS;
 const sha512a = (...m) => etc.sha512Async(...m); // Async SHA512

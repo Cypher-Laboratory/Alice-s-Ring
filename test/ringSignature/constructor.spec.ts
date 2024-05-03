@@ -6,7 +6,7 @@ import {
   notOnCurve,
   unknownCurve,
 } from "../../src/errors";
-import { hashFunction } from "../../src/utils/hashFunction";
+import { HashFunction } from "../../src/utils/hashFunction";
 import * as data from "../data";
 
 const ed25519 = new Curve(CurveName.ED25519);
@@ -183,7 +183,7 @@ describe("Test Constructor", () => {
             data.randomC,
             data.randomResponses,
             ed25519,
-            { hash: hashFunction.KECCAK256 },
+            { hash: HashFunction.KECCAK256 },
           ),
       );
     });
@@ -196,7 +196,7 @@ describe("Test Constructor", () => {
             data.randomC,
             data.randomResponses,
             ed25519,
-            { hash: hashFunction.SHA512 },
+            { hash: HashFunction.SHA512 },
           ),
       );
     });
