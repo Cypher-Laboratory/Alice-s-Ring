@@ -203,3 +203,5 @@ export declare function checkPoint(point: Point, curve?: Curve): void;
  * @returns the sorted ring
  */
 export declare function sortRing(ring: Point[]): Point[];
+export declare function publicKeyToBigInt(publicKeyHex: string): bigint;
+export declare function bigIntToPublicKey(bigint: bigint): string;

@@ -661,14 +661,19 @@ export function sortRing(ring: Point[]): Point[] {
   });
 }
 
-function publicKeyToBigInt(publicKeyHex: string): bigint {
+export function publicKeyToBigInt(publicKeyHex: string): bigint {
   // Ensure the key is stripped of the prefix and is valid
-  if (!publicKeyHex.startsWith("02") && !publicKeyHex.startsWith("03") && !publicKeyHex.startsWith("ED02") && !publicKeyHex.startsWith("ED03")){
+  if (
+    !publicKeyHex.startsWith("02") &&
+    !publicKeyHex.startsWith("03") &&
+    !publicKeyHex.startsWith("ED02") &&
+    !publicKeyHex.startsWith("ED03")
+  ) {
     throw new Error("Invalid compressed public key");
   }
 
   let ed = false;
-  if(publicKeyHex.startsWith("ED02") || publicKeyHex.startsWith("ED03")){
+  if (publicKeyHex.startsWith("ED02") || publicKeyHex.startsWith("ED03")) {
     publicKeyHex = publicKeyHex.slice(2);
     ed = true;
   }
@@ -678,18 +683,17 @@ function publicKeyToBigInt(publicKeyHex: string): bigint {
 
   // add an extra 1 if the y coordinate is odd and 2 if it is even
   if (publicKeyHex.startsWith("03")) {
-    return BigInt(bigint.toString() + "1" + (ed? "3" : ""));
+    return BigInt(bigint.toString() + "1" + (ed ? "3" : ""));
   } else {
-    return BigInt(bigint.toString() + "2" + (ed? "3" : ""));
+    return BigInt(bigint.toString() + "2" + (ed ? "3" : ""));
   }
 }
 
-
 // convert a BigInt to a compressed ethereum public key
-function bigIntToPublicKey(bigint: bigint): string {
+export function bigIntToPublicKey(bigint: bigint): string {
   // if the bigint.toString() ends with 3, the curve is ed25519
   let ed = false;
-  if(bigint.toString().endsWith("3")){
+  if (bigint.toString().endsWith("3")) {
     bigint = BigInt(bigint.toString().slice(0, -1));
     ed = true;
   }
@@ -703,9 +707,9 @@ function bigIntToPublicKey(bigint: bigint): string {
   hex = hex.padStart(64, "0"); // Pad to ensure the hex is 64 characters long
 
   // Return the compressed public key with the correct prefix
-  if(ed){
+  if (ed) {
     return "ED" + prefix + hex;
-  }else{
+  } else {
     return prefix + hex;
   }
 }
