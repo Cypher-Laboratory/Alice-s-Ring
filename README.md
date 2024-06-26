@@ -15,7 +15,7 @@ The audit of this library was conducted by the company CryptoExperts [https://ww
 ## Usage
 
 ```typescript
-import { RingSignature , Curve , CurveName , Point } from '@cypherlab/types-ring-signature';
+import { RingSignature , Curve , CurveName , Point } from '@cypher-laboratory/alicesring-sag';
 
 const curve: Curve = new Curve(CurveName.SECP256K1);
 const ring: Point[] = []; // your ring of public keys
