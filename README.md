@@ -4,7 +4,7 @@ This repository contains a TypeScript implementation of the [Ring Signature](htt
 
 ## About the implementation
 
-The implementation is based on the [SAG algorithm](https://eprint.iacr.org/2004/027.pdf) and uses the [Elliptic Curve Cryptography](https://en.wikipedia.org/wiki/Elliptic-curve_cryptography) (ECC) to generate the keys and sign the message.
+The implementation is based on the SAG algorithm and uses the [Elliptic Curve Cryptography](https://en.wikipedia.org/wiki/Elliptic-curve_cryptography) (ECC) to generate the keys and sign the message.
 
 We used the implementation proposed in [Zero to Monero](https://www.getmonero.org/library/Zero-to-Monero-2-0-0.pdf) (p.36) as a reference.
 
