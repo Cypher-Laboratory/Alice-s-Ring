@@ -1,4 +1,4 @@
-# types-Ring-Signature
+# Alice's-Ring-SAG-TS
 
 This repository contains a TypeScript implementation of the [Ring Signature](https://en.wikipedia.org/wiki/Ring_signature) algorithm using Spontaneous Anonymous Group (SAG).
 
