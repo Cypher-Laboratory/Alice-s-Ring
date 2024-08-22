@@ -271,7 +271,6 @@ export class RingSignature {
 
     // get the signer public key
     const signerPubKey: Point = derivePubKey(signerPrivateKey, curve);
-
     // check if the ring is sorted by x ascending coordinate (and y ascending if x's are equal)
     if (!isRingSorted(ring)) throw err.invalidRing("The ring is not sorted");
 
@@ -292,10 +291,11 @@ export class RingSignature {
       ring = [signerPubKey];
       signerIndex = 0;
     }
-
+    const serializedRing = serializeRing(ring);
     // compute cpi+1
     const cpi1 = RingSignature.computeC(
       ring,
+      serializedRing,
       messageDigest,
       { index: (signerIndex + 1) % ring.length, alpha: alpha },
       curve,
@@ -363,7 +363,7 @@ export class RingSignature {
       }
     }
     const messageDigest = this.messageDigest;
-
+    const serializedRing = serializeRing(this.ring);
     // NOTE : the loop has at least one iteration since the ring
     // is ensured to be not empty
     let lastComputedCp = this.c;
@@ -372,6 +372,7 @@ export class RingSignature {
     for (let i = 0; i < this.ring.length; i++) {
       lastComputedCp = RingSignature.computeC(
         this.ring,
+        serializedRing,
         messageDigest,
         {
           index: (i + 1) % this.ring.length,
@@ -444,7 +445,7 @@ export class RingSignature {
 
     // contains all the cees from 0 to ring.length - 1 (0, 1, ..., pi, ..., ring.length - 1)
     const cees: bigint[] = ring.map(() => 0n);
-
+    const serializedRing = serializeRing(ring);
     for (let i = signerIndex + 1; i < ring.length + signerIndex + 1; i++) {
       /* 
       Convert i to obtain a numbers between 0 and ring.length - 1, 
@@ -466,6 +467,7 @@ export class RingSignature {
         // compute the c value
         cees[index] = RingSignature.computeC(
           ring,
+          serializedRing,
           messageDigest,
           params,
           curve,
@@ -505,6 +507,7 @@ export class RingSignature {
    */
   private static computeC(
     ring: Point[],
+    serializeRing: bigint[],
     messageDigest: bigint,
     params: {
       index: number;
@@ -537,7 +540,7 @@ export class RingSignature {
       const alphaG = G.mult(params.alpha);
       // if !config.evmCompatibility, the ring is not added to the hash
       // if config.evmCompatibility, the message is only added in the first iteration
-      const hashContent = (config?.evmCompatibility ? [] : serializeRing(ring))
+      const hashContent = (config?.evmCompatibility ? [] : serializeRing)
         .concat(
           (config?.evmCompatibility && params.index === 1) ||
             !config?.evmCompatibility
@@ -561,7 +564,7 @@ export class RingSignature {
         ring[params.previousIndex].mult(params.previousC),
       );
 
-      const hashContent = (config?.evmCompatibility ? [] : serializeRing(ring))
+      const hashContent = (config?.evmCompatibility ? [] : serializeRing)
         .concat(
           (config?.evmCompatibility && params.index === 1) ||
             !config?.evmCompatibility
