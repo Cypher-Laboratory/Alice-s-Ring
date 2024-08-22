@@ -507,7 +507,7 @@ export class RingSignature {
    */
   private static computeC(
     ring: Point[],
-    serializeRing: bigint[],
+    serializedRing: bigint[],
     messageDigest: bigint,
     params: {
       index: number;
@@ -540,7 +540,7 @@ export class RingSignature {
       const alphaG = G.mult(params.alpha);
       // if !config.evmCompatibility, the ring is not added to the hash
       // if config.evmCompatibility, the message is only added in the first iteration
-      const hashContent = (config?.evmCompatibility ? [] : serializeRing)
+      const hashContent = (config?.evmCompatibility ? [] : serializedRing)
         .concat(
           (config?.evmCompatibility && params.index === 1) ||
             !config?.evmCompatibility
@@ -564,7 +564,7 @@ export class RingSignature {
         ring[params.previousIndex].mult(params.previousC),
       );
 
-      const hashContent = (config?.evmCompatibility ? [] : serializeRing)
+      const hashContent = (config?.evmCompatibility ? [] : serializedRing)
         .concat(
           (config?.evmCompatibility && params.index === 1) ||
             !config?.evmCompatibility
