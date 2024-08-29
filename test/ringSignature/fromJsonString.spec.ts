@@ -1,7 +1,9 @@
-import { RingSignature } from "../../src";
+import { RingSignature, Curve, CurveName } from "../../src";
 import { invalidJson } from "../../src/errors";
 import * as data from "../data";
 
+const secp = new Curve(CurveName.SECP256K1);
+const ed = new Curve(CurveName.ED25519);
 /**
  * Test the RingSignature.fromJsonString() method
  *
@@ -23,6 +25,25 @@ describe("Test fromJsonString()", () => {
     expect(RingSignature.fromJsonString(data.jsonRS.valid)).toBeInstanceOf(
       RingSignature,
     );
+  });
+
+  it("Should convert a ring signature to a json string and import it correctly secp256K1", () => {
+    const rs = RingSignature.sign(
+      data.publicKeys_secp256k1,
+      data.signerPrivKey,
+      data.message,
+      secp,
+    ).toJsonString();
+    expect(RingSignature.fromJsonString(rs)).toBeInstanceOf(RingSignature);
+  });
+  it("Should convert a ring signature to a json string and import it correctly ED25519", () => {
+    const rs = RingSignature.sign(
+      data.publicKeys_ed25519,
+      data.signerPrivKey,
+      data.message,
+      ed,
+    ).toJsonString();
+    expect(RingSignature.fromJsonString(rs)).toBeInstanceOf(RingSignature);
   });
 
   it("Should throw an error if the input is not a valid json", () => {

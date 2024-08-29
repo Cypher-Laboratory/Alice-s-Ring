@@ -1,24 +1,48 @@
-import { randomBigint, modulo, hash, base64Regex } from "./utils";
+import { randomBigint, modulo, base64Regex } from "./utils";
 import { piSignature } from "./signature/piSignature";
-import { CurveName, derivePubKey } from "./curves";
+import { derivePubKey } from "./curves";
 import { Curve, Point } from ".";
-import { SignatureConfig } from "./interfaces";
-import { HashFunction } from "./utils/hashFunction";
 import * as err from "./errors";
 import { isRingSorted } from "./utils/isRingSorted";
+import { keccak_256 } from "@noble/hashes/sha3";
+import { u256ArrayToBytes } from "./utils";
+
+/**
+ * hash a data returning the same hash between cairo and ts
+ *
+ *
+ **/
+function cairoHash(data: bigint[]): bigint {
+  return BigInt(
+    "0x" + Buffer.from(keccak_256(u256ArrayToBytes(data))).toString("hex"),
+  );
+}
+
+function stringToBigInt(str: string): bigint {
+  // Convert the string to a Uint8Array of UTF-8 encoded bytes
+  const encoder = new TextEncoder();
+  const bytes = encoder.encode(str);
+
+  // Convert the bytes to a hexadecimal string
+  const hex = Array.from(bytes)
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+
+  // Prepend '0x' to create a hexadecimal literal and convert to BigInt
+  return BigInt("0x" + hex);
+}
 
 /**
  * Ring signature class.
  * This class is used to sign messages using ring signatures.
  * It can also be used to verify ring signatures.
  */
-export class RingSignature {
+export class CairoRingSignature {
   private message: string; // clear message
   private c: bigint;
   private responses: bigint[];
   private ring: Point[];
   private curve: Curve;
-  private config?: SignatureConfig;
 
   /**
    * Ring signature class constructor
@@ -36,7 +60,6 @@ export class RingSignature {
     c: bigint,
     responses: bigint[],
     curve: Curve,
-    config?: SignatureConfig,
   ) {
     if (ring.length === 0) throw err.noEmptyRing;
 
@@ -44,14 +67,6 @@ export class RingSignature {
       throw err.lengthMismatch("ring", "responses");
 
     if (c >= curve.N) throw err.invalidParams("c must be a < N");
-
-    // check if config is an object
-    if (config && typeof config !== "object")
-      throw err.invalidParams("Config must be an object");
-
-    // evm compatibility does not work with ed25519
-    if (curve.name === CurveName.ED25519 && config?.evmCompatibility)
-      throw err.invalidParams("EVM compatibility is not available for ed25519");
 
     // check ring, c and responses validity
     checkRing(ring, curve);
@@ -65,7 +80,6 @@ export class RingSignature {
     this.c = c;
     this.responses = responses;
     this.curve = curve;
-    this.config = config;
   }
 
   /**
@@ -105,15 +119,6 @@ export class RingSignature {
   }
 
   /**
-   * Get the config
-   *
-   * @returns The config
-   */
-  getConfig(): SignatureConfig | undefined {
-    return this.config;
-  }
-
-  /**
    * Get the message
    *
    * @returns The message
@@ -129,9 +134,7 @@ export class RingSignature {
    */
   get messageDigest(): bigint {
     // Never hash the message with evmCompatibility = true
-    return BigInt(
-      "0x" + hash([this.message], { ...this.config, evmCompatibility: false }),
-    );
+    return cairoHash([stringToBigInt(this.message)]);
   }
 
   /**
@@ -144,7 +147,7 @@ export class RingSignature {
    *
    * @returns A RingSignature
    */
-  static fromJsonString(json: string | object): RingSignature {
+  static fromJsonString(json: string | object): CairoRingSignature {
     let parsedJson;
     if (typeof json === "string") {
       try {
@@ -166,16 +169,6 @@ export class RingSignature {
     if (typeof parsedJson.c === "number")
       parsedJson.c = parsedJson.c.toString();
 
-    // check if config is an object
-    if (parsedJson.config && typeof parsedJson.config !== "object")
-      throw err.invalidJson("Config must be an object");
-    // check if config.hash is an element from HashFunction. If not, throw an error
-    if (
-      parsedJson.config &&
-      parsedJson.config.hash &&
-      !Object.values(HashFunction).includes(parsedJson.config.hash)
-    )
-      throw err.invalidJson("Config.hash must be an element from HashFunction");
     try {
       const sig = parsedJson as {
         message: string;
@@ -183,10 +176,9 @@ export class RingSignature {
         c: string;
         responses: string[];
         curve: string;
-        config?: SignatureConfig;
       };
       const curve = Curve.fromString(sig.curve);
-      return new RingSignature(
+      return new CairoRingSignature(
         sig.message,
         sig.ring.map((point: string) =>
           Point.deserialize(bigIntToPublicKey(BigInt(point))),
@@ -194,7 +186,6 @@ export class RingSignature {
         BigInt(sig.c),
         sig.responses.map((response: string) => BigInt(response)),
         curve,
-        sig.config,
       );
     } catch (e) {
       throw err.invalidJson(e);
@@ -213,7 +204,6 @@ export class RingSignature {
       c: this.c.toString(),
       responses: this.responses.map((response) => response.toString()),
       curve: this.curve.toString(),
-      config: this.config,
     });
   }
 
@@ -224,12 +214,12 @@ export class RingSignature {
    *
    * @returns The ring signature
    */
-  static fromBase64(base64: string): RingSignature {
+  static fromBase64(base64: string): CairoRingSignature {
     // check if the base64 string is valid
     if (!base64Regex.test(base64)) throw err.invalidBase64();
 
     const decoded = Buffer.from(base64, "base64").toString("ascii");
-    return RingSignature.fromJsonString(decoded);
+    return CairoRingSignature.fromJsonString(decoded);
   }
 
   /**
@@ -238,112 +228,13 @@ export class RingSignature {
   toBase64(): string {
     return Buffer.from(this.toJsonString()).toString("base64");
   }
-  /**
-   * Sign a message using ring signatures
-   *
-   * @param ring - Ring of public keys (does not contain the signer public key)
-   * @param signerPrivKey - Private key of the signer
-   * @param message - Clear message to sign
-   * @param curve - The elliptic curve to use
-   * @param config - The config params to use
-   *
-   * @returns A RingSignature
-   */
-  static sign(
-    ring: Point[], // ring.length = n
-    signerPrivateKey: bigint,
-    message: string,
-    curve: Curve,
-    config?: SignatureConfig,
-  ): RingSignature {
-    if (signerPrivateKey === 0n || signerPrivateKey >= curve.N)
-      throw err.invalidParams("Signer private key cannot be 0 and must be < N");
-
-    // check if ring is valid
-    checkRing(ring, curve, true);
-
-    // Never hash the message with evmCompatibility = true
-    const messageDigest = BigInt(
-      "0x" + hash([message], { ...config, evmCompatibility: false }),
-    );
-
-    const alpha = randomBigint(curve.N);
-
-    // get the signer public key
-    const signerPubKey: Point = derivePubKey(signerPrivateKey, curve);
-    // check if the ring is sorted by x ascending coordinate (and y ascending if x's are equal)
-    if (!isRingSorted(ring)) throw err.invalidRing("The ring is not sorted");
-
-    // if needed, insert the user public key at the right place (sorted by x ascending coordinate)
-    let signerIndex = ring.findIndex(
-      (point) => point.x === signerPubKey.x && point.y === signerPubKey.y,
-    );
-    if (signerIndex === -1) {
-      // todo: make it more efficient
-      ring = ring.concat([signerPubKey]) as Point[];
-      ring = sortRing(ring);
-      signerIndex = ring.findIndex(
-        (point) => point.x === signerPubKey.x && point.y === signerPubKey.y,
-      );
-    }
-
-    if (ring.length === 0) {
-      ring = [signerPubKey];
-      signerIndex = 0;
-    }
-    const serializedRing = serializeRing(ring);
-    // compute cpi+1
-    const cpi1 = RingSignature.computeC(
-      ring,
-      serializedRing,
-      messageDigest,
-      { index: (signerIndex + 1) % ring.length, alpha: alpha },
-      curve,
-      config,
-    );
-
-    const rawSignature = RingSignature.signature(
-      curve,
-      ring,
-      cpi1,
-      signerIndex,
-      messageDigest,
-      config,
-    );
-
-    // compute the signer response
-    const signerResponse = piSignature(
-      alpha,
-      rawSignature.cees[rawSignature.signerIndex],
-      signerPrivateKey,
-      curve,
-    );
-
-    return new RingSignature(
-      message,
-      rawSignature.ring,
-      rawSignature.cees[0],
-      // insert the signer response
-      rawSignature.responses
-        .slice(0, rawSignature.signerIndex)
-        .concat(
-          [signerResponse],
-          rawSignature.responses.slice(rawSignature.signerIndex + 1),
-        ),
-      curve,
-      config,
-    );
-  }
-
-  static cairoSerializeRing(ring: Point[]) {}
 
   static cairoSign(
     ring: Point[], // ring.length = n
     signerPrivateKey: bigint,
     message: string,
     curve: Curve,
-    config?: SignatureConfig,
-  ): RingSignature {
+  ): CairoRingSignature {
     if (signerPrivateKey === 0n || signerPrivateKey >= curve.N)
       throw err.invalidParams("Signer private key cannot be 0 and must be < N");
 
@@ -351,8 +242,7 @@ export class RingSignature {
     checkRing(ring, curve, true);
 
     // Never hash the message with evmCompatibility = true
-    const messageDigest = BigInt("0x" + hash([message]));
-
+    const messageDigest = cairoHash([stringToBigInt(message)]);
     const alpha = randomBigint(curve.N);
 
     // get the signer public key
@@ -377,24 +267,22 @@ export class RingSignature {
       ring = [signerPubKey];
       signerIndex = 0;
     }
-    const serializedRing = serializeRing(ring);
+    const serializedRing = serializeRingCairo(ring);
     // compute cpi+1
-    const cpi1 = RingSignature.computeC(
+    const cpi1 = CairoRingSignature.computeC(
       ring,
       serializedRing,
       messageDigest,
       { index: (signerIndex + 1) % ring.length, alpha: alpha },
       curve,
-      config,
     );
 
-    const rawSignature = RingSignature.signature(
+    const rawSignature = CairoRingSignature.signature(
       curve,
       ring,
       cpi1,
       signerIndex,
       messageDigest,
-      config,
     );
 
     // compute the signer response
@@ -405,7 +293,7 @@ export class RingSignature {
       curve,
     );
 
-    return new RingSignature(
+    return new CairoRingSignature(
       message,
       rawSignature.ring,
       rawSignature.cees[0],
@@ -417,7 +305,6 @@ export class RingSignature {
           rawSignature.responses.slice(rawSignature.signerIndex + 1),
         ),
       curve,
-      config,
     );
   }
 
@@ -448,15 +335,15 @@ export class RingSignature {
         throw `The public key ${point} is not valid`;
       }
     }
-    const messageDigest = this.messageDigest;
-    const serializedRing = serializeRing(this.ring);
+    const messageDigest = cairoHash([stringToBigInt(this.message)]);
+    const serializedRing = serializeRingCairo(this.ring);
     // NOTE : the loop has at least one iteration since the ring
     // is ensured to be not empty
     let lastComputedCp = this.c;
 
     // compute the c values : c1 ’, c2 ’, ... , cn ’, c0 ’
     for (let i = 0; i < this.ring.length; i++) {
-      lastComputedCp = RingSignature.computeC(
+      lastComputedCp = CairoRingSignature.computeC(
         this.ring,
         serializedRing,
         messageDigest,
@@ -467,7 +354,6 @@ export class RingSignature {
           previousIndex: i,
         },
         this.curve,
-        this.config,
       );
     }
 
@@ -484,10 +370,10 @@ export class RingSignature {
   static verify(signature: string): boolean {
     // check if the signature is a json or a base64 string
     if (base64Regex.test(signature)) {
-      signature = RingSignature.fromBase64(signature).toJsonString();
+      signature = CairoRingSignature.fromBase64(signature).toJsonString();
     }
-    const ringSignature: RingSignature =
-      RingSignature.fromJsonString(signature);
+    const ringSignature: CairoRingSignature =
+      CairoRingSignature.fromJsonString(signature);
     return ringSignature.verify();
   }
 
@@ -509,7 +395,6 @@ export class RingSignature {
     ceePiPlusOne: bigint,
     signerIndex: number,
     messageDigest: bigint,
-    config?: SignatureConfig,
   ): {
     ring: Point[];
     cees: bigint[];
@@ -531,7 +416,7 @@ export class RingSignature {
 
     // contains all the cees from 0 to ring.length - 1 (0, 1, ..., pi, ..., ring.length - 1)
     const cees: bigint[] = ring.map(() => 0n);
-    const serializedRing = serializeRing(ring);
+    const serializedRing = serializeRingCairo(ring);
     for (let i = signerIndex + 1; i < ring.length + signerIndex + 1; i++) {
       /* 
       Convert i to obtain a numbers between 0 and ring.length - 1, 
@@ -551,13 +436,12 @@ export class RingSignature {
           previousIndex: indexMinusOne,
         };
         // compute the c value
-        cees[index] = RingSignature.computeC(
+        cees[index] = CairoRingSignature.computeC(
           ring,
           serializedRing,
           messageDigest,
           params,
           curve,
-          config,
         );
       }
     }
@@ -603,7 +487,6 @@ export class RingSignature {
       alpha?: bigint;
     },
     curve: Curve,
-    config?: SignatureConfig,
   ): bigint {
     const G = curve.GtoPoint();
     const N = curve.N;
@@ -626,20 +509,9 @@ export class RingSignature {
       const alphaG = G.mult(params.alpha);
       // if !config.evmCompatibility, the ring is not added to the hash
       // if config.evmCompatibility, the message is only added in the first iteration
-      const hashContent = (config?.evmCompatibility ? [] : serializedRing)
-        .concat(
-          (config?.evmCompatibility && params.index === 1) ||
-            !config?.evmCompatibility
-            ? [messageDigest]
-            : [],
-        )
-        .concat([
-          config?.evmCompatibility
-            ? BigInt(alphaG.toEthAddress())
-            : BigInt("0x" + alphaG.serialize()),
-        ]);
+      const hashContent = serializedRing.concat(messageDigest).concat(alphaG.y);
 
-      return modulo(BigInt("0x" + hash(hashContent, config)), N);
+      return modulo(cairoHash(hashContent), N);
     }
     if (
       params.previousR &&
@@ -650,20 +522,9 @@ export class RingSignature {
         ring[params.previousIndex].mult(params.previousC),
       );
 
-      const hashContent = (config?.evmCompatibility ? [] : serializedRing)
-        .concat(
-          (config?.evmCompatibility && params.index === 1) ||
-            !config?.evmCompatibility
-            ? [messageDigest]
-            : [],
-        )
-        .concat([
-          config?.evmCompatibility
-            ? BigInt(point.toEthAddress())
-            : BigInt("0x" + point.serialize()),
-        ]);
-
-      return modulo(BigInt("0x" + hash(hashContent, config)), N);
+      const hashContent = serializedRing.concat(messageDigest).concat(point.y);
+      console.log("hash value : ", cairoHash(hashContent));
+      return modulo(cairoHash(hashContent), N);
     }
     throw err.missingParams(
       "Either 'alpha' or all the others params must be set",
@@ -708,10 +569,10 @@ export function checkRing(ring: Point[], ref?: Curve, emptyRing = false): void {
  *
  * @returns The serialized ring as a string array
  */
-export function serializeRing(ring: Point[]): bigint[] {
+export function serializeRingCairo(ring: Point[]): bigint[] {
   const serializedPoints: bigint[] = [];
   for (const point of ring) {
-    serializedPoints.push(publicKeyToBigInt(point.serialize())); // Call serialize() on each 'point' object
+    serializedPoints.push(point.y); // Call serialize() on each 'point' object
   }
   return serializedPoints;
 }
@@ -802,3 +663,42 @@ export function bigIntToPublicKey(bigint: bigint): string {
     return prefix + hex;
   }
 }
+
+export function serializeRing(ring: Point[]): bigint[] {
+  const serializedPoints: bigint[] = [];
+  for (const point of ring) {
+    serializedPoints.push(publicKeyToBigInt(point.serialize())); // Call serialize() on each 'point' object
+  }
+  return serializedPoints;
+}
+
+/*Data to hash :  [
+  10657495649227650482807288028275287879965920379530753533351072332674903396550n,
+  34408208267190262510609719821648603367379423696147372401733970751195464215177n,
+  25532149091352286430307180900301885225921841363939904958011540612962878155828n,
+  25130982270725351492078080917244946694662105954296899228585440574429183004137n,
+  50465964246956439513629485026616137077907893571903418330307354468252175739185n,
+  31501100563447797089370444184875303192304610195273019347825025349024727370472n,
+  22349926047418830863286868424047153664031984048551566879408141024670517963814n,
+  31521397850261351514215762853960690202016064460811530235485016346110580060958n,
+  29281598888376043924944403887350209383198193855627819911092056030887793472672n,
+  35304555330307088563378989364011432108154408245338297158206561833203829092972n,
+  36407112948267700815706237961212238366155814822320393324467842672799158956408n,
+  84425940107102072363874442480208383655871035780590271845742782040219098874582 n,
+  29225814993887036894080305403416487429252652911122778133476064460051368767684n
+]*/
+
+//
+//[10657495649227650482807288028275287879965920379530753533351072332674903396550,
+//34408208267190262510609719821648603367379423696147372401733970751195464215177,
+//25532149091352286430307180900301885225921841363939904958011540612962878155828,
+//25130982270725351492078080917244946694662105954296899228585440574429183004137,
+//50465964246956439513629485026616137077907893571903418330307354468252175739185,
+//31501100563447797089370444184875303192304610195273019347825025349024727370472,
+//22349926047418830863286868424047153664031984048551566879408141024670517963814,
+//31521397850261351514215762853960690202016064460811530235485016346110580060958,
+//29281598888376043924944403887350209383198193855627819911092056030887793472672,
+//35304555330307088563378989364011432108154408245338297158206561833203829092972,
+//36407112948267700815706237961212238366155814822320393324467842672799158956408,
+//84425940107102072363874442480208383655871035780590271845742782040219098874582,
+//29225814993887036894080305403416487429252652911122778133476064460051368767684]

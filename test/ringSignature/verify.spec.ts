@@ -31,7 +31,6 @@ describe("Test verify()", () => {
       data.message,
       ed25519,
     );
-
     expect(signature.verify()).toBe(true);
   });
 
