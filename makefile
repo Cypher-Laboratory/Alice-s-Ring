@@ -79,6 +79,7 @@ fmt-rust:
 	@echo "Formatting Rust package..."
 	@set -e; \
 	cd $(RUST_VERIFIER_DIR) && cargo fmt
+	@echo "Done formatting Rust package."
 
 .PHONY: fmt-check
 fmt-check: fmt-check-ts fmt-check-solidity fmt-check-rust
