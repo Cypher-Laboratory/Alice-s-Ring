@@ -14,24 +14,35 @@ jobs:
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
-      - uses: actions/checkout@v3
+        - uses: actions/checkout@v3
+    
+        - name: Use Node.js ${{ matrix.node-version }}
+          uses: actions/setup-node@v3
+          with:
+            node-version: ${{ matrix.node-version }}
+            cache: "yarn"  # Cache Yarn dependencies
+    
+        # Cache Yarn dependencies
+        - name: Cache Yarn dependencies
+          uses: actions/cache@v3
+          with:
+            path: |
+              node_modules
+              .yarn/cache
+            key: yarn-cache-${{ matrix.node-version }}-${{ hashFiles('yarn.lock') }}
+            restore-keys: |
+              yarn-cache-${{ matrix.node-version }}-
 
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: "npm"
+        # Install all dependencies for all packages in the monorepo
+        - run: yarn install --immutable --immutable-cache --check-cache
 
-      # Install all dependencies for all packages in the monorepo
-      - run: npm ci --workspaces --include 'packages/*' --omit 'rust-verifier'
+        # Check formatting for all packages
+        - run: yarn workspaces run fmt:check
 
-      # Check formatting for all packages
-      - run: npm run fmt:check --workspaces
+        # Build all packages
+        - run: yarn build 
 
-      # Build all packages
-      - run: npm run build 
-
-      # Run tests for all packages
-      - run: npm test --workspaces
+        # Run tests for all packages
+        - run: yarn workspaces run test 
 
 

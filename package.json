@@ -8,8 +8,8 @@
     "packages/metamask-snap/*"
   ],
   "scripts": {
-    "test": "cd packages/ring-sig-utils && npm run build && cd ../.. && npm run test --workspaces",
-    "build": "cd packages/ring-sig-utils && npm run build && cd ../.. && npm run build --workspaces",
+    "test": "cd packages/ring-sig-utils && npm run build && cd ../.. && yarn workspaces run test ",
+    "build": "cd packages/ring-sig-utils && npm run build && cd ../.. && yarn workspaces run test ",
     "clean": "npm run clean --workspaces && rimraf ./node_modules"
   },
   "repository": {
