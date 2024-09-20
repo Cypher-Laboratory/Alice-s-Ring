@@ -29,7 +29,7 @@ jobs:
       - run: npm run fmt:check --workspaces
 
       # Build all packages
-      - run: npm run build --workspaces
+      - run: npm run build 
 
       # Run tests for all packages
       - run: npm test --workspaces
