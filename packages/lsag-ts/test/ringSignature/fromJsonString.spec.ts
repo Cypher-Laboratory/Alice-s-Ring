@@ -20,19 +20,15 @@ import * as data from "../data";
  */
 describe("Test fromJson()", () => {
   it("Should return a RingSignature object", () => {
-    const signature = RingSignature.fromJson(data.jsonRS.valid)
-    expect(signature).toBeInstanceOf(
-      RingSignature,
-    );
+    const signature = RingSignature.fromJson(data.jsonRS.valid);
+    expect(signature).toBeInstanceOf(RingSignature);
 
     expect(signature.verify()).toBe(true);
   });
 
   it("Should throw an error if the input is not a valid json", () => {
     expect(() => {
-      RingSignature.fromJson(
-        JSON.stringify(data.jsonRS.valid).slice(0, 1),
-      );
+      RingSignature.fromJson(JSON.stringify(data.jsonRS.valid).slice(0, 1));
     }).toThrow(); // no error message because it depends on the node version used
   });
 

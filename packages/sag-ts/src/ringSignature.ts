@@ -413,8 +413,7 @@ export class RingSignature {
     if (base64Regex.test(signature)) {
       signature = RingSignature.fromBase64(signature).toJsonString();
     }
-    const ringSignature: RingSignature =
-      RingSignature.fromJson(signature);
+    const ringSignature: RingSignature = RingSignature.fromJson(signature);
     return ringSignature.verify();
   }
 
@@ -569,7 +568,6 @@ export class RingSignature {
         ]);
 
       const c = mod(BigInt("0x" + hash(hashContent, config)), N);
-
 
       console.log("c" + params.index + ": " + c);
       return c;

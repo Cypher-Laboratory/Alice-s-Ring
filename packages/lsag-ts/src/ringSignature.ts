@@ -205,7 +205,6 @@ export class RingSignature {
     )
       throw err.invalidJson("Config.hash must be an element from HashFunction");
 
-
     try {
       const sig = parsedJson as {
         message: string;
@@ -458,8 +457,7 @@ export class RingSignature {
     if (base64Regex.test(signature)) {
       signature = RingSignature.fromBase64(signature).toJsonString();
     }
-    const ringSignature: RingSignature =
-      RingSignature.fromJson(signature);
+    const ringSignature: RingSignature = RingSignature.fromJson(signature);
     return ringSignature.verify();
   }
 
