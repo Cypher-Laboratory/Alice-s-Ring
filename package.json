@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "test": "cd packages/ring-sig-utils && npm run build && cd ../.. && npm run test --workspaces",
-    "build": "npm i -D typescript && cd packages/ring-sig-utils && npm run build && cd ../.. && npm run build --workspaces",
+    "build": "cd packages/ring-sig-utils && npm run build && cd ../.. && npm run build --workspaces",
     "clean": "npm run clean --workspaces && rimraf ./node_modules"
   },
   "repository": {
