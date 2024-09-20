@@ -16,11 +16,12 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - name: Navigate to package/rust-verifier
-      run: cd packages/rust-verifier
     - name: fmt
+      working-directory: packages/rust-verifier
       run: cargo fmt -- --all --check
     - name: Build
+      working-directory: packages/rust-verifier
       run: cargo build --verbose
     - name: Run tests
+      working-directory: packages/rust-verifier
       run: cargo test --verbose

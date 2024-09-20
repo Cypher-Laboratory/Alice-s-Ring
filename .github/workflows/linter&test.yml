@@ -23,7 +23,7 @@ jobs:
           cache: "npm"
 
       # Install all dependencies for all packages in the monorepo
-      - run: npm ci --workspaces
+      - run: npm ci --workspaces --include 'packages/*' --omit 'rust-verifier'
 
       # Check formatting for all packages
       - run: npm run fmt:check --workspaces
