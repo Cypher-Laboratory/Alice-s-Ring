@@ -1,5 +1,5 @@
 {
-  "name": "ring-signature-snap",
+  "name": "@cypher-laboratory/ring-signature-snap-documentation",
   "version": "0.0.0",
   "private": true,
   "scripts": {
@@ -34,7 +34,7 @@
     "@docusaurus/module-type-aliases": "^3.5.2",
     "@docusaurus/tsconfig": "^3.5.2",
     "@docusaurus/types": "^3.5.2",
-    "typescript": "~5.2.2"
+    "typescript": "5.6.2"
   },
   "browserslist": {
     "production": [

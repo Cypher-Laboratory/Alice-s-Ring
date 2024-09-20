@@ -10,7 +10,7 @@
     "url": "https://github.com/Cypher-Laboratory/Alice-s-Ring-SAG-TS.git"
   },
   "scripts": {
-    "build": "npm run fmt && rimraf ./dist && mkdir -p ./dist && tsc",
+    "build": "npm run fmt && rimraf ./dist && tsc",
     "test": "jest",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -26,8 +26,7 @@
     "@cypher-laboratory/ring-sig-utils": "^0.0.1",
     "@noble/hashes": "^1.3.2",
     "crypto-browserify": "^3.12.0",
-    "ts-node": "^10.9.1",
-    "typescript": "^5.6.2"
+    "ts-node": "^10.9.1"
   },
   "devDependencies": {
     "@types/jest": "^29.5.7",
@@ -37,6 +36,7 @@
     "eslint": "^8.44.0",
     "jest": "^29.7.0",
     "prettier": "^3.0.0",
-    "ts-jest": "^29.1.1"
+    "ts-jest": "^29.1.1",
+    "typescript": "^5.6.2"
   }
 }

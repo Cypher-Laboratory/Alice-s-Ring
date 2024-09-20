@@ -1,4 +1,5 @@
 # Define directories for the packages
+RING_SIG_UTILS_DIR = packages/ring-sig-utils
 SAG_TS_DIR = packages/sag-ts
 LSAG_TS_DIR = packages/lsag-ts
 SAG_EVM_VERIFIER_DIR = packages/sag-evm-verifier
@@ -19,10 +20,16 @@ install:
 
 # ------------------ Build Targets ------------------
 .PHONY: build
-build: build-ts build-solidity build-rust build-final-log
+build: build-ring-sig-utils build-ts build-solidity build-rust build-final-log
+
+.PHONY: build-ring-sig-utils
+build-ring-sig-utils:
+	@echo "Building ring-sig-utils package first..."
+	@set -e; \
+	cd $(RING_SIG_UTILS_DIR) && npm run build
 
 .PHONY: build-ts
-build-ts:
+build-ts: build-ring-sig-utils
 	@echo "Building TypeScript packages..."
 	@set -e; \
 	cd $(SAG_TS_DIR) && npm run build & \
@@ -52,9 +59,10 @@ build-final-log:
 test: test-ts test-solidity test-rust
 
 .PHONY: test-ts
-test-ts:
+test-ts: build-ring-sig-utils
 	@echo "Running tests for TypeScript packages..."
 	@set -e; \
+	cd $(RING_SIG_UTILS_DIR) && npm run test & \
 	cd $(SAG_TS_DIR) && npm run test & \
 	cd $(LSAG_TS_DIR) && npm run test & \
 	cd $(SNAP_SDK_DIR) && npm run test & \
@@ -78,9 +86,10 @@ test-rust:
 fmt: fmt-ts fmt-solidity fmt-rust
 
 .PHONY: fmt-ts
-fmt-ts:
+fmt-ts: build-ring-sig-utils
 	@echo "Formatting TypeScript packages..."
 	@set -e; \
+	cd $(RING_SIG_UTILS_DIR) && npm run fmt & \
 	cd $(SAG_TS_DIR) && npm run fmt & \
 	cd $(LSAG_TS_DIR) && npm run fmt & \
 	cd $(SNAP_SDK_DIR) && npm run fmt & \
@@ -104,9 +113,10 @@ fmt-rust:
 fmt-check: fmt-check-ts fmt-check-solidity fmt-check-rust
 
 .PHONY: fmt-check-ts
-fmt-check-ts:
+fmt-check-ts: build-ring-sig-utils
 	@echo "Checking format for TypeScript packages..."
 	@set -e; \
+	cd $(RING_SIG_UTILS_DIR) && npm run fmt:check & \
 	cd $(SAG_TS_DIR) && npm run fmt:check & \
 	cd $(LSAG_TS_DIR) && npm run fmt:check & \
 	cd $(SNAP_SDK_DIR) && npm run fmt:check & \
@@ -133,6 +143,7 @@ clean: clean-ts clean-solidity clean-rust
 clean-ts:
 	@echo "Cleaning TypeScript packages..."
 	@set -e; \
+	cd $(RING_SIG_UTILS_DIR) && npm run clean & \
 	cd $(SAG_TS_DIR) && npm run clean & \
 	cd $(LSAG_TS_DIR) && npm run clean & \
 	cd $(SNAP_SDK_DIR) && npm run clean & \
