@@ -17,7 +17,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Navigate to package/rust-verifier
-      run: cd package/rust-verifier
+      run: cd packages/rust-verifier
     - name: fmt
       run: cargo fmt -- --all --check
     - name: Build
