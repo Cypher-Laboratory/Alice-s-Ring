@@ -8,6 +8,7 @@
     "packages/metamask-snap/*"
   ],
   "scripts": {
+    "allow-scripts": "yarn workspace root allow-scripts",
     "test": "cd packages/ring-sig-utils && npm run build && cd ../.. && yarn workspaces run test ",
     "build": "cd packages/ring-sig-utils && npm run build && cd ../.. && yarn workspaces run test ",
     "clean": "npm run clean --workspaces && rimraf ./node_modules"
