@@ -11,13 +11,14 @@
     "test": "npx hardhat compile && npx hardhat test",
     "build": "npx hardhat compile",
     "fmt": "exit 0",
-    "fmt:check": "exit 0"
+    "fmt:check": "exit 0",
+    "clean": "rimraf ./dist && rimraf ./node_modules && rimraf ./build && rimraf ./artifacts && rimraf ./coverage && rimraf ./cache"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/Cypher-Laboratory/Alice-s-Ring-EVM-verifier.git"
   },
-  "author": "Elli610",
+  "author": "Elli610 <nathan@cypherlab.org>",
   "license": "MIT",
   "keywords": [
     "solidity",

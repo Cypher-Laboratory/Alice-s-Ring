@@ -1,0 +1,15 @@
+{
+  "name": "rust-verifier",
+  "version": "0.1.0",
+  "description": "An implementation of the SAG and LSG verifiers written in rust",
+  "main": "index.js",
+  "scripts": {
+    "build": "cargo build",
+    "test": "cargo test",
+    "fmt": "cargo clippy --all-targets --all-features -- -D warnings && cargo fmt",
+    "fmt:check": "cargo fmt -- --check",
+    "clean": "cargo clean"
+  },
+  "author": "Elli610 <nathan@cypherlab.org>",
+  "license": "MIT"
+}

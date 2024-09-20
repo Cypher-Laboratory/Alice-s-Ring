@@ -17,7 +17,8 @@
     "prettier": "prettier --check .",
     "prettier:fix": "prettier --write .",
     "fmt:check": "npm run prettier && npm run lint",
-    "fmt": "npm run prettier:fix && npm run fmt:check"
+    "fmt": "npm run prettier:fix && npm run fmt:check",
+    "clean": "rimraf ./dist && rimraf ./node_modules"
   },
   "author": "Elli610 && LeJamon && maximedgr",
   "license": "MIT",
