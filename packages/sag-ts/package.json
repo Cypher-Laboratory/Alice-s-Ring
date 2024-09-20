@@ -10,7 +10,7 @@
     "url": "https://github.com/Cypher-Laboratory/Alice-s-Ring-SAG-TS.git"
   },
   "scripts": {
-    "build": "npm run fmt && rimraf ./dist && tsc",
+    "build": "npm run fmt && rimraf ./dist && mkdir -p ./dist && tsc",
     "test": "jest",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",

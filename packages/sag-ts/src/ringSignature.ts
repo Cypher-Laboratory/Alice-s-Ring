@@ -275,8 +275,6 @@ export class RingSignature {
       "0x" + hash([message], config),
     );
 
-    console.log("initial msg digest: ", messageDigest);
-
     const alpha = randomBigint(curve.N);
 
     // get the signer public key
@@ -395,8 +393,6 @@ export class RingSignature {
         this.curve,
         this.config,
       );
-
-      console.log("c" + (i + 1) + "': " + lastComputedCp);
     }
     // return true if c0 === c0'
     return this.c === lastComputedCp;
@@ -567,10 +563,7 @@ export class RingSignature {
             : alphaG.serialize(),
         ]);
 
-      const c = mod(BigInt("0x" + hash(hashContent, config)), N);
-
-      console.log("c" + params.index + ": " + c);
-      return c;
+      return mod(BigInt("0x" + hash(hashContent, config)), N);
     }
     if (
       params.previousR &&
@@ -596,9 +589,7 @@ export class RingSignature {
             : point.serialize(),
         ]);
 
-      const c = mod(BigInt("0x" + hash(hashContent, config)), N);
-      console.log("c" + params.index + ": " + c);
-      return c;
+      return mod(BigInt("0x" + hash(hashContent, config)), N);
     }
     throw err.missingParams(
       "Either 'alpha' or all the others params must be set",
