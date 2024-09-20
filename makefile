@@ -16,7 +16,7 @@ all: install build
 install:
 	@echo "Installing dependencies..."
 	@set -e; \
-	npm install --workspaces
+	yarn install --workspaces
 
 # ------------------ Build Targets ------------------
 .PHONY: build
@@ -26,16 +26,16 @@ build: build-ring-sig-utils build-ts build-solidity build-rust build-final-log
 build-ring-sig-utils:
 	@echo "Building ring-sig-utils package first..."
 	@set -e; \
-	cd $(RING_SIG_UTILS_DIR) && npm run build
+	cd $(RING_SIG_UTILS_DIR) && yarn build
 
 .PHONY: build-ts
 build-ts: build-ring-sig-utils
 	@echo "Building TypeScript packages..."
 	@set -e; \
-	cd $(SAG_TS_DIR) && npm run build & \
-	cd $(LSAG_TS_DIR) && npm run build & \
-	cd $(SNAP_SDK_DIR) && npm run build & \
-	cd $(SNAP_DOCS_DIR) && npm run build & \
+	cd $(SAG_TS_DIR) && yarn build & \
+	cd $(LSAG_TS_DIR) && yarn build & \
+	cd $(SNAP_SDK_DIR) && yarn build & \
+	cd $(SNAP_DOCS_DIR) && yarn build & \
 	wait
 
 .PHONY: build-solidity
@@ -62,11 +62,11 @@ test: test-ts test-solidity test-rust
 test-ts: build-ring-sig-utils
 	@echo "Running tests for TypeScript packages..."
 	@set -e; \
-	cd $(RING_SIG_UTILS_DIR) && npm run test & \
-	cd $(SAG_TS_DIR) && npm run test & \
-	cd $(LSAG_TS_DIR) && npm run test & \
-	cd $(SNAP_SDK_DIR) && npm run test & \
-	cd $(SNAP_DOCS_DIR) && npm run test & \
+	cd $(RING_SIG_UTILS_DIR) && yarn test & \
+	cd $(SAG_TS_DIR) && yarn test & \
+	cd $(LSAG_TS_DIR) && yarn test & \
+	cd $(SNAP_SDK_DIR) && yarn test & \
+	cd $(SNAP_DOCS_DIR) && yarn test & \
 	wait
 
 .PHONY: test-solidity
@@ -89,18 +89,18 @@ fmt: fmt-ts fmt-solidity fmt-rust
 fmt-ts: build-ring-sig-utils
 	@echo "Formatting TypeScript packages..."
 	@set -e; \
-	cd $(RING_SIG_UTILS_DIR) && npm run fmt & \
-	cd $(SAG_TS_DIR) && npm run fmt & \
-	cd $(LSAG_TS_DIR) && npm run fmt & \
-	cd $(SNAP_SDK_DIR) && npm run fmt & \
-	cd $(SNAP_DOCS_DIR) && npm run fmt & \
+	cd $(RING_SIG_UTILS_DIR) && yarn fmt & \
+	cd $(SAG_TS_DIR) && yarn fmt & \
+	cd $(LSAG_TS_DIR) && yarn fmt & \
+	cd $(SNAP_SDK_DIR) && yarn fmt & \
+	cd $(SNAP_DOCS_DIR) && yarn fmt & \
 	wait
 
 .PHONY: fmt-solidity
 fmt-solidity:
 	@echo "Formatting Solidity package..."
 	@set -e; \
-	cd $(SAG_EVM_VERIFIER_DIR) && npm run fmt
+	cd $(SAG_EVM_VERIFIER_DIR) && yarn fmt
 
 .PHONY: fmt-rust
 fmt-rust:
@@ -116,18 +116,18 @@ fmt-check: fmt-check-ts fmt-check-solidity fmt-check-rust
 fmt-check-ts: build-ring-sig-utils
 	@echo "Checking format for TypeScript packages..."
 	@set -e; \
-	cd $(RING_SIG_UTILS_DIR) && npm run fmt:check & \
-	cd $(SAG_TS_DIR) && npm run fmt:check & \
-	cd $(LSAG_TS_DIR) && npm run fmt:check & \
-	cd $(SNAP_SDK_DIR) && npm run fmt:check & \
-	cd $(SNAP_DOCS_DIR) && npm run fmt:check & \
+	cd $(RING_SIG_UTILS_DIR) && yarn fmt:check & \
+	cd $(SAG_TS_DIR) && yarn fmt:check & \
+	cd $(LSAG_TS_DIR) && yarn fmt:check & \
+	cd $(SNAP_SDK_DIR) && yarn fmt:check & \
+	cd $(SNAP_DOCS_DIR) && yarn fmt:check & \
 	wait
 
 .PHONY: fmt-check-solidity
 fmt-check-solidity:
 	@echo "Checking format for Solidity package..."
 	@set -e; \
-	cd $(SAG_EVM_VERIFIER_DIR) && npm run fmt:check
+	cd $(SAG_EVM_VERIFIER_DIR) && yarn fmt:check
 
 .PHONY: fmt-check-rust
 fmt-check-rust:

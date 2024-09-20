@@ -38,11 +38,23 @@
   "homepage": "https://github.com/Cypher-Laboratory/alicesring-evm-verifier#readme",
   "devDependencies": {
     "@cypher-laboratory/ring-sig-utils": "^0.0.1",
+    "@nomicfoundation/hardhat-chai-matchers": "^2.0.0",
+    "@nomicfoundation/hardhat-ethers": "^3.0.0",
+    "@nomicfoundation/hardhat-network-helpers": "^1.0.0",
     "@nomicfoundation/hardhat-toolbox": "^3.0.0",
+    "@nomicfoundation/hardhat-verify": "^1.0.0",
+    "@typechain/ethers-v6": "^0.4.0",
+    "@typechain/hardhat": "^8.0.0",
+    "@types/chai": "^4.2.0",
+    "@types/mocha": ">=9.1.0",
+    "chai": "^4.2.0",
     "eth-gas-reporter": "^0.2.27",
     "hardhat": "^2.19.0",
+    "hardhat-gas-reporter": "^1.0.8",
     "prettier": "^3.0.0",
-    "ts-node": "^10.9.1"
+    "solidity-coverage": "^0.8.1",
+    "ts-node": "^10.9.1",
+    "typechain": "^8.2.0"
   },
   "dependencies": {
     "@types/node": "^20.4.2",
