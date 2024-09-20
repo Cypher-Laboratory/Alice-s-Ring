@@ -1,0 +1,51 @@
+{
+  "name": "@cypher-laboratory/alicesring-evm-verifier",
+  "version": "0.0.1",
+  "description": "A SAG ring signature verifier on EVM",
+  "files": [
+    "contracts/*.sol",
+    "/build/*.json"
+  ],
+  "scripts": {
+    "publish": "npx hardhat compile && rm -rf build && mkdir build && mv artifacts/* build/ && rm -r artifacts && npm publish --access public",
+    "test": "npx hardhat compile && npx hardhat test",
+    "fmt:check": "exit 0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Cypher-Laboratory/Alice-s-Ring-EVM-verifier.git"
+  },
+  "author": "Elli610",
+  "license": "MIT",
+  "keywords": [
+    "solidity",
+    "ethereum",
+    "smart",
+    "contracts",
+    "smart contract",
+    "SAG",
+    "ring",
+    "signature",
+    "ring signature",
+    "verifier"
+  ],
+  "bugs": {
+    "url": "https://github.com/Cypher-Laboratory/alicesring-evm-verifier/issues"
+  },
+  "homepage": "https://github.com/Cypher-Laboratory/alicesring-evm-verifier#readme",
+  "devDependencies": {
+    "@cypher-laboratory/ring-sig-utils": "^0.0.1",
+    "@nomicfoundation/hardhat-toolbox": "^3.0.0",
+    "eth-gas-reporter": "^0.2.27",
+    "hardhat": "^2.19.0",
+    "prettier": "^3.0.0",
+    "ts-node": "^10.9.1"
+  },
+  "dependencies": {
+    "@types/node": "^20.4.2",
+    "@typescript-eslint/eslint-plugin": "^5.61.0",
+    "@typescript-eslint/parser": "^5.61.0",
+    "eslint": "^8.44.0",
+    "ethers": "^6.8.1"
+  }
+}

@@ -20,9 +20,12 @@ import * as data from "../data";
  */
 describe("Test fromJsonString()", () => {
   it("Should return a RingSignature object", () => {
-    expect(RingSignature.fromJsonString(data.jsonRS.valid)).toBeInstanceOf(
+    const signature = RingSignature.fromJsonString(data.jsonRS.valid)
+    expect(signature).toBeInstanceOf(
       RingSignature,
     );
+
+    expect(signature).toBe(true);
   });
 
   it("Should throw an error if the input is not a valid json", () => {
@@ -38,7 +41,7 @@ describe("Test fromJsonString()", () => {
     expect(() => {
       RingSignature.fromJsonString(data.jsonRS.invalidPoint);
     }).toThrow(
-      "Invalid JSON: Error: Point is not on curve: [32743619774205115914274069865521774281655691935407979316086911, 53228091394546760600611500015626053249772644735222949402928992498633999047123]",
+      "Point is not on curve: [10346397184098159818256440585121857622196485392949286607356908257589657045119, 59740408343500434874037892492299096053039967015620848237175731335480776099981]",
     );
   });
 

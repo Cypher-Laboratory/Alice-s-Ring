@@ -5,6 +5,8 @@ import * as data from "../data";
 const secp256k1 = new Curve(CurveName.SECP256K1);
 const ed25519 = new Curve(CurveName.ED25519);
 
+// todo: test with evmCompatibility = true
+
 /**
  * Test the RingSignature.verify() method
  *

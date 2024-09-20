@@ -12,6 +12,9 @@ import {
   hash,
   base64Regex,
   SignatureConfig,
+  serializeRing,
+  checkPoint,
+  sortRing,
 } from "@cypher-laboratory/ring-sig-utils";
 
 /**
@@ -136,9 +139,7 @@ export class RingSignature {
    */
   get messageDigest(): bigint {
     // Never hash the message with evmCompatibility = true
-    return BigInt(
-      "0x" + hash([this.message], { ...this.config, evmCompatibility: false }),
-    );
+    return BigInt("0x" + hash([this.message], this.config));
   }
 
   /**
@@ -183,6 +184,7 @@ export class RingSignature {
       !Object.values(HashFunction).includes(parsedJson.config.hash)
     )
       throw err.invalidJson("Config.hash must be an element from HashFunction");
+
     try {
       const sig = parsedJson as {
         message: string;
@@ -193,13 +195,12 @@ export class RingSignature {
         config?: SignatureConfig;
       };
       const curve = Curve.fromString(sig.curve);
+
       return new RingSignature(
         sig.message,
-        sig.ring.map((point: string) =>
-          Point.deserialize(bigIntToPublicKey(BigInt(point))),
-        ),
-        BigInt(sig.c),
-        sig.responses.map((response: string) => BigInt(response)),
+        sig.ring.map((point: string) => Point.deserialize(point)),
+        BigInt("0x" + sig.c),
+        sig.responses.map((response: string) => BigInt("0x" + response)),
         curve,
         sig.config,
       );
@@ -216,9 +217,9 @@ export class RingSignature {
   toJsonString(): string {
     return JSON.stringify({
       message: this.message,
-      ring: serializeRing(this.ring).map((bi) => bi.toString()),
-      c: this.c.toString(),
-      responses: this.responses.map((response) => response.toString()),
+      ring: serializeRing(this.ring),
+      c: this.c.toString(16),
+      responses: this.responses.map((response) => response.toString(16)),
       curve: this.curve.toString(),
       config: this.config,
     });
@@ -269,9 +270,9 @@ export class RingSignature {
     // check if ring is valid
     checkRing(ring, curve, true);
 
-    // Never hash the message with evmCompatibility = true
     const messageDigest = BigInt(
-      "0x" + hash([message], { ...config, evmCompatibility: false }),
+      // same as this.messageDigest
+      "0x" + hash([message], config),
     );
 
     const alpha = randomBigint(curve.N);
@@ -390,8 +391,9 @@ export class RingSignature {
         this.curve,
         this.config,
       );
-    }
 
+      console.log("c" + (i + 1) + "': " + lastComputedCp);
+    }
     // return true if c0 === c0'
     return this.c === lastComputedCp;
   }
@@ -514,7 +516,7 @@ export class RingSignature {
    */
   private static computeC(
     ring: Point[],
-    serializedRing: bigint[],
+    serializedRing: string[],
     messageDigest: bigint,
     params: {
       index: number;
@@ -547,7 +549,9 @@ export class RingSignature {
       const alphaG = G.mult(params.alpha);
       // if !config.evmCompatibility, the ring is not added to the hash
       // if config.evmCompatibility, the message is only added in the first iteration
-      const hashContent = (config?.evmCompatibility ? [] : serializedRing)
+      const hashContent = (
+        (config?.evmCompatibility ? [] : serializedRing) as (bigint | string)[]
+      )
         .concat(
           (config?.evmCompatibility && params.index === 1) ||
             !config?.evmCompatibility
@@ -571,7 +575,9 @@ export class RingSignature {
         ring[params.previousIndex].mult(params.previousC),
       );
 
-      const hashContent = (config?.evmCompatibility ? [] : serializedRing)
+      const hashContent = (
+        (config?.evmCompatibility ? [] : serializedRing) as (bigint | string)[]
+      )
         .concat(
           (config?.evmCompatibility && params.index === 1) ||
             !config?.evmCompatibility
@@ -619,107 +625,5 @@ export function checkRing(ring: Point[], ref?: Curve, emptyRing = false): void {
     }
   } catch (e) {
     throw err.invalidPoint(("At least one point is not valid: " + e) as string);
-  }
-}
-
-/**
- * Serialize a ring, i.e., serialize each point in the ring
- *
- * @param ring - The ring to serialize
- *
- * @returns The serialized ring as a string array
- */
-export function serializeRing(ring: Point[]): bigint[] {
-  const serializedPoints: bigint[] = [];
-  for (const point of ring) {
-    serializedPoints.push(publicKeyToBigInt(point.serialize())); // Call serialize() on each 'point' object
-  }
-  return serializedPoints;
-}
-
-/**
- * Check if a point is valid
- *
- * @param point - The point to check
- * @param curve - The curve to use as a reference
- *
- * @throws Error if the point is not on the reference curve
- * @throws Error if at least 1 coordinate is not valid (= 0 or >= curve order)
- */
-export function checkPoint(point: Point, curve?: Curve): void {
-  if (curve && !curve.equals(point.curve)) {
-    throw err.curveMismatch();
-  }
-  // check if the point is on the reference curve
-  if (!point.curve.isOnCurve(point)) {
-    throw err.notOnCurve();
-  }
-}
-
-/**
- * Sort a ring by x ascending coordinate (and y ascending if x's are equal)
- *
- * @param ring the ring to sort
- * @returns the sorted ring
- */
-export function sortRing(ring: Point[]): Point[] {
-  return ring.sort((a, b) => {
-    if (a.x !== b.x) {
-      return a.x < b.x ? -1 : 1;
-    }
-    return a.y < b.y ? -1 : 1;
-  });
-}
-
-export function publicKeyToBigInt(publicKeyHex: string): bigint {
-  // Ensure the key is stripped of the prefix and is valid
-  if (
-    !publicKeyHex.startsWith("02") &&
-    !publicKeyHex.startsWith("03") &&
-    !publicKeyHex.startsWith("ED02") &&
-    !publicKeyHex.startsWith("ED03")
-  ) {
-    throw new Error("Invalid compressed public key");
-  }
-
-  let ed = false;
-  if (publicKeyHex.startsWith("ED02") || publicKeyHex.startsWith("ED03")) {
-    publicKeyHex = publicKeyHex.slice(2);
-    ed = true;
-  }
-
-  // Remove the prefix (0x02 or 0x03) and convert the remaining hex to BigInt
-  const bigint = BigInt("0x" + publicKeyHex.slice(2));
-
-  // add an extra 1 if the y coordinate is odd and 2 if it is even
-  if (publicKeyHex.startsWith("03")) {
-    return BigInt(bigint.toString() + "1" + (ed ? "3" : ""));
-  } else {
-    return BigInt(bigint.toString() + "2" + (ed ? "3" : ""));
-  }
-}
-
-// convert a BigInt to a compressed ethereum public key
-export function bigIntToPublicKey(bigint: bigint): string {
-  // if the bigint.toString() ends with 3, the curve is ed25519
-  let ed = false;
-  if (bigint.toString().endsWith("3")) {
-    bigint = BigInt(bigint.toString().slice(0, -1));
-    ed = true;
-  }
-
-  const parity = bigint.toString().slice(-1);
-  const prefix = parity === "1" ? "03" : "02";
-
-  bigint = BigInt(bigint.toString().slice(0, -1));
-  // Convert BigInt to a hex string and pad with zeros if necessary
-  let hex = bigint.toString(16);
-  hex = hex.padStart(64, "0"); // Pad to ensure the hex is 64 characters long
-
-  // Return the compressed public key with the correct prefix
-  if (ed) {
-    return "ED" + prefix + hex;
-  } else {
-    return prefix + hex;
   }
 }

@@ -5,12 +5,10 @@ export {
   SignatureConfig,
   piSignature,
   randomBigint,
-} from "@cypher-laboratory/ring-sig-utils";
-
-export {
-  RingSignature,
   checkPoint,
   checkRing,
   sortRing,
   serializeRing,
-} from "./ringSignature";
+} from "@cypher-laboratory/ring-sig-utils";
+
+export { RingSignature } from "./ringSignature";

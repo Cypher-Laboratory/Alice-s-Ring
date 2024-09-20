@@ -1,6 +1,5 @@
 import * as data from "../data";
-import { isRingSorted } from "@cypher-laboratory/ring-sig-utils";
-import { sortRing } from "../../src/ringSignature";
+import { isRingSorted, sortRing } from "@cypher-laboratory/ring-sig-utils";
 
 describe("Test isRingSorted() SECP256K1", () => {
   it("Should return true if the ring is sorted", () => {

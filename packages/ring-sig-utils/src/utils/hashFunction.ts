@@ -2,6 +2,7 @@ import { keccak_256 as keccak256 } from "@noble/hashes/sha3";
 import { utf8ToBytes } from "@noble/hashes/utils";
 import { sha512 } from "@noble/hashes/sha512";
 import { SignatureConfig } from "../interfaces";
+import { uint8ArrayToHex } from ".";
 import { Curve, CurveName } from "../curves";
 import { Point } from "../point";
 import { hashToCurve } from "@noble/curves/secp256k1";
@@ -29,13 +30,13 @@ export function hash(
   if (!config) fct = HashFunction.KECCAK256;
   switch (fct) {
     case HashFunction.KECCAK256: {
-      return keccak_256(data);
+      return keccak_256(data, config?.evmCompatibility);
     }
     case HashFunction.SHA512: {
       return sha_512(data);
     }
     default: {
-      return keccak_256(data);
+      return keccak_256(data, config?.evmCompatibility);
     }
   }
 }
@@ -44,10 +45,41 @@ export function hash(
  * Hash data using keccak256
  *
  * @param input - The data to hash
+ * @param evmCompatible - Whether to use EVM compatibility (pad inputs to 32 bytes)
  *
- * @returns - The hash of the data as an hex string
+ * @returns - The hash of the data as a hex string
  */
-export function keccak_256(input: (string | bigint)[]): string {
+export function keccak_256(
+  input: (string | bigint)[],
+  evmCompatible?: boolean,
+): string {
+  // If evmCompatibility is true, pad all elements to 32 bytes, concat them, and hash as the EVM verifier does
+  if (evmCompatible) {
+    try {
+      const data = Buffer.concat(
+        input.map((item) => {
+          if (typeof item === "bigint") {
+            // For bigints, convert to 32-byte buffers (uint256)
+            return tobe256(item);
+          } else if (typeof item === "string") {
+            // For strings, convert to 32-byte padded buffers (bytes32)
+            return Buffer.from(item, "utf-8");
+          } else {
+            throw new Error(
+              "evm compatibility is true. All elements must be of type bigint or string.",
+            );
+          }
+        }),
+      );
+      return uint8ArrayToHex(keccak256(data));
+    } catch (error) {
+      throw new Error(
+        "evm compatibility is true. All elements must be of type bigint or string.",
+      );
+    }
+  }
+
+  // Non-evmCompatible case: serialize input as string and hash
   return Buffer.from(keccak256(serializeInput(input))).toString("hex");
 }
 
@@ -121,6 +153,7 @@ export function ecHash(input: (string | bigint)[], curve: Curve): Point {
  * serialized the input
  * @param input the input data
  **/
+
 function serializeInput(input: (bigint | string)[]): string {
   return input.map((x) => (typeof x === "bigint" ? x.toString() : x)).join("");
 }

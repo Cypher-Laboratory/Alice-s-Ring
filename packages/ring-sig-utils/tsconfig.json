@@ -6,9 +6,8 @@
     "declaration": true,
     "outDir": "./dist",
     "strict": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "types": ["node", "jest"]
   },
-  "exclude": [
-    "./test"
-  ]
+  "exclude": ["node_modules"]
 }

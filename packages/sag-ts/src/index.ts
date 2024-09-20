@@ -1,11 +1,10 @@
 export { piSignature } from "./signature/piSignature";
 
-export {
-  RingSignature,
-  checkPoint,
-  checkRing,
-  sortRing,
-  serializeRing,
-} from "./ringSignature";
+export { RingSignature, checkRing } from "./ringSignature";
 
-export { SignatureConfig } from "@cypher-laboratory/ring-sig-utils";
+export {
+  SignatureConfig,
+  sortRing,
+  checkPoint,
+  serializeRing,
+} from "@cypher-laboratory/ring-sig-utils";

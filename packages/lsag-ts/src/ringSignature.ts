@@ -12,6 +12,9 @@ import {
   piSignature,
   isRingSorted,
   errors as err,
+  serializeRing,
+  sortRing,
+  checkRing,
 } from "@cypher-laboratory/ring-sig-utils";
 
 /**
@@ -200,7 +203,7 @@ export class RingSignature {
       !Object.values(HashFunction).includes(parsedJson.config.hash)
     )
       throw err.invalidJson("Config.hash must be an element from HashFunction");
-
+    console.log("before try");
     try {
       const sig = parsedJson as {
         message: string;
@@ -236,7 +239,7 @@ export class RingSignature {
   toJsonString(): string {
     return JSON.stringify({
       message: this.message,
-      ring: serializeRing(this.ring).map((bi) => bi.toString()),
+      ring: serializeRing(this.ring),
       c: this.c.toString(16),
       responses: this.responses.map((response) => response.toString(16)),
       curve: this.curve.toString(),
@@ -648,83 +651,4 @@ export class RingSignature {
       "Either 'alpha' or all the others params must be set",
     );
   }
-}
-
-/**
- * Check if a ring is valid
- *
- * @param ring - The ring to check
- * @param ref - The curve to use as a reference (optional, if not set, the first point's curve will be used)
- * @param emptyRing - If true, the ring can be empty
- *
- * @throws Error if the ring is empty
- * @throws Error if the ring contains duplicates
- * @throws Error if at least one of the points is invalid
- */
-export function checkRing(ring: Point[], ref?: Curve, emptyRing = false): void {
-  // check if the ring is empty
-  if (ring.length === 0 && !emptyRing) throw err.noEmptyRing;
-  if (!ref) ref = ring[0].curve;
-
-  // check for duplicates using a set
-  if (new Set(serializeRing(ring)).size !== ring.length)
-    throw err.noDuplicates("ring");
-
-  // check if all the points are valid
-  try {
-    for (const point of ring) {
-      checkPoint(point, ref);
-    }
-  } catch (e) {
-    throw err.invalidPoint(("At least one point is not valid: " + e) as string);
-  }
-}
-
-/**
- * Serialize a ring, i.e., serialize each point in the ring
- *
- * @param ring - The ring to serialize
- *
- * @returns The serialized ring as a string array
- */
-export function serializeRing(ring: Point[]): string[] {
-  const serializedPoints: string[] = [];
-  for (const point of ring) {
-    serializedPoints.push(point.serialize()); // Call serialize() on each 'point' object
-  }
-  return serializedPoints;
-}
-
-/**
- * Check if a point is valid
- *
- * @param point - The point to check
- * @param curve - The curve to use as a reference
- *
- * @throws Error if the point is not on the reference curve
- * @throws Error if at least 1 coordinate is not valid (= 0 or >= curve order)
- */
-export function checkPoint(point: Point, curve?: Curve): void {
-  if (curve && !curve.equals(point.curve)) {
-    throw err.curveMismatch();
-  }
-  // check if the point is on the reference curve
-  if (!point.curve.isOnCurve(point)) {
-    throw err.notOnCurve();
-  }
-}
-
-/**
- * Sort a ring by x ascending coordinate (and y ascending if x's are equal)
- *
- * @param ring the ring to sort
- * @returns the sorted ring
- */
-export function sortRing(ring: Point[]): Point[] {
-  return ring.sort((a, b) => {
-    if (a.x !== b.x) {
-      return a.x < b.x ? -1 : 1;
-    }
-    return a.y < b.y ? -1 : 1;
-  });
 }
