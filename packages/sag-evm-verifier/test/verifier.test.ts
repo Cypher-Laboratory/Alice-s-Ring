@@ -56,27 +56,16 @@ describe("evm-verifier", function () { // todo: add some more tests
       responses: BigNumberish[] = signature.responses.map((response: string) => BigInt("0x" + response)),
       c: BigNumberish = BigInt("0x" + signature.c);
 
-    console.log("message: ", signature.message);
-    console.log("messageDigest: ", messageDigest);
-    // console.log("ring: ", ring);
-    // console.log("responses: ", responses);
-    // console.log("c: ", c);
-
-
     // link library
     const contractFactory = await ethers.getContractFactory("SAGVerifier");
 
     // deploy SigVerifier contract
     const SagVerifier = await contractFactory.deploy();
 
-    console.log("verify: ", await SagVerifier.verifyRingSignature(messageDigest, ring, responses, c));
-
-    // expect(
-    //   await SagVerifier.verifyRingSignature(messageDigest, ring, responses, c),
-    // ).to.equal(true);
+    expect(
+      await SagVerifier.verifyRingSignature(messageDigest, ring, responses, c),
+    ).to.equal(true);
   });
 
   // todo: test all cases (array length, etc) from `packages/sag-ts/test/data/jsonSignatures.json` (except the ones that plays with unexpected types)
 });
-65199279522379187766625386235004916218554682778311381448518683987635016332883n
-65199279522379187766625386235004916218554682778311381448518683987635016332883n

@@ -7,7 +7,7 @@ pragma solidity ^0.8.20;
 
 import {ISAGVerifier} from "./ISAGVerifier.sol";
 
-/* is ISAGVerifier */ contract SAGVerifier {
+contract SAGVerifier is ISAGVerifier {
     // Field size
     uint256 constant pp =
         0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F;
@@ -37,7 +37,7 @@ import {ISAGVerifier} from "./ISAGVerifier.sol";
         uint256[] memory ring,
         uint256[] memory responses,
         uint256 c // signature seed
-    ) public pure returns (uint256) {
+    ) public pure returns (bool) {
         // check if ring.length is even
         require(
             ring.length > 0 && ring.length % 2 == 0,
@@ -58,12 +58,11 @@ import {ISAGVerifier} from "./ISAGVerifier.sol";
         // compute c2', c3', ..., cn', c0'
         for (uint256 i = 1; i < responses.length; i++) {
             cp = computeC(responses[i], cp, ring[j], ring[j + 1]);
-            return cp;
             j += 2;
         }
 
         // check if c0' == c0
-        // return (c == cp);
+        return (c == cp);
     }
 
     /**
