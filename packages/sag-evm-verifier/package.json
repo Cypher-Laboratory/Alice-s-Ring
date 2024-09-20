@@ -9,6 +9,7 @@
   "scripts": {
     "publish": "npx hardhat compile && rm -rf build && mkdir build && mv artifacts/* build/ && rm -r artifacts && npm publish --access public",
     "test": "npx hardhat compile && npx hardhat test",
+    "build": "npx hardhat compile",
     "fmt:check": "exit 0"
   },
   "repository": {

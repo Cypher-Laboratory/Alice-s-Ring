@@ -29,7 +29,7 @@ describe("Test toJsonString()", () => {
       data.randomResponses,
       secp256k1,
     );
-    expect(RingSignature.fromJsonString(rs.toJsonString())).toBeInstanceOf(
+    expect(RingSignature.fromJson(rs.toJsonString())).toBeInstanceOf(
       RingSignature,
     );
   });

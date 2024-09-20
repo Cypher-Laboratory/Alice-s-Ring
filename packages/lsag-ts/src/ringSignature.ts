@@ -171,7 +171,7 @@ export class RingSignature {
    *
    * @returns A RingSignature
    */
-  static fromJsonString(json: string | object): RingSignature {
+  static fromJson(json: string | object): RingSignature {
     let parsedJson;
     if (typeof json === "string") {
       try {
@@ -196,6 +196,7 @@ export class RingSignature {
     // check if config is an object
     if (parsedJson.config && typeof parsedJson.config !== "object")
       throw err.invalidJson("Config must be an object");
+
     // check if config.hash is an element from HashFunction. If not, throw an error
     if (
       parsedJson.config &&
@@ -203,7 +204,8 @@ export class RingSignature {
       !Object.values(HashFunction).includes(parsedJson.config.hash)
     )
       throw err.invalidJson("Config.hash must be an element from HashFunction");
-    console.log("before try");
+
+
     try {
       const sig = parsedJson as {
         message: string;
@@ -215,7 +217,9 @@ export class RingSignature {
         linkabilityFlag: string;
         config?: SignatureConfig;
       };
+
       const curve = Curve.fromString(sig.curve);
+
       return new RingSignature(
         sig.message,
         sig.ring.map((point: string) => Point.deserialize(point)),
@@ -261,7 +265,7 @@ export class RingSignature {
     if (!base64Regex.test(base64)) throw err.invalidBase64();
 
     const decoded = Buffer.from(base64, "base64").toString("ascii");
-    return RingSignature.fromJsonString(decoded);
+    return RingSignature.fromJson(decoded);
   }
 
   /**
@@ -414,14 +418,15 @@ export class RingSignature {
     }
     const messageDigest = this.messageDigest;
 
+    const serializedRing = serializeRing(this.ring);
+
     // NOTE : the loop has at least one iteration since the ring
     // is ensured to be not empty
     let lastComputedCp = this.c;
 
-    const serializedRing = serializeRing(this.ring);
     // compute the c values : c1 ’, c2 ’, ... , cn ’, c0 ’
     for (let i = 0; i < this.ring.length; i++) {
-      const c = RingSignature.computeC(
+      lastComputedCp = RingSignature.computeC(
         this.ring,
         serializedRing,
         messageDigest,
@@ -436,8 +441,6 @@ export class RingSignature {
         this.curve,
         this.config,
       );
-
-      lastComputedCp = c;
     }
 
     // return true if c0 === c0'
@@ -456,7 +459,7 @@ export class RingSignature {
       signature = RingSignature.fromBase64(signature).toJsonString();
     }
     const ringSignature: RingSignature =
-      RingSignature.fromJsonString(signature);
+      RingSignature.fromJson(signature);
     return ringSignature.verify();
   }
 

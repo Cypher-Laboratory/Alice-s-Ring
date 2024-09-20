@@ -10,7 +10,7 @@ import * as data from "../data";
  * - the method throws an error if the input is not a valid base64 encoded string
  *
  * @remarks
- * the following tests are performed by RingSignature.fromJsonString() (caller once the base64 string is decoded):
+ * the following tests are performed by RingSignature.fromJson() (caller once the base64 string is decoded):
  * - the method throws an error if a point is not valid
  * - the method throws an error if the curve is not valid
  * - the method throws an error if the message is not valid

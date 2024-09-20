@@ -5,9 +5,7 @@
 
 pragma solidity ^0.8.20;
 
-import {ISAGVerifier} from "./ISAGVerifier.sol";
-
-contract SAGVerifier is ISAGVerifier {
+library SAGVerifier {
     // Field size
     uint256 constant pp =
         0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F;

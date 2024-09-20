@@ -53,7 +53,7 @@ describe("Test toJsonString()", () => {
       keyImage,
       data.linkabilityFlag,
     );
-    expect(RingSignature.fromJsonString(rs.toJsonString())).toBeInstanceOf(
+    expect(RingSignature.fromJson(rs.toJsonString())).toBeInstanceOf(
       RingSignature,
     );
   });

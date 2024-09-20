@@ -180,17 +180,17 @@ const signature = RingSignature.sign(
   }
 );
 
-// console.log("ring: ", signature.getRing().map((p) => p.serialize()));
-// console.log(
-//   "responses: ",
-//   signature.getResponses().map((r) => r.toString(16)),
-// );
-// console.log("c: ", signature.getChallenge().toString(16));
-// console.log("message: ", signature.getMessage());
+console.log("ring: ", signature.getRing().map((p) => p.serialize()));
+console.log(
+  "responses: ",
+  signature.getResponses().map((r) => r.toString(16)),
+);
+console.log("c: ", signature.getChallenge().toString(16));
+console.log("message: ", signature.getMessage());
 
 // // // console.log("b64: ", signature.toBase64());
 
-// console.log("verify: ", signature.verify());
+console.log("verify: ", signature.verify());
 // // console.log("msg digest: ", signature.messageDigest);
 
 // load sig from json:
@@ -210,8 +210,8 @@ const signature = RingSignature.sign(
 //   }
 // );
 
-import * as dataSigs from "../test/data/jsonSignatures.json";
+// import * as dataSigs from "../test/data/jsonSignatures.json";
 
-const ring_sig = RingSignature.fromJsonString(dataSigs.valid);
+// const ring_sig = RingSignature.fromJson(dataSigs.valid);
 
-console.log("ring sig verified: ", ring_sig.verify());
+// console.log("ring sig verified: ", ring_sig.verify());

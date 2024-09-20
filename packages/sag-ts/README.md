@@ -40,7 +40,7 @@ console.log(
 const jsonString = signature.toJsonString();
 
 // Import from jsonString
-const retrievedFromJson = RingSignature.fromJsonString(jsonString);
+const retrievedFromJson = RingSignature.fromJson(jsonString);
 ```
 
 ## Dependencies

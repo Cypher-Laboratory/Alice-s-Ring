@@ -152,7 +152,7 @@ export class RingSignature {
    *
    * @returns A RingSignature
    */
-  static fromJsonString(json: string | object): RingSignature {
+  static fromJson(json: string | object): RingSignature {
     let parsedJson;
     if (typeof json === "string") {
       try {
@@ -237,7 +237,7 @@ export class RingSignature {
     if (!base64Regex.test(base64)) throw err.invalidBase64();
 
     const decoded = Buffer.from(base64, "base64").toString("ascii");
-    return RingSignature.fromJsonString(decoded);
+    return RingSignature.fromJson(decoded);
   }
 
   /**
@@ -274,6 +274,8 @@ export class RingSignature {
       // same as this.messageDigest
       "0x" + hash([message], config),
     );
+
+    console.log("initial msg digest: ", messageDigest);
 
     const alpha = randomBigint(curve.N);
 
@@ -371,7 +373,9 @@ export class RingSignature {
       }
     }
     const messageDigest = this.messageDigest;
+
     const serializedRing = serializeRing(this.ring);
+
     // NOTE : the loop has at least one iteration since the ring
     // is ensured to be not empty
     let lastComputedCp = this.c;
@@ -410,7 +414,7 @@ export class RingSignature {
       signature = RingSignature.fromBase64(signature).toJsonString();
     }
     const ringSignature: RingSignature =
-      RingSignature.fromJsonString(signature);
+      RingSignature.fromJson(signature);
     return ringSignature.verify();
   }
 
@@ -561,10 +565,14 @@ export class RingSignature {
         .concat([
           config?.evmCompatibility
             ? BigInt(alphaG.toEthAddress())
-            : BigInt("0x" + alphaG.serialize()),
+            : alphaG.serialize(),
         ]);
 
-      return mod(BigInt("0x" + hash(hashContent, config)), N);
+      const c = mod(BigInt("0x" + hash(hashContent, config)), N);
+
+
+      console.log("c" + params.index + ": " + c);
+      return c;
     }
     if (
       params.previousR &&
@@ -587,10 +595,12 @@ export class RingSignature {
         .concat([
           config?.evmCompatibility
             ? BigInt(point.toEthAddress())
-            : BigInt("0x" + point.serialize()),
+            : point.serialize(),
         ]);
 
-      return mod(BigInt("0x" + hash(hashContent, config)), N);
+      const c = mod(BigInt("0x" + hash(hashContent, config)), N);
+      console.log("c" + params.index + ": " + c);
+      return c;
     }
     throw err.missingParams(
       "Either 'alpha' or all the others params must be set",

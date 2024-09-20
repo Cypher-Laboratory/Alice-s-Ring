@@ -38,7 +38,7 @@ describe("Test verify()", () => {
     const editedSig = JSON.parse(signature);
     editedSig.message = "Wrong message";
 
-    expect(RingSignature.fromJsonString(editedSig).verify()).toBe(false);
+    expect(RingSignature.fromJson(editedSig).verify()).toBe(false);
   });
 
   it("Should return true if the base64 signature is valid", () => {
