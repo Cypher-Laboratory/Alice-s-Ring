@@ -7,7 +7,7 @@
     "packages/*"
   ],
   "scripts": {
-    "test": "npm run test --workspaces",
+    "test": "cd packages/ring-sig-utils && npm run build && cd ../.. && npm run test --workspaces",
     "build": "cd packages/ring-sig-utils && npm run build && cd ../.. && npm run build --workspaces"
   },
   "repository": {
