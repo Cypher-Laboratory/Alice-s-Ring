@@ -3,14 +3,23 @@ SAG_TS_DIR = packages/sag-ts
 LSAG_TS_DIR = packages/lsag-ts
 SAG_EVM_VERIFIER_DIR = packages/sag-evm-verifier
 RUST_VERIFIER_DIR = packages/rust-verifier
+SNAP_SDK_DIR = packages/metamask-snap/snap-sdk
+SNAP_DOCS_DIR = packages/metamask-snap/snap-documentation
 
-# Default target: build everything
+# Default target: install dependencies and build everything
 .PHONY: all
-all: build
+all: install build
+
+# ------------------ Dependency Installation ------------------
+.PHONY: install
+install:
+	@echo "Installing dependencies..."
+	@set -e; \
+	npm install --workspaces
 
 # ------------------ Build Targets ------------------
 .PHONY: build
-build: build-ts build-solidity build-rust
+build: build-ts build-solidity build-rust build-final-log
 
 .PHONY: build-ts
 build-ts:
@@ -18,6 +27,8 @@ build-ts:
 	@set -e; \
 	cd $(SAG_TS_DIR) && npm run build & \
 	cd $(LSAG_TS_DIR) && npm run build & \
+	cd $(SNAP_SDK_DIR) && npm run build & \
+	cd $(SNAP_DOCS_DIR) && npm run build & \
 	wait
 
 .PHONY: build-solidity
@@ -32,6 +43,10 @@ build-rust:
 	@set -e; \
 	cd $(RUST_VERIFIER_DIR) && cargo build
 
+.PHONY: build-final-log
+build-final-log: 
+	@echo "All packages built successfully"
+
 # ------------------ Test Targets ------------------
 .PHONY: test
 test: test-ts test-solidity test-rust
@@ -42,6 +57,8 @@ test-ts:
 	@set -e; \
 	cd $(SAG_TS_DIR) && npm run test & \
 	cd $(LSAG_TS_DIR) && npm run test & \
+	cd $(SNAP_SDK_DIR) && npm run test & \
+	cd $(SNAP_DOCS_DIR) && npm run test & \
 	wait
 
 .PHONY: test-solidity
@@ -66,6 +83,8 @@ fmt-ts:
 	@set -e; \
 	cd $(SAG_TS_DIR) && npm run fmt & \
 	cd $(LSAG_TS_DIR) && npm run fmt & \
+	cd $(SNAP_SDK_DIR) && npm run fmt & \
+	cd $(SNAP_DOCS_DIR) && npm run fmt & \
 	wait
 
 .PHONY: fmt-solidity
@@ -90,6 +109,8 @@ fmt-check-ts:
 	@set -e; \
 	cd $(SAG_TS_DIR) && npm run fmt:check & \
 	cd $(LSAG_TS_DIR) && npm run fmt:check & \
+	cd $(SNAP_SDK_DIR) && npm run fmt:check & \
+	cd $(SNAP_DOCS_DIR) && npm run fmt:check & \
 	wait
 
 .PHONY: fmt-check-solidity
@@ -114,13 +135,15 @@ clean-ts:
 	@set -e; \
 	cd $(SAG_TS_DIR) && npm run clean & \
 	cd $(LSAG_TS_DIR) && npm run clean & \
+	cd $(SNAP_SDK_DIR) && npm run clean & \
+	cd $(SNAP_DOCS_DIR) && npm run clean & \
 	wait
 
 .PHONY: clean-solidity
 clean-solidity:
 	@echo "Cleaning Solidity package..."
 	@set -e; \
-	cd $(SAG_EVM_VERIFIER_DIR) && npx hardhat clean
+	cd $(SAG_EVM_VERIFIER_DIR) && npx hardhat clean && npm run clean
 
 .PHONY: clean-rust
 clean-rust:

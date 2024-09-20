@@ -4,11 +4,13 @@
   "description": "A set of libraries for ring signatures",
   "private": true,
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "packages/metamask-snap/*"
   ],
   "scripts": {
     "test": "cd packages/ring-sig-utils && npm run build && cd ../.. && npm run test --workspaces",
-    "build": "cd packages/ring-sig-utils && npm run build && cd ../.. && npm run build --workspaces"
+    "build": "cd packages/ring-sig-utils && npm run build && cd ../.. && npm run build --workspaces",
+    "clean": "npm run clean --workspaces && rimraf ./node_modules"
   },
   "repository": {
     "type": "git",
