@@ -6,6 +6,11 @@ import * as err from "./errors";
 import { isRingSorted } from "./utils/isRingSorted";
 import { keccak_256 } from "@noble/hashes/sha3";
 import { u256ArrayToBytes } from "./utils";
+import {
+  pointToWeirstrass,
+  prepare_garaga_hint,
+} from "./utils/garaga_bindings";
+import { IGaragaHints } from "./interfaces";
 
 /**
  * hash a data returning the same hash between cairo and ts
@@ -229,12 +234,12 @@ export class CairoRingSignature {
     return Buffer.from(this.toJsonString()).toString("base64");
   }
 
-  static cairoSign(
+  static async cairoSign(
     ring: Point[], // ring.length = n
     signerPrivateKey: bigint,
     message: string,
     curve: Curve,
-  ): CairoRingSignature {
+  ): Promise<CairoRingSignature> {
     if (signerPrivateKey === 0n || signerPrivateKey >= curve.N)
       throw err.invalidParams("Signer private key cannot be 0 and must be < N");
 
@@ -269,7 +274,7 @@ export class CairoRingSignature {
     }
     const serializedRing = serializeRingCairo(ring);
     // compute cpi+1
-    const cpi1 = CairoRingSignature.computeC(
+    const cpi1 = await CairoRingSignature.computeC(
       ring,
       serializedRing,
       messageDigest,
@@ -277,7 +282,7 @@ export class CairoRingSignature {
       curve,
     );
 
-    const rawSignature = CairoRingSignature.signature(
+    const rawSignature = await CairoRingSignature.signature(
       curve,
       ring,
       cpi1,
@@ -323,7 +328,7 @@ export class CairoRingSignature {
    *
    * @returns True if the signature is valid, false otherwise
    */
-  verify(): boolean {
+  async verify(): Promise<boolean> {
     // we compute c1' = Hash(Ring, m, [r0G, c0K0])
     // then, for each ci (1 < i < n), compute ci' = Hash(Ring, message, [riG + ciKi])
     // (G = generator, K = ring public key)
@@ -340,10 +345,9 @@ export class CairoRingSignature {
     // NOTE : the loop has at least one iteration since the ring
     // is ensured to be not empty
     let lastComputedCp = this.c;
-
     // compute the c values : c1 ’, c2 ’, ... , cn ’, c0 ’
     for (let i = 0; i < this.ring.length; i++) {
-      lastComputedCp = CairoRingSignature.computeC(
+      lastComputedCp = await CairoRingSignature.computeC(
         this.ring,
         serializedRing,
         messageDigest,
@@ -367,16 +371,68 @@ export class CairoRingSignature {
    * @param signature - The json or base64 encoded signature to verify
    * @returns True if the signature is valid, false otherwise
    */
-  static verify(signature: string): boolean {
+  static async verify(signature: string): Promise<boolean> {
     // check if the signature is a json or a base64 string
     if (base64Regex.test(signature)) {
       signature = CairoRingSignature.fromBase64(signature).toJsonString();
     }
     const ringSignature: CairoRingSignature =
       CairoRingSignature.fromJsonString(signature);
-    return ringSignature.verify();
+    return await ringSignature.verify();
   }
 
+  async verify_garaga(): Promise<IGaragaHints[]> {
+    // we compute c1' = Hash(Ring, m, [r0G, c0K0])
+    // then, for each ci (1 < i < n), compute ci' = Hash(Ring, message, [riG + ciKi])
+    // (G = generator, K = ring public key)
+    // finally, if we substitute lastC for lastC' and c0' == c0, the signature is valid
+
+    // hash the message
+    for (const point of this.ring) {
+      if (point.checkLowOrder() === false) {
+        throw `The public key ${point} is not valid`;
+      }
+    }
+    const messageDigest = cairoHash([stringToBigInt(this.message)]);
+    const serializedRing = serializeRingCairo(this.ring);
+    // NOTE : the loop has at least one iteration since the ring
+    // is ensured to be not empty
+    let lastComputedCp = this.c;
+    const hint: IGaragaHints[] = [];
+    // compute the c values : c1 ’, c2 ’, ... , cn ’, c0 ’
+    for (let i = 0; i < this.ring.length; i++) {
+      const compute = await CairoRingSignature.computeCGaraga(
+        this.ring,
+        serializedRing,
+        messageDigest,
+        {
+          index: (i + 1) % this.ring.length,
+          previousR: this.responses[i],
+          previousC: lastComputedCp,
+          previousIndex: i,
+        },
+        this.curve,
+      );
+      lastComputedCp = compute.last_computed_c;
+      hint.push(compute.hint);
+    }
+
+    if (this.c === lastComputedCp) {
+      return hint;
+    } else {
+      throw Error("Invalid ring sigantrue");
+    }
+  }
+
+  static async verify_garaga(signature: string): Promise<boolean> {
+    // check if the signature is a json or a base64 string
+    if (base64Regex.test(signature)) {
+      signature = CairoRingSignature.fromBase64(signature).toJsonString();
+    }
+    const ringSignature: CairoRingSignature =
+      CairoRingSignature.fromJsonString(signature);
+    return await ringSignature.verify();
+  }
   /**
    * Generate an incomplete ring signature.
    *
@@ -389,18 +445,18 @@ export class CairoRingSignature {
    *
    * @returns An incomplete ring signature
    */
-  private static signature(
+  private static async signature(
     curve: Curve,
     ring: Point[],
     ceePiPlusOne: bigint,
     signerIndex: number,
     messageDigest: bigint,
-  ): {
+  ): Promise<{
     ring: Point[];
     cees: bigint[];
     signerIndex: number;
     responses: bigint[];
-  } {
+  }> {
     // check if ring is valid
     try {
       checkRing(ring, curve);
@@ -436,7 +492,7 @@ export class CairoRingSignature {
           previousIndex: indexMinusOne,
         };
         // compute the c value
-        cees[index] = CairoRingSignature.computeC(
+        cees[index] = await CairoRingSignature.computeC(
           ring,
           serializedRing,
           messageDigest,
@@ -475,7 +531,7 @@ export class CairoRingSignature {
    *
    * @returns A new c value
    */
-  private static computeC(
+  private static async computeC(
     ring: Point[],
     serializedRing: bigint[],
     messageDigest: bigint,
@@ -487,7 +543,7 @@ export class CairoRingSignature {
       alpha?: bigint;
     },
     curve: Curve,
-  ): bigint {
+  ): Promise<bigint> {
     const G = curve.GtoPoint();
     const N = curve.N;
     const hasAlphaWithoutPrevious =
@@ -521,10 +577,56 @@ export class CairoRingSignature {
       const point = G.mult(params.previousR).add(
         ring[params.previousIndex].mult(params.previousC),
       );
+      const G_weirstrass = pointToWeirstrass(G);
+      const ring_weirstrass = pointToWeirstrass(ring[params.previousIndex]);
+      const precompute = await prepare_garaga_hint(
+        [G_weirstrass, ring_weirstrass],
+        [params.previousR, params.previousC],
+      );
 
       const hashContent = serializedRing.concat(messageDigest).concat(point.y);
-      console.log("hash value : ", cairoHash(hashContent));
       return modulo(cairoHash(hashContent), N);
+    }
+    throw err.missingParams(
+      "Either 'alpha' or all the others params must be set",
+    );
+  }
+
+  private static async computeCGaraga(
+    ring: Point[],
+    serializedRing: bigint[],
+    messageDigest: bigint,
+    params: {
+      index: number;
+      previousR?: bigint;
+      previousC?: bigint;
+      previousIndex?: number;
+      alpha?: bigint;
+    },
+    curve: Curve,
+  ): Promise<{ last_computed_c: bigint; hint: IGaragaHints }> {
+    const G = curve.GtoPoint();
+    const N = curve.N;
+    if (
+      params.previousR &&
+      params.previousC &&
+      params.previousIndex !== undefined
+    ) {
+      const point = G.mult(params.previousR).add(
+        ring[params.previousIndex].mult(params.previousC),
+      );
+      console.log("point to weirstrass : ", pointToWeirstrass(point));
+      const G_weirstrass = pointToWeirstrass(G);
+      const ring_weirstrass = pointToWeirstrass(ring[params.previousIndex]);
+      const precompute = await prepare_garaga_hint(
+        [G_weirstrass, ring_weirstrass],
+        [params.previousR, params.previousC],
+      );
+      const hashContent = serializedRing.concat(messageDigest).concat(point.y);
+      return {
+        last_computed_c: modulo(cairoHash(hashContent), N),
+        hint: precompute,
+      };
     }
     throw err.missingParams(
       "Either 'alpha' or all the others params must be set",
