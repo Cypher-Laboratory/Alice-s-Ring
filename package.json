@@ -4,8 +4,7 @@
   "description": "A set of libraries for ring signatures",
   "private": true,
   "workspaces": [
-    "packages/*",
-    "packages/metamask-snap/*"
+    "packages/*"
   ],
   "scripts": {
     "allow-scripts": "yarn workspace root allow-scripts",

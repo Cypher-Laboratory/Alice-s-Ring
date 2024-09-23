@@ -1,0 +1,1 @@
+THe ring signature snap along with its documentation, sdk and examples are available [here](https://github.com/Cypher-Laboratory/Alice-s-Ring-snap)
