@@ -335,8 +335,6 @@ export class RingSignature {
     );
   }
 
-  static cairoSerializeRing(ring: Point[]) {}
-
   static cairoSign(
     ring: Point[], // ring.length = n
     signerPrivateKey: bigint,
