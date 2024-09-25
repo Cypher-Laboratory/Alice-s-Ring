@@ -5,7 +5,7 @@ import { CurveName } from "./curves";
 //import { toWeierstrass, toTwistedEdwards } from "./utils/garaga_bindings";
 //import { G1Point, msmCalldataBuilder, CurveId, init } from "garaga";
 const ed25519 = new Curve(CurveName.ED25519);
-
+console.log(ed25519.N.toString(16));
 async function main() {
   const ring_signature = await CairoRingSignature.cairoSign(
     data.publicKeys_ed25519,
@@ -13,11 +13,14 @@ async function main() {
     "test",
     ed25519,
   );
-
-  const hints = await ring_signature.verify_garaga();
-  console.log(hints[2].hint.toString());
+  console.log(await ring_signature.verify());
   console.log(ring_signature.toBase64());
 }
+main();
+/*  for (const p of ring_signature.getRing()) {
+    console.log(p.toU384Coordinates());
+  }
+}¨/
 main();
 /*const x_twisted =
   39543460263672751862715731148177899282638773519115997227341754029484841581726n;

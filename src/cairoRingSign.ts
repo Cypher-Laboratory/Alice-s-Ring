@@ -1,4 +1,5 @@
 import { randomBigint, modulo, base64Regex } from "./utils";
+import { convertToUint384, u384Serialize } from "./utils";
 import { piSignature } from "./signature/piSignature";
 import { derivePubKey } from "./curves";
 import { Curve, Point } from ".";
@@ -10,14 +11,13 @@ import {
   pointToWeirstrass,
   prepare_garaga_hint,
 } from "./utils/garaga_bindings";
-import { IGaragaHints } from "./interfaces";
 
 /**
  * hash a data returning the same hash between cairo and ts
  *
  *
  **/
-function cairoHash(data: bigint[]): bigint {
+export function cairoHash(data: bigint[]): bigint {
   return BigInt(
     "0x" + Buffer.from(keccak_256(u256ArrayToBytes(data))).toString("hex"),
   );
@@ -381,7 +381,7 @@ export class CairoRingSignature {
     return await ringSignature.verify();
   }
 
-  async verify_garaga(): Promise<IGaragaHints[]> {
+  async verify_garaga(): Promise<bigint[][]> {
     // we compute c1' = Hash(Ring, m, [r0G, c0K0])
     // then, for each ci (1 < i < n), compute ci' = Hash(Ring, message, [riG + ciKi])
     // (G = generator, K = ring public key)
@@ -393,12 +393,13 @@ export class CairoRingSignature {
         throw `The public key ${point} is not valid`;
       }
     }
+
     const messageDigest = cairoHash([stringToBigInt(this.message)]);
     const serializedRing = serializeRingCairo(this.ring);
     // NOTE : the loop has at least one iteration since the ring
     // is ensured to be not empty
     let lastComputedCp = this.c;
-    const hint: IGaragaHints[] = [];
+    const hint: bigint[][] = [];
     // compute the c values : c1 ’, c2 ’, ... , cn ’, c0 ’
     for (let i = 0; i < this.ring.length; i++) {
       const compute = await CairoRingSignature.computeCGaraga(
@@ -422,6 +423,16 @@ export class CairoRingSignature {
     } else {
       throw Error("Invalid ring sigantrue");
     }
+  }
+
+  async get_calldata_struct() {
+    const hints = await this.verify_garaga();
+    return {
+      message: this.message,
+      c: this.c,
+      ring: this.ring,
+      hints,
+    };
   }
 
   static async verify_garaga(signature: string): Promise<boolean> {
@@ -562,10 +573,13 @@ export class CairoRingSignature {
       );
     }
     if (params.alpha) {
-      const alphaG = G.mult(params.alpha);
+      const alphaG = pointToWeirstrass(G.mult(params.alpha));
       // if !config.evmCompatibility, the ring is not added to the hash
       // if config.evmCompatibility, the message is only added in the first iteration
-      const hashContent = serializedRing.concat(messageDigest).concat(alphaG.y);
+      const message_to_hash = u384Serialize(convertToUint384(messageDigest));
+      const hashContent = serializedRing
+        .concat(message_to_hash)
+        .concat(u384Serialize(convertToUint384(alphaG[1])));
 
       return modulo(cairoHash(hashContent), N);
     }
@@ -574,17 +588,16 @@ export class CairoRingSignature {
       params.previousC &&
       params.previousIndex !== undefined
     ) {
-      const point = G.mult(params.previousR).add(
-        ring[params.previousIndex].mult(params.previousC),
-      );
-      const G_weirstrass = pointToWeirstrass(G);
-      const ring_weirstrass = pointToWeirstrass(ring[params.previousIndex]);
-      const precompute = await prepare_garaga_hint(
-        [G_weirstrass, ring_weirstrass],
-        [params.previousR, params.previousC],
+      const point = pointToWeirstrass(
+        G.mult(params.previousR).add(
+          ring[params.previousIndex].mult(params.previousC),
+        ),
       );
 
-      const hashContent = serializedRing.concat(messageDigest).concat(point.y);
+      const message_to_hash = u384Serialize(convertToUint384(messageDigest));
+      const hashContent = serializedRing
+        .concat(message_to_hash)
+        .concat(u384Serialize(convertToUint384(point[1])));
       return modulo(cairoHash(hashContent), N);
     }
     throw err.missingParams(
@@ -604,7 +617,7 @@ export class CairoRingSignature {
       alpha?: bigint;
     },
     curve: Curve,
-  ): Promise<{ last_computed_c: bigint; hint: IGaragaHints }> {
+  ): Promise<{ last_computed_c: bigint; hint: bigint[] }> {
     const G = curve.GtoPoint();
     const N = curve.N;
     if (
@@ -612,17 +625,27 @@ export class CairoRingSignature {
       params.previousC &&
       params.previousIndex !== undefined
     ) {
-      const point = G.mult(params.previousR).add(
-        ring[params.previousIndex].mult(params.previousC),
+      const point = pointToWeirstrass(
+        G.mult(params.previousR).add(
+          ring[params.previousIndex].mult(params.previousC),
+        ),
       );
-      console.log("point to weirstrass : ", pointToWeirstrass(point));
       const G_weirstrass = pointToWeirstrass(G);
       const ring_weirstrass = pointToWeirstrass(ring[params.previousIndex]);
       const precompute = await prepare_garaga_hint(
         [G_weirstrass, ring_weirstrass],
         [params.previousR, params.previousC],
       );
-      const hashContent = serializedRing.concat(messageDigest).concat(point.y);
+      const message_to_hash = u384Serialize(convertToUint384(messageDigest));
+      const hashContent = serializedRing
+        .concat(message_to_hash)
+        .concat(u384Serialize(convertToUint384(point[1])));
+      //  hashContent in cairo :
+      //[43860635396307821452324163049, 3100731210178364366614804429, 4003596457430562539, 0, 37579310788736091150752461420, 73452028363098349877545252045, 5624340152284032467, 0, 1952805748, 0, 0, 0, 1460119948458457431984546616, 37222761485630166031084485990, 214697657363648178, 0]
+      console.log(
+        "challenge : ",
+        convertToUint384(modulo(cairoHash(hashContent), N)),
+      );
       return {
         last_computed_c: modulo(cairoHash(hashContent), N),
         hint: precompute,
@@ -672,10 +695,13 @@ export function checkRing(ring: Point[], ref?: Curve, emptyRing = false): void {
  * @returns The serialized ring as a string array
  */
 export function serializeRingCairo(ring: Point[]): bigint[] {
-  const serializedPoints: bigint[] = [];
+  let serializedPoints: bigint[] = [];
   for (const point of ring) {
-    serializedPoints.push(point.y); // Call serialize() on each 'point' object
+    serializedPoints = serializedPoints.concat(
+      u384Serialize(point.toU384Coordinates()[1]),
+    );
   }
+
   return serializedPoints;
 }
 

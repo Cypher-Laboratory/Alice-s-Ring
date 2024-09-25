@@ -2,7 +2,6 @@ import { Point } from "../point";
 import { modPow } from "./modPow";
 import { modulo } from "./modulo";
 import { CurveName } from "../curves";
-import { IGaragaHints } from "../interfaces";
 /* 
  * rewrite of the toWeierstrass function from garaga
 
@@ -102,25 +101,16 @@ export function pointToWeirstrass(p: Point) {
 export async function prepare_garaga_hint(
   points: [bigint, bigint][], // Temporarily use 'any' for G1Point
   scalars: bigint[],
-): Promise<IGaragaHints> {
+): Promise<bigint[]> {
   // Return type might need to be adjusted
   try {
     const garaga = await import("garaga");
 
     await garaga.init();
-
-    const result = garaga.msmCalldataBuilder(
-      points,
-      scalars,
-      garaga.CurveId.X25519,
-    );
-    const hint: IGaragaHints = {
-      points,
-      scalars,
-      hint: result,
-      curve_index: 4n,
-    };
-    return hint;
+    console.log("set to true");
+    return garaga.msmCalldataBuilder(points, scalars, garaga.CurveId.X25519, {
+      includeDigitsDecomposition: false,
+    });
   } catch (error) {
     console.error(
       "Failed to initialize the WASM module or perform operation:",
