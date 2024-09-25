@@ -1,5 +1,5 @@
 import { randomBigint, modulo, base64Regex } from "./utils";
-import { convertToUint384, u384Serialize } from "./utils";
+import { convertToUint384, uint384Serialize } from "./utils";
 import { piSignature } from "./signature/piSignature";
 import { derivePubKey } from "./curves";
 import { Curve, Point } from ".";
@@ -576,10 +576,10 @@ export class CairoRingSignature {
       const alphaG = pointToWeirstrass(G.mult(params.alpha));
       // if !config.evmCompatibility, the ring is not added to the hash
       // if config.evmCompatibility, the message is only added in the first iteration
-      const message_to_hash = u384Serialize(convertToUint384(messageDigest));
+      const message_to_hash = uint384Serialize(convertToUint384(messageDigest));
       const hashContent = serializedRing
         .concat(message_to_hash)
-        .concat(u384Serialize(convertToUint384(alphaG[1])));
+        .concat(uint384Serialize(convertToUint384(alphaG[1])));
 
       return modulo(cairoHash(hashContent), N);
     }
@@ -594,10 +594,10 @@ export class CairoRingSignature {
         ),
       );
 
-      const message_to_hash = u384Serialize(convertToUint384(messageDigest));
+      const message_to_hash = uint384Serialize(convertToUint384(messageDigest));
       const hashContent = serializedRing
         .concat(message_to_hash)
-        .concat(u384Serialize(convertToUint384(point[1])));
+        .concat(uint384Serialize(convertToUint384(point[1])));
       return modulo(cairoHash(hashContent), N);
     }
     throw err.missingParams(
@@ -636,10 +636,10 @@ export class CairoRingSignature {
         [G_weirstrass, ring_weirstrass],
         [params.previousR, params.previousC],
       );
-      const message_to_hash = u384Serialize(convertToUint384(messageDigest));
+      const message_to_hash = uint384Serialize(convertToUint384(messageDigest));
       const hashContent = serializedRing
         .concat(message_to_hash)
-        .concat(u384Serialize(convertToUint384(point[1])));
+        .concat(uint384Serialize(convertToUint384(point[1])));
       //  hashContent in cairo :
       //[43860635396307821452324163049, 3100731210178364366614804429, 4003596457430562539, 0, 37579310788736091150752461420, 73452028363098349877545252045, 5624340152284032467, 0, 1952805748, 0, 0, 0, 1460119948458457431984546616, 37222761485630166031084485990, 214697657363648178, 0]
       console.log(
@@ -698,7 +698,7 @@ export function serializeRingCairo(ring: Point[]): bigint[] {
   let serializedPoints: bigint[] = [];
   for (const point of ring) {
     serializedPoints = serializedPoints.concat(
-      u384Serialize(point.toU384Coordinates()[1]),
+      uint384Serialize(point.toU384Coordinates()[1]),
     );
   }
 
