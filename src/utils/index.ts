@@ -3,7 +3,13 @@ export { modulo } from "./modulo";
 export { keccak_256, hash, sha_512 } from "./hashFunction";
 export { base64Regex } from "./base64";
 export { modPow } from "./modPow";
-export { u256ArrayToBytes } from "./u256ArrayToBytes";
+export {
+  u256ArrayToBytes,
+  cairoHash,
+  stringToBigInt,
+  serializeRingCairo,
+} from "./cairo_utils";
+export { pointToWeirstrass, prepareGaragaHints } from "./garaga_bindings";
 export { convertToUint384, uint384Serialize, Uint384 } from "./u384";
 /**
  * Utils function to cast uint8 array to hex string

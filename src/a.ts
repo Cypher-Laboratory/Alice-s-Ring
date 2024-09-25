@@ -5,15 +5,14 @@ import { CurveName } from "./curves";
 //import { toWeierstrass, toTwistedEdwards } from "./utils/garaga_bindings";
 //import { G1Point, msmCalldataBuilder, CurveId, init } from "garaga";
 const ed25519 = new Curve(CurveName.ED25519);
-console.log(ed25519.N.toString(16));
 async function main() {
-  const ring_signature = await CairoRingSignature.cairoSign(
+  const ring_signature = await CairoRingSignature.sign(
     data.publicKeys_ed25519,
     data.signerPrivKey,
     "test",
     ed25519,
   );
-  console.log(await ring_signature.verify());
+  console.log(ring_signature.verify());
   console.log(ring_signature.toBase64());
 }
 main();

@@ -8,7 +8,7 @@ async function main() {
   //  console.log(p.toU384Coordinates());
   //}
 
-  const sig = await rs.get_calldata_struct();
+  const sig = await rs.getCallDataStruct();
   console.log(sig.hints[0].toString());
   console.log(sig.hints[1].toString());
   //console.log("hint0 : ", sig[0].hint.toString());

@@ -139,7 +139,7 @@ export function pointToWeirstrass(p: Point) {
  * @returns A Promise that resolves to a bigint array containing the MSM hint.
  * @throws Will throw an error if the Garaga library fails to initialize or if the MSM calldata building fails.
  */
-export async function prepare_garaga_hint(
+export async function prepareGaragaHints(
   points: [bigint, bigint][],
   scalars: bigint[],
 ): Promise<bigint[]> {
