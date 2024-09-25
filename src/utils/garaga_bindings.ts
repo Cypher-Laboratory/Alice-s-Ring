@@ -2,10 +2,16 @@ import { Point } from "../point";
 import { modPow } from "./modPow";
 import { modulo } from "./modulo";
 import { CurveName } from "../curves";
+
+const ED25519_CONSTANTS = {
+  A: 57896044618658097711785492504343953926634992332820282019728792003956564819948n,
+  D: 37095705934669439343138083508754565189542113879843219016388785533085940283555n,
+  P: 57896044618658097711785492504343953926634992332820282019728792003956564819949n,
+};
+
 /* 
  * rewrite of the toWeierstrass function from garaga
-
-def to_weierstrass(self, x_twisted, y_twisted):
+    def to_weierstrass(self, x_twisted, y_twisted):
         a = self.a_twisted
         d = self.d_twisted
         return (
@@ -17,6 +23,15 @@ def to_weierstrass(self, x_twisted, y_twisted):
             % self.p,
         )
 */
+/**
+ * Converts a point from Twisted Edwards to Weierstrass coordinates
+ * @param a_twisted The 'a' parameter of the Twisted Edwards curve
+ * @param d_twisted The 'd' parameter of the Twisted Edwards curve
+ * @param p The prime modulus
+ * @param x_twisted The x-coordinate in Twisted Edwards form
+ * @param y_twisted The y-coordinate in Twisted Edwards form
+ * @returns A tuple [x, y] representing the point in Weierstrass coordinates
+ */
 export function toWeierstrass(
   a_twisted: bigint,
   d_twisted: bigint,
@@ -42,7 +57,7 @@ export function toWeierstrass(
 
 /*
  *Rewrite of the to_twistededwards function from garaga
-def to_twistededwards(self, x_weirstrass: int, y_weirstrass: int):
+  def to_twistededwards(self, x_weirstrass: int, y_weirstrass: int):
         a = self.a_twisted
         d = self.d_twisted
         y = (
@@ -56,6 +71,15 @@ def to_twistededwards(self, x_weirstrass: int, y_weirstrass: int):
             % self.p
         )
         return (x, y)
+ */
+/**
+ * Converts a point from Weierstrass to Twisted Edwards coordinates
+ * @param a_twisted The 'a' parameter of the Twisted Edwards curve
+ * @param d_twisted The 'd' parameter of the Twisted Edwards curve
+ * @param p The prime modulus
+ * @param x_twisted The x-coordinate in Weirstrass form
+ * @param y_twisted The y-coordinate in Weirstrass form
+ * @returns A tuple [x, y] representing the point in Weierstrass coordinates
  */
 export function toTwistedEdwards(
   a_twisted: bigint,
@@ -79,16 +103,24 @@ export function toTwistedEdwards(
   return [x, y];
 }
 
-/*
- * wrapper function around toWeirstrass to use with the Point class
+/**
+ * Converts a point from Twisted Edwards to Weierstrass coordinates.
+ *
+ * This function serves as a wrapper around the `toWeierstrass` function,
+ * specifically designed to work with the Point class. It currently supports
+ * only the ED25519 curve.
+ *
+ * @param p The Point object to convert, must be on a supported curve.
+ * @returns A tuple [x, y] representing the point in Weierstrass coordinates.
+ * @throws Will throw an Error if the curve is not supported.
  */
 export function pointToWeirstrass(p: Point) {
   switch (p.curve.name) {
     case CurveName.ED25519: {
       return toWeierstrass(
-        57896044618658097711785492504343953926634992332820282019728792003956564819948n,
-        37095705934669439343138083508754565189542113879843219016388785533085940283555n,
-        57896044618658097711785492504343953926634992332820282019728792003956564819949n,
+        ED25519_CONSTANTS.A,
+        ED25519_CONSTANTS.D,
+        ED25519_CONSTANTS.P,
         p.x,
         p.y,
       );
@@ -98,16 +130,22 @@ export function pointToWeirstrass(p: Point) {
   }
 }
 
+/**
+ * Computes and returns the MSM (Multi-Scalar Multiplication) hint for a given set of points and scalars.
+ * This function uses the Garaga library to generate a hint for efficient MSM computation.
+ *
+ * @param points An array of points in Weierstrass coordinates, each represented as a tuple [x, y] of bigints.
+ * @param scalars An array of bigint scalars corresponding to the points.
+ * @returns A Promise that resolves to a bigint array containing the MSM hint.
+ * @throws Will throw an error if the Garaga library fails to initialize or if the MSM calldata building fails.
+ */
 export async function prepare_garaga_hint(
-  points: [bigint, bigint][], // Temporarily use 'any' for G1Point
+  points: [bigint, bigint][],
   scalars: bigint[],
 ): Promise<bigint[]> {
-  // Return type might need to be adjusted
   try {
     const garaga = await import("garaga");
-
     await garaga.init();
-    console.log("set to true");
     return garaga.msmCalldataBuilder(points, scalars, garaga.CurveId.X25519, {
       includeDigitsDecomposition: false,
     });
@@ -116,6 +154,6 @@ export async function prepare_garaga_hint(
       "Failed to initialize the WASM module or perform operation:",
       error,
     );
-    throw error;
+    throw new Error(`Garaga operation failed: ${error}`);
   }
 }
