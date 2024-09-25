@@ -1,0 +1,59 @@
+{
+  "version": [
+    {
+      "ringSize": 1,
+      "gasCost": 2
+    }
+  ],
+  "ks-hackathon": {
+    "description": "first try on the evm verifier, no ecrecover tweak ",
+    "stats": [
+      {
+        "ringSize": 3,
+        "gasCost": 7489000
+      }
+    ]
+  },
+  "0.0.0": {
+    "description": "second try on the evm verifier, ecrecover tweak, use abi.encodePacked(Strings(message), Strings(address))",
+    "stats": [
+      {
+        "ringSize": 4,
+        "gasCost": 62829
+      },
+      {
+        "ringSize": 20,
+        "gasCost": 274341
+      },
+      {
+        "ringSize": 100,
+        "gasCost": 1334255
+      },
+      {
+        "ringSize": 300,
+        "gasCost": 3992961
+      }
+    ]
+  },
+  "0.0.1": {
+    "description": "update v0.0.0: use abi.encodePacked(message, uint256(address)), save half of the gas",
+    "stats": [
+      {
+        "ringSize": 4,
+        "gasCost": 25836
+      },
+      {
+        "ringSize": 20,
+        "gasCost": 129978
+      },
+      {
+        "ringSize": 100,
+        "gasCost": 651096
+      },
+      {
+        "ringSize": 300,
+        "gasCost": 1956842
+      }
+    ]
+  }
+}

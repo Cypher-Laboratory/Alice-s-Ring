@@ -1,1 +1,0 @@
-export { SignatureConfig } from "./signatureConfig";

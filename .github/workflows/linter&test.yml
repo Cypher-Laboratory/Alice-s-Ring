@@ -10,17 +10,39 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [18.x, 20.x]
+        node-version: [20.x, 22.x]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
-      - uses: actions/checkout@v3
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: "npm"
-      - run: npm ci
-      - run: npm run fmt:check
-      - run: npm test
-      - run: npm run build
+        - uses: actions/checkout@v3
+    
+        - name: Use Node.js ${{ matrix.node-version }}
+          uses: actions/setup-node@v3
+          with:
+            node-version: ${{ matrix.node-version }}
+            cache: "yarn"  # Cache Yarn dependencies
+    
+        # Cache Yarn dependencies
+        - name: Cache Yarn dependencies
+          uses: actions/cache@v3
+          with:
+            path: |
+              node_modules
+              .yarn/cache
+            key: yarn-cache-${{ matrix.node-version }}-${{ hashFiles('yarn.lock') }}
+            restore-keys: |
+              yarn-cache-${{ matrix.node-version }}-
+
+        # Install all dependencies for all packages in the monorepo
+        - run: yarn install --immutable --immutable-cache --check-cache
+
+        # Check formatting for all packages
+        - run: yarn workspaces run fmt:check
+
+        # Build all packages
+        - run: yarn build 
+
+        # Run tests for all packages
+        - run: yarn workspaces run test 
+
+

@@ -1,0 +1,27 @@
+name: Rust
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: fmt
+      working-directory: packages/rust-verifier
+      run: cargo fmt -- --check
+    - name: Build
+      working-directory: packages/rust-verifier
+      run: cargo build --verbose
+    - name: Run tests
+      working-directory: packages/rust-verifier
+      run: cargo test --verbose

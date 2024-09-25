@@ -1,0 +1,10 @@
+.github
+test
+.eslintignore
+.eslintrc.js
+.prettierignore
+scripts
+perf-stats
+typechain-types
+cache
+artifacts

@@ -1,0 +1,17 @@
+[package]
+name = "rust_rs_verifier"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+elliptic-curve = "0.13.8"
+sha3 = "0.10.6"
+sha2 = "0.10.8"
+k256 = {version ="0.13.3", features=["hash2curve", "expose-field"]}
+hex = "0.4"
+num-bigint = "0.4"
+num-traits = "0.2"
+regex = "1.10.6"
+base64 = "0.22.1"
+serde = { version = "1.0.210", features = ["derive"] }
+serde_json = "1.0.128"
