@@ -9,9 +9,9 @@ import {
   serializeRing,
   checkPoint,
   sortRing,
-  mod, 
+  mod,
   convertToUint384,
-  uint384Serialize
+  uint384Serialize,
 } from "@cypher-laboratory/ring-sig-utils";
 import { piSignature } from "./signature/piSignature";
 import {
@@ -702,5 +702,3 @@ export function bigIntToPublicKey(bigint: bigint): string {
     return prefix + hex;
   }
 }
-
-

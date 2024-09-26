@@ -15,8 +15,7 @@ async function main() {
   const signature = RingSignature.sign(ring, signerPrivKey, message, curve);
 
   const callDataStruct = await signature.getCallDataStruct();
-
-  console.log("\n\tverified: ", console.log(callDataStruct), "\n");
+  console.log("callDataStruct : ", callDataStruct);
 }
 
 main();
