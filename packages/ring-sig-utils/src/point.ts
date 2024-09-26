@@ -13,7 +13,7 @@ import {
   unknownCurve,
 } from "./errors";
 import { keccak_256 } from "@noble/hashes/sha3";
-
+import { convertToUint384, Uint384 } from "./u384";
 /**
  * A point on the elliptic curve.
  */
@@ -208,6 +208,15 @@ export class Point {
    */
   toCoordinates(): [bigint, bigint] {
     return [this.x, this.y];
+  }
+
+  /**
+   * Converts a point to its affine representation in using u384.
+   *
+   * @returns the affine representation of the point in u384.
+   */
+  toU384Coordinates(): [Uint384, Uint384] {
+    return [convertToUint384(this.x), convertToUint384(this.y)];
   }
 
   /**

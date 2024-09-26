@@ -1,0 +1,1633 @@
+
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Code coverage report for src/utils/noble-libraries/noble-ED25519.ts</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../../prettify.css" />
+    <link rel="stylesheet" href="../../../base.css" />
+    <link rel="shortcut icon" type="image/x-icon" href="../../../favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../../../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+    
+<body>
+<div class='wrapper'>
+    <div class='pad1'>
+        <h1><a href="../../../index.html">All files</a> / <a href="index.html">src/utils/noble-libraries</a> noble-ED25519.ts</h1>
+        <div class='clearfix'>
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">62.94% </span>
+                <span class="quiet">Statements</span>
+                <span class='fraction'>231/367</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">41.34% </span>
+                <span class="quiet">Branches</span>
+                <span class='fraction'>43/104</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">51.51% </span>
+                <span class="quiet">Functions</span>
+                <span class='fraction'>34/66</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">64.52% </span>
+                <span class="quiet">Lines</span>
+                <span class='fraction'>211/327</span>
+            </div>
+        
+            
+        </div>
+        <p class="quiet">
+            Press <em>n</em> or <em>j</em> to go to the next uncovered block, <em>b</em>, <em>p</em> or <em>k</em> for the previous block.
+        </p>
+        <template id="filterTemplate">
+            <div class="quiet">
+                Filter:
+                <input oninput="onInput()" type="search" id="fileSearch">
+            </div>
+        </template>
+    </div>
+    <div class='status-line medium'></div>
+    <pre><table class="coverage">
+<tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
+<a name='L2'></a><a href='#L2'>2</a>
+<a name='L3'></a><a href='#L3'>3</a>
+<a name='L4'></a><a href='#L4'>4</a>
+<a name='L5'></a><a href='#L5'>5</a>
+<a name='L6'></a><a href='#L6'>6</a>
+<a name='L7'></a><a href='#L7'>7</a>
+<a name='L8'></a><a href='#L8'>8</a>
+<a name='L9'></a><a href='#L9'>9</a>
+<a name='L10'></a><a href='#L10'>10</a>
+<a name='L11'></a><a href='#L11'>11</a>
+<a name='L12'></a><a href='#L12'>12</a>
+<a name='L13'></a><a href='#L13'>13</a>
+<a name='L14'></a><a href='#L14'>14</a>
+<a name='L15'></a><a href='#L15'>15</a>
+<a name='L16'></a><a href='#L16'>16</a>
+<a name='L17'></a><a href='#L17'>17</a>
+<a name='L18'></a><a href='#L18'>18</a>
+<a name='L19'></a><a href='#L19'>19</a>
+<a name='L20'></a><a href='#L20'>20</a>
+<a name='L21'></a><a href='#L21'>21</a>
+<a name='L22'></a><a href='#L22'>22</a>
+<a name='L23'></a><a href='#L23'>23</a>
+<a name='L24'></a><a href='#L24'>24</a>
+<a name='L25'></a><a href='#L25'>25</a>
+<a name='L26'></a><a href='#L26'>26</a>
+<a name='L27'></a><a href='#L27'>27</a>
+<a name='L28'></a><a href='#L28'>28</a>
+<a name='L29'></a><a href='#L29'>29</a>
+<a name='L30'></a><a href='#L30'>30</a>
+<a name='L31'></a><a href='#L31'>31</a>
+<a name='L32'></a><a href='#L32'>32</a>
+<a name='L33'></a><a href='#L33'>33</a>
+<a name='L34'></a><a href='#L34'>34</a>
+<a name='L35'></a><a href='#L35'>35</a>
+<a name='L36'></a><a href='#L36'>36</a>
+<a name='L37'></a><a href='#L37'>37</a>
+<a name='L38'></a><a href='#L38'>38</a>
+<a name='L39'></a><a href='#L39'>39</a>
+<a name='L40'></a><a href='#L40'>40</a>
+<a name='L41'></a><a href='#L41'>41</a>
+<a name='L42'></a><a href='#L42'>42</a>
+<a name='L43'></a><a href='#L43'>43</a>
+<a name='L44'></a><a href='#L44'>44</a>
+<a name='L45'></a><a href='#L45'>45</a>
+<a name='L46'></a><a href='#L46'>46</a>
+<a name='L47'></a><a href='#L47'>47</a>
+<a name='L48'></a><a href='#L48'>48</a>
+<a name='L49'></a><a href='#L49'>49</a>
+<a name='L50'></a><a href='#L50'>50</a>
+<a name='L51'></a><a href='#L51'>51</a>
+<a name='L52'></a><a href='#L52'>52</a>
+<a name='L53'></a><a href='#L53'>53</a>
+<a name='L54'></a><a href='#L54'>54</a>
+<a name='L55'></a><a href='#L55'>55</a>
+<a name='L56'></a><a href='#L56'>56</a>
+<a name='L57'></a><a href='#L57'>57</a>
+<a name='L58'></a><a href='#L58'>58</a>
+<a name='L59'></a><a href='#L59'>59</a>
+<a name='L60'></a><a href='#L60'>60</a>
+<a name='L61'></a><a href='#L61'>61</a>
+<a name='L62'></a><a href='#L62'>62</a>
+<a name='L63'></a><a href='#L63'>63</a>
+<a name='L64'></a><a href='#L64'>64</a>
+<a name='L65'></a><a href='#L65'>65</a>
+<a name='L66'></a><a href='#L66'>66</a>
+<a name='L67'></a><a href='#L67'>67</a>
+<a name='L68'></a><a href='#L68'>68</a>
+<a name='L69'></a><a href='#L69'>69</a>
+<a name='L70'></a><a href='#L70'>70</a>
+<a name='L71'></a><a href='#L71'>71</a>
+<a name='L72'></a><a href='#L72'>72</a>
+<a name='L73'></a><a href='#L73'>73</a>
+<a name='L74'></a><a href='#L74'>74</a>
+<a name='L75'></a><a href='#L75'>75</a>
+<a name='L76'></a><a href='#L76'>76</a>
+<a name='L77'></a><a href='#L77'>77</a>
+<a name='L78'></a><a href='#L78'>78</a>
+<a name='L79'></a><a href='#L79'>79</a>
+<a name='L80'></a><a href='#L80'>80</a>
+<a name='L81'></a><a href='#L81'>81</a>
+<a name='L82'></a><a href='#L82'>82</a>
+<a name='L83'></a><a href='#L83'>83</a>
+<a name='L84'></a><a href='#L84'>84</a>
+<a name='L85'></a><a href='#L85'>85</a>
+<a name='L86'></a><a href='#L86'>86</a>
+<a name='L87'></a><a href='#L87'>87</a>
+<a name='L88'></a><a href='#L88'>88</a>
+<a name='L89'></a><a href='#L89'>89</a>
+<a name='L90'></a><a href='#L90'>90</a>
+<a name='L91'></a><a href='#L91'>91</a>
+<a name='L92'></a><a href='#L92'>92</a>
+<a name='L93'></a><a href='#L93'>93</a>
+<a name='L94'></a><a href='#L94'>94</a>
+<a name='L95'></a><a href='#L95'>95</a>
+<a name='L96'></a><a href='#L96'>96</a>
+<a name='L97'></a><a href='#L97'>97</a>
+<a name='L98'></a><a href='#L98'>98</a>
+<a name='L99'></a><a href='#L99'>99</a>
+<a name='L100'></a><a href='#L100'>100</a>
+<a name='L101'></a><a href='#L101'>101</a>
+<a name='L102'></a><a href='#L102'>102</a>
+<a name='L103'></a><a href='#L103'>103</a>
+<a name='L104'></a><a href='#L104'>104</a>
+<a name='L105'></a><a href='#L105'>105</a>
+<a name='L106'></a><a href='#L106'>106</a>
+<a name='L107'></a><a href='#L107'>107</a>
+<a name='L108'></a><a href='#L108'>108</a>
+<a name='L109'></a><a href='#L109'>109</a>
+<a name='L110'></a><a href='#L110'>110</a>
+<a name='L111'></a><a href='#L111'>111</a>
+<a name='L112'></a><a href='#L112'>112</a>
+<a name='L113'></a><a href='#L113'>113</a>
+<a name='L114'></a><a href='#L114'>114</a>
+<a name='L115'></a><a href='#L115'>115</a>
+<a name='L116'></a><a href='#L116'>116</a>
+<a name='L117'></a><a href='#L117'>117</a>
+<a name='L118'></a><a href='#L118'>118</a>
+<a name='L119'></a><a href='#L119'>119</a>
+<a name='L120'></a><a href='#L120'>120</a>
+<a name='L121'></a><a href='#L121'>121</a>
+<a name='L122'></a><a href='#L122'>122</a>
+<a name='L123'></a><a href='#L123'>123</a>
+<a name='L124'></a><a href='#L124'>124</a>
+<a name='L125'></a><a href='#L125'>125</a>
+<a name='L126'></a><a href='#L126'>126</a>
+<a name='L127'></a><a href='#L127'>127</a>
+<a name='L128'></a><a href='#L128'>128</a>
+<a name='L129'></a><a href='#L129'>129</a>
+<a name='L130'></a><a href='#L130'>130</a>
+<a name='L131'></a><a href='#L131'>131</a>
+<a name='L132'></a><a href='#L132'>132</a>
+<a name='L133'></a><a href='#L133'>133</a>
+<a name='L134'></a><a href='#L134'>134</a>
+<a name='L135'></a><a href='#L135'>135</a>
+<a name='L136'></a><a href='#L136'>136</a>
+<a name='L137'></a><a href='#L137'>137</a>
+<a name='L138'></a><a href='#L138'>138</a>
+<a name='L139'></a><a href='#L139'>139</a>
+<a name='L140'></a><a href='#L140'>140</a>
+<a name='L141'></a><a href='#L141'>141</a>
+<a name='L142'></a><a href='#L142'>142</a>
+<a name='L143'></a><a href='#L143'>143</a>
+<a name='L144'></a><a href='#L144'>144</a>
+<a name='L145'></a><a href='#L145'>145</a>
+<a name='L146'></a><a href='#L146'>146</a>
+<a name='L147'></a><a href='#L147'>147</a>
+<a name='L148'></a><a href='#L148'>148</a>
+<a name='L149'></a><a href='#L149'>149</a>
+<a name='L150'></a><a href='#L150'>150</a>
+<a name='L151'></a><a href='#L151'>151</a>
+<a name='L152'></a><a href='#L152'>152</a>
+<a name='L153'></a><a href='#L153'>153</a>
+<a name='L154'></a><a href='#L154'>154</a>
+<a name='L155'></a><a href='#L155'>155</a>
+<a name='L156'></a><a href='#L156'>156</a>
+<a name='L157'></a><a href='#L157'>157</a>
+<a name='L158'></a><a href='#L158'>158</a>
+<a name='L159'></a><a href='#L159'>159</a>
+<a name='L160'></a><a href='#L160'>160</a>
+<a name='L161'></a><a href='#L161'>161</a>
+<a name='L162'></a><a href='#L162'>162</a>
+<a name='L163'></a><a href='#L163'>163</a>
+<a name='L164'></a><a href='#L164'>164</a>
+<a name='L165'></a><a href='#L165'>165</a>
+<a name='L166'></a><a href='#L166'>166</a>
+<a name='L167'></a><a href='#L167'>167</a>
+<a name='L168'></a><a href='#L168'>168</a>
+<a name='L169'></a><a href='#L169'>169</a>
+<a name='L170'></a><a href='#L170'>170</a>
+<a name='L171'></a><a href='#L171'>171</a>
+<a name='L172'></a><a href='#L172'>172</a>
+<a name='L173'></a><a href='#L173'>173</a>
+<a name='L174'></a><a href='#L174'>174</a>
+<a name='L175'></a><a href='#L175'>175</a>
+<a name='L176'></a><a href='#L176'>176</a>
+<a name='L177'></a><a href='#L177'>177</a>
+<a name='L178'></a><a href='#L178'>178</a>
+<a name='L179'></a><a href='#L179'>179</a>
+<a name='L180'></a><a href='#L180'>180</a>
+<a name='L181'></a><a href='#L181'>181</a>
+<a name='L182'></a><a href='#L182'>182</a>
+<a name='L183'></a><a href='#L183'>183</a>
+<a name='L184'></a><a href='#L184'>184</a>
+<a name='L185'></a><a href='#L185'>185</a>
+<a name='L186'></a><a href='#L186'>186</a>
+<a name='L187'></a><a href='#L187'>187</a>
+<a name='L188'></a><a href='#L188'>188</a>
+<a name='L189'></a><a href='#L189'>189</a>
+<a name='L190'></a><a href='#L190'>190</a>
+<a name='L191'></a><a href='#L191'>191</a>
+<a name='L192'></a><a href='#L192'>192</a>
+<a name='L193'></a><a href='#L193'>193</a>
+<a name='L194'></a><a href='#L194'>194</a>
+<a name='L195'></a><a href='#L195'>195</a>
+<a name='L196'></a><a href='#L196'>196</a>
+<a name='L197'></a><a href='#L197'>197</a>
+<a name='L198'></a><a href='#L198'>198</a>
+<a name='L199'></a><a href='#L199'>199</a>
+<a name='L200'></a><a href='#L200'>200</a>
+<a name='L201'></a><a href='#L201'>201</a>
+<a name='L202'></a><a href='#L202'>202</a>
+<a name='L203'></a><a href='#L203'>203</a>
+<a name='L204'></a><a href='#L204'>204</a>
+<a name='L205'></a><a href='#L205'>205</a>
+<a name='L206'></a><a href='#L206'>206</a>
+<a name='L207'></a><a href='#L207'>207</a>
+<a name='L208'></a><a href='#L208'>208</a>
+<a name='L209'></a><a href='#L209'>209</a>
+<a name='L210'></a><a href='#L210'>210</a>
+<a name='L211'></a><a href='#L211'>211</a>
+<a name='L212'></a><a href='#L212'>212</a>
+<a name='L213'></a><a href='#L213'>213</a>
+<a name='L214'></a><a href='#L214'>214</a>
+<a name='L215'></a><a href='#L215'>215</a>
+<a name='L216'></a><a href='#L216'>216</a>
+<a name='L217'></a><a href='#L217'>217</a>
+<a name='L218'></a><a href='#L218'>218</a>
+<a name='L219'></a><a href='#L219'>219</a>
+<a name='L220'></a><a href='#L220'>220</a>
+<a name='L221'></a><a href='#L221'>221</a>
+<a name='L222'></a><a href='#L222'>222</a>
+<a name='L223'></a><a href='#L223'>223</a>
+<a name='L224'></a><a href='#L224'>224</a>
+<a name='L225'></a><a href='#L225'>225</a>
+<a name='L226'></a><a href='#L226'>226</a>
+<a name='L227'></a><a href='#L227'>227</a>
+<a name='L228'></a><a href='#L228'>228</a>
+<a name='L229'></a><a href='#L229'>229</a>
+<a name='L230'></a><a href='#L230'>230</a>
+<a name='L231'></a><a href='#L231'>231</a>
+<a name='L232'></a><a href='#L232'>232</a>
+<a name='L233'></a><a href='#L233'>233</a>
+<a name='L234'></a><a href='#L234'>234</a>
+<a name='L235'></a><a href='#L235'>235</a>
+<a name='L236'></a><a href='#L236'>236</a>
+<a name='L237'></a><a href='#L237'>237</a>
+<a name='L238'></a><a href='#L238'>238</a>
+<a name='L239'></a><a href='#L239'>239</a>
+<a name='L240'></a><a href='#L240'>240</a>
+<a name='L241'></a><a href='#L241'>241</a>
+<a name='L242'></a><a href='#L242'>242</a>
+<a name='L243'></a><a href='#L243'>243</a>
+<a name='L244'></a><a href='#L244'>244</a>
+<a name='L245'></a><a href='#L245'>245</a>
+<a name='L246'></a><a href='#L246'>246</a>
+<a name='L247'></a><a href='#L247'>247</a>
+<a name='L248'></a><a href='#L248'>248</a>
+<a name='L249'></a><a href='#L249'>249</a>
+<a name='L250'></a><a href='#L250'>250</a>
+<a name='L251'></a><a href='#L251'>251</a>
+<a name='L252'></a><a href='#L252'>252</a>
+<a name='L253'></a><a href='#L253'>253</a>
+<a name='L254'></a><a href='#L254'>254</a>
+<a name='L255'></a><a href='#L255'>255</a>
+<a name='L256'></a><a href='#L256'>256</a>
+<a name='L257'></a><a href='#L257'>257</a>
+<a name='L258'></a><a href='#L258'>258</a>
+<a name='L259'></a><a href='#L259'>259</a>
+<a name='L260'></a><a href='#L260'>260</a>
+<a name='L261'></a><a href='#L261'>261</a>
+<a name='L262'></a><a href='#L262'>262</a>
+<a name='L263'></a><a href='#L263'>263</a>
+<a name='L264'></a><a href='#L264'>264</a>
+<a name='L265'></a><a href='#L265'>265</a>
+<a name='L266'></a><a href='#L266'>266</a>
+<a name='L267'></a><a href='#L267'>267</a>
+<a name='L268'></a><a href='#L268'>268</a>
+<a name='L269'></a><a href='#L269'>269</a>
+<a name='L270'></a><a href='#L270'>270</a>
+<a name='L271'></a><a href='#L271'>271</a>
+<a name='L272'></a><a href='#L272'>272</a>
+<a name='L273'></a><a href='#L273'>273</a>
+<a name='L274'></a><a href='#L274'>274</a>
+<a name='L275'></a><a href='#L275'>275</a>
+<a name='L276'></a><a href='#L276'>276</a>
+<a name='L277'></a><a href='#L277'>277</a>
+<a name='L278'></a><a href='#L278'>278</a>
+<a name='L279'></a><a href='#L279'>279</a>
+<a name='L280'></a><a href='#L280'>280</a>
+<a name='L281'></a><a href='#L281'>281</a>
+<a name='L282'></a><a href='#L282'>282</a>
+<a name='L283'></a><a href='#L283'>283</a>
+<a name='L284'></a><a href='#L284'>284</a>
+<a name='L285'></a><a href='#L285'>285</a>
+<a name='L286'></a><a href='#L286'>286</a>
+<a name='L287'></a><a href='#L287'>287</a>
+<a name='L288'></a><a href='#L288'>288</a>
+<a name='L289'></a><a href='#L289'>289</a>
+<a name='L290'></a><a href='#L290'>290</a>
+<a name='L291'></a><a href='#L291'>291</a>
+<a name='L292'></a><a href='#L292'>292</a>
+<a name='L293'></a><a href='#L293'>293</a>
+<a name='L294'></a><a href='#L294'>294</a>
+<a name='L295'></a><a href='#L295'>295</a>
+<a name='L296'></a><a href='#L296'>296</a>
+<a name='L297'></a><a href='#L297'>297</a>
+<a name='L298'></a><a href='#L298'>298</a>
+<a name='L299'></a><a href='#L299'>299</a>
+<a name='L300'></a><a href='#L300'>300</a>
+<a name='L301'></a><a href='#L301'>301</a>
+<a name='L302'></a><a href='#L302'>302</a>
+<a name='L303'></a><a href='#L303'>303</a>
+<a name='L304'></a><a href='#L304'>304</a>
+<a name='L305'></a><a href='#L305'>305</a>
+<a name='L306'></a><a href='#L306'>306</a>
+<a name='L307'></a><a href='#L307'>307</a>
+<a name='L308'></a><a href='#L308'>308</a>
+<a name='L309'></a><a href='#L309'>309</a>
+<a name='L310'></a><a href='#L310'>310</a>
+<a name='L311'></a><a href='#L311'>311</a>
+<a name='L312'></a><a href='#L312'>312</a>
+<a name='L313'></a><a href='#L313'>313</a>
+<a name='L314'></a><a href='#L314'>314</a>
+<a name='L315'></a><a href='#L315'>315</a>
+<a name='L316'></a><a href='#L316'>316</a>
+<a name='L317'></a><a href='#L317'>317</a>
+<a name='L318'></a><a href='#L318'>318</a>
+<a name='L319'></a><a href='#L319'>319</a>
+<a name='L320'></a><a href='#L320'>320</a>
+<a name='L321'></a><a href='#L321'>321</a>
+<a name='L322'></a><a href='#L322'>322</a>
+<a name='L323'></a><a href='#L323'>323</a>
+<a name='L324'></a><a href='#L324'>324</a>
+<a name='L325'></a><a href='#L325'>325</a>
+<a name='L326'></a><a href='#L326'>326</a>
+<a name='L327'></a><a href='#L327'>327</a>
+<a name='L328'></a><a href='#L328'>328</a>
+<a name='L329'></a><a href='#L329'>329</a>
+<a name='L330'></a><a href='#L330'>330</a>
+<a name='L331'></a><a href='#L331'>331</a>
+<a name='L332'></a><a href='#L332'>332</a>
+<a name='L333'></a><a href='#L333'>333</a>
+<a name='L334'></a><a href='#L334'>334</a>
+<a name='L335'></a><a href='#L335'>335</a>
+<a name='L336'></a><a href='#L336'>336</a>
+<a name='L337'></a><a href='#L337'>337</a>
+<a name='L338'></a><a href='#L338'>338</a>
+<a name='L339'></a><a href='#L339'>339</a>
+<a name='L340'></a><a href='#L340'>340</a>
+<a name='L341'></a><a href='#L341'>341</a>
+<a name='L342'></a><a href='#L342'>342</a>
+<a name='L343'></a><a href='#L343'>343</a>
+<a name='L344'></a><a href='#L344'>344</a>
+<a name='L345'></a><a href='#L345'>345</a>
+<a name='L346'></a><a href='#L346'>346</a>
+<a name='L347'></a><a href='#L347'>347</a>
+<a name='L348'></a><a href='#L348'>348</a>
+<a name='L349'></a><a href='#L349'>349</a>
+<a name='L350'></a><a href='#L350'>350</a>
+<a name='L351'></a><a href='#L351'>351</a>
+<a name='L352'></a><a href='#L352'>352</a>
+<a name='L353'></a><a href='#L353'>353</a>
+<a name='L354'></a><a href='#L354'>354</a>
+<a name='L355'></a><a href='#L355'>355</a>
+<a name='L356'></a><a href='#L356'>356</a>
+<a name='L357'></a><a href='#L357'>357</a>
+<a name='L358'></a><a href='#L358'>358</a>
+<a name='L359'></a><a href='#L359'>359</a>
+<a name='L360'></a><a href='#L360'>360</a>
+<a name='L361'></a><a href='#L361'>361</a>
+<a name='L362'></a><a href='#L362'>362</a>
+<a name='L363'></a><a href='#L363'>363</a>
+<a name='L364'></a><a href='#L364'>364</a>
+<a name='L365'></a><a href='#L365'>365</a>
+<a name='L366'></a><a href='#L366'>366</a>
+<a name='L367'></a><a href='#L367'>367</a>
+<a name='L368'></a><a href='#L368'>368</a>
+<a name='L369'></a><a href='#L369'>369</a>
+<a name='L370'></a><a href='#L370'>370</a>
+<a name='L371'></a><a href='#L371'>371</a>
+<a name='L372'></a><a href='#L372'>372</a>
+<a name='L373'></a><a href='#L373'>373</a>
+<a name='L374'></a><a href='#L374'>374</a>
+<a name='L375'></a><a href='#L375'>375</a>
+<a name='L376'></a><a href='#L376'>376</a>
+<a name='L377'></a><a href='#L377'>377</a>
+<a name='L378'></a><a href='#L378'>378</a>
+<a name='L379'></a><a href='#L379'>379</a>
+<a name='L380'></a><a href='#L380'>380</a>
+<a name='L381'></a><a href='#L381'>381</a>
+<a name='L382'></a><a href='#L382'>382</a>
+<a name='L383'></a><a href='#L383'>383</a>
+<a name='L384'></a><a href='#L384'>384</a>
+<a name='L385'></a><a href='#L385'>385</a>
+<a name='L386'></a><a href='#L386'>386</a>
+<a name='L387'></a><a href='#L387'>387</a>
+<a name='L388'></a><a href='#L388'>388</a>
+<a name='L389'></a><a href='#L389'>389</a>
+<a name='L390'></a><a href='#L390'>390</a>
+<a name='L391'></a><a href='#L391'>391</a>
+<a name='L392'></a><a href='#L392'>392</a>
+<a name='L393'></a><a href='#L393'>393</a>
+<a name='L394'></a><a href='#L394'>394</a>
+<a name='L395'></a><a href='#L395'>395</a>
+<a name='L396'></a><a href='#L396'>396</a>
+<a name='L397'></a><a href='#L397'>397</a>
+<a name='L398'></a><a href='#L398'>398</a>
+<a name='L399'></a><a href='#L399'>399</a>
+<a name='L400'></a><a href='#L400'>400</a>
+<a name='L401'></a><a href='#L401'>401</a>
+<a name='L402'></a><a href='#L402'>402</a>
+<a name='L403'></a><a href='#L403'>403</a>
+<a name='L404'></a><a href='#L404'>404</a>
+<a name='L405'></a><a href='#L405'>405</a>
+<a name='L406'></a><a href='#L406'>406</a>
+<a name='L407'></a><a href='#L407'>407</a>
+<a name='L408'></a><a href='#L408'>408</a>
+<a name='L409'></a><a href='#L409'>409</a>
+<a name='L410'></a><a href='#L410'>410</a>
+<a name='L411'></a><a href='#L411'>411</a>
+<a name='L412'></a><a href='#L412'>412</a>
+<a name='L413'></a><a href='#L413'>413</a>
+<a name='L414'></a><a href='#L414'>414</a>
+<a name='L415'></a><a href='#L415'>415</a>
+<a name='L416'></a><a href='#L416'>416</a>
+<a name='L417'></a><a href='#L417'>417</a>
+<a name='L418'></a><a href='#L418'>418</a>
+<a name='L419'></a><a href='#L419'>419</a>
+<a name='L420'></a><a href='#L420'>420</a>
+<a name='L421'></a><a href='#L421'>421</a>
+<a name='L422'></a><a href='#L422'>422</a>
+<a name='L423'></a><a href='#L423'>423</a>
+<a name='L424'></a><a href='#L424'>424</a>
+<a name='L425'></a><a href='#L425'>425</a>
+<a name='L426'></a><a href='#L426'>426</a>
+<a name='L427'></a><a href='#L427'>427</a>
+<a name='L428'></a><a href='#L428'>428</a>
+<a name='L429'></a><a href='#L429'>429</a>
+<a name='L430'></a><a href='#L430'>430</a>
+<a name='L431'></a><a href='#L431'>431</a>
+<a name='L432'></a><a href='#L432'>432</a>
+<a name='L433'></a><a href='#L433'>433</a>
+<a name='L434'></a><a href='#L434'>434</a>
+<a name='L435'></a><a href='#L435'>435</a>
+<a name='L436'></a><a href='#L436'>436</a>
+<a name='L437'></a><a href='#L437'>437</a>
+<a name='L438'></a><a href='#L438'>438</a>
+<a name='L439'></a><a href='#L439'>439</a>
+<a name='L440'></a><a href='#L440'>440</a>
+<a name='L441'></a><a href='#L441'>441</a>
+<a name='L442'></a><a href='#L442'>442</a>
+<a name='L443'></a><a href='#L443'>443</a>
+<a name='L444'></a><a href='#L444'>444</a>
+<a name='L445'></a><a href='#L445'>445</a>
+<a name='L446'></a><a href='#L446'>446</a>
+<a name='L447'></a><a href='#L447'>447</a>
+<a name='L448'></a><a href='#L448'>448</a>
+<a name='L449'></a><a href='#L449'>449</a>
+<a name='L450'></a><a href='#L450'>450</a>
+<a name='L451'></a><a href='#L451'>451</a>
+<a name='L452'></a><a href='#L452'>452</a>
+<a name='L453'></a><a href='#L453'>453</a>
+<a name='L454'></a><a href='#L454'>454</a>
+<a name='L455'></a><a href='#L455'>455</a>
+<a name='L456'></a><a href='#L456'>456</a>
+<a name='L457'></a><a href='#L457'>457</a>
+<a name='L458'></a><a href='#L458'>458</a>
+<a name='L459'></a><a href='#L459'>459</a>
+<a name='L460'></a><a href='#L460'>460</a>
+<a name='L461'></a><a href='#L461'>461</a>
+<a name='L462'></a><a href='#L462'>462</a>
+<a name='L463'></a><a href='#L463'>463</a>
+<a name='L464'></a><a href='#L464'>464</a>
+<a name='L465'></a><a href='#L465'>465</a>
+<a name='L466'></a><a href='#L466'>466</a>
+<a name='L467'></a><a href='#L467'>467</a>
+<a name='L468'></a><a href='#L468'>468</a>
+<a name='L469'></a><a href='#L469'>469</a>
+<a name='L470'></a><a href='#L470'>470</a>
+<a name='L471'></a><a href='#L471'>471</a>
+<a name='L472'></a><a href='#L472'>472</a>
+<a name='L473'></a><a href='#L473'>473</a>
+<a name='L474'></a><a href='#L474'>474</a>
+<a name='L475'></a><a href='#L475'>475</a>
+<a name='L476'></a><a href='#L476'>476</a>
+<a name='L477'></a><a href='#L477'>477</a>
+<a name='L478'></a><a href='#L478'>478</a>
+<a name='L479'></a><a href='#L479'>479</a>
+<a name='L480'></a><a href='#L480'>480</a>
+<a name='L481'></a><a href='#L481'>481</a>
+<a name='L482'></a><a href='#L482'>482</a>
+<a name='L483'></a><a href='#L483'>483</a>
+<a name='L484'></a><a href='#L484'>484</a>
+<a name='L485'></a><a href='#L485'>485</a>
+<a name='L486'></a><a href='#L486'>486</a>
+<a name='L487'></a><a href='#L487'>487</a>
+<a name='L488'></a><a href='#L488'>488</a>
+<a name='L489'></a><a href='#L489'>489</a>
+<a name='L490'></a><a href='#L490'>490</a>
+<a name='L491'></a><a href='#L491'>491</a>
+<a name='L492'></a><a href='#L492'>492</a>
+<a name='L493'></a><a href='#L493'>493</a>
+<a name='L494'></a><a href='#L494'>494</a>
+<a name='L495'></a><a href='#L495'>495</a>
+<a name='L496'></a><a href='#L496'>496</a>
+<a name='L497'></a><a href='#L497'>497</a>
+<a name='L498'></a><a href='#L498'>498</a>
+<a name='L499'></a><a href='#L499'>499</a>
+<a name='L500'></a><a href='#L500'>500</a>
+<a name='L501'></a><a href='#L501'>501</a>
+<a name='L502'></a><a href='#L502'>502</a>
+<a name='L503'></a><a href='#L503'>503</a>
+<a name='L504'></a><a href='#L504'>504</a>
+<a name='L505'></a><a href='#L505'>505</a>
+<a name='L506'></a><a href='#L506'>506</a>
+<a name='L507'></a><a href='#L507'>507</a>
+<a name='L508'></a><a href='#L508'>508</a>
+<a name='L509'></a><a href='#L509'>509</a>
+<a name='L510'></a><a href='#L510'>510</a>
+<a name='L511'></a><a href='#L511'>511</a>
+<a name='L512'></a><a href='#L512'>512</a>
+<a name='L513'></a><a href='#L513'>513</a>
+<a name='L514'></a><a href='#L514'>514</a>
+<a name='L515'></a><a href='#L515'>515</a>
+<a name='L516'></a><a href='#L516'>516</a>
+<a name='L517'></a><a href='#L517'>517</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">29x</span>
+<span class="cline-any cline-yes">29x</span>
+<span class="cline-any cline-yes">29x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">29x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">29x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">29x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1323x</span>
+<span class="cline-any cline-yes">29x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1323x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1764x</span>
+<span class="cline-any cline-yes">441x</span>
+<span class="cline-any cline-yes">29x</span>
+<span class="cline-any cline-yes">2312641x</span>
+<span class="cline-any cline-yes">2312641x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">156774x</span>
+<span class="cline-any cline-yes">29x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">222320x</span>
+<span class="cline-any cline-yes">222320x</span>
+<span class="cline-any cline-yes">222320x</span>
+<span class="cline-any cline-yes">222320x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">29x</span>
+<span class="cline-any cline-yes">29x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1095x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2526x</span>
+<span class="cline-any cline-yes">2526x</span>
+<span class="cline-any cline-yes">2526x</span>
+<span class="cline-any cline-yes">2526x</span>
+<span class="cline-any cline-yes">2526x</span>
+<span class="cline-any cline-yes">2526x</span>
+<span class="cline-any cline-yes">2526x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">32487x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">34403x</span>
+<span class="cline-any cline-yes">34403x</span>
+<span class="cline-any cline-yes">34403x</span>
+<span class="cline-any cline-yes">34403x</span>
+<span class="cline-any cline-yes">34403x</span>
+<span class="cline-any cline-yes">34403x</span>
+<span class="cline-any cline-yes">34403x</span>
+<span class="cline-any cline-yes">34403x</span>
+<span class="cline-any cline-yes">34403x</span>
+<span class="cline-any cline-yes">34403x</span>
+<span class="cline-any cline-yes">34403x</span>
+<span class="cline-any cline-yes">34403x</span>
+<span class="cline-any cline-yes">34403x</span>
+<span class="cline-any cline-yes">34403x</span>
+<span class="cline-any cline-yes">34403x</span>
+<span class="cline-any cline-yes">34403x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">154248x</span>
+<span class="cline-any cline-yes">154248x</span>
+<span class="cline-any cline-yes">154248x</span>
+<span class="cline-any cline-yes">154248x</span>
+<span class="cline-any cline-yes">154248x</span>
+<span class="cline-any cline-yes">154248x</span>
+<span class="cline-any cline-yes">154248x</span>
+<span class="cline-any cline-yes">154248x</span>
+<span class="cline-any cline-yes">154248x</span>
+<span class="cline-any cline-yes">154248x</span>
+<span class="cline-any cline-yes">154248x</span>
+<span class="cline-any cline-yes">154248x</span>
+<span class="cline-any cline-yes">154248x</span>
+<span class="cline-any cline-yes">154248x</span>
+<span class="cline-any cline-yes">154248x</span>
+<span class="cline-any cline-yes">154248x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1120x</span>
+<span class="cline-any cline-yes">1118x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1118x</span>
+<span class="cline-any cline-yes">1118x</span>
+<span class="cline-any cline-yes">135x</span>
+<span class="cline-any cline-yes">135x</span>
+<span class="cline-any cline-yes">135x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">33710x</span>
+<span class="cline-any cline-yes">19499x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">135x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1312x</span>
+<span class="cline-any cline-yes">1312x</span>
+<span class="cline-any cline-yes">1312x</span>
+<span class="cline-any cline-yes">1312x</span>
+<span class="cline-any cline-yes">1312x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">441x</span>
+<span class="cline-any cline-yes">441x</span>
+<span class="cline-any cline-yes">441x</span>
+<span class="cline-any cline-yes">441x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">29x</span>
+<span class="cline-any cline-yes">29x</span>
+<span class="cline-any cline-yes">14553x</span>
+<span class="cline-any cline-yes">29x</span>
+<span class="cline-any cline-yes">441x</span>
+<span class="cline-any cline-yes">14112x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">29x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">882x</span>
+<span class="cline-any cline-yes">882x</span>
+<span class="cline-any cline-yes">882x</span>
+<span class="cline-any cline-yes">882x</span>
+<span class="cline-any cline-yes">28224x</span>
+<span class="cline-any cline-yes">28224x</span>
+<span class="cline-any cline-yes">28224x</span>
+<span class="cline-any cline-yes">28224x</span>
+<span class="cline-any cline-yes">28224x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">882x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">441x</span>
+<span class="cline-any cline-yes">441x</span>
+<span class="cline-any cline-yes">29x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">441x</span>
+<span class="cline-any cline-yes">441x</span>
+<span class="cline-any cline-yes">441x</span>
+<span class="cline-any cline-yes">441x</span>
+<span class="cline-any cline-yes">441x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">441x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">29x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1312x</span>
+<span class="cline-any cline-yes">1312x</span>
+<span class="cline-any cline-yes">1312x</span>
+<span class="cline-any cline-yes">1312x</span>
+<span class="cline-any cline-yes">1312x</span>
+<span class="cline-any cline-yes">1312x</span>
+<span class="cline-any cline-yes">1312x</span>
+<span class="cline-any cline-yes">1312x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">179744x</span>
+<span class="cline-any cline-yes">179744x</span>
+<span class="cline-any cline-yes">179744x</span>
+<span class="cline-any cline-yes">179744x</span>
+<span class="cline-any cline-yes">179744x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1312x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">29x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">29x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">29x</span>
+<span class="cline-any cline-yes">29x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">441x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">29x</span>
+<span class="cline-any cline-yes">29x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">441x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">29x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">441x</span>
+<span class="cline-any cline-yes">441x</span>
+<span class="cline-any cline-yes">441x</span>
+<span class="cline-any cline-yes">441x</span>
+<span class="cline-any cline-yes">441x</span>
+<span class="cline-any cline-yes">441x</span>
+<span class="cline-any cline-yes">441x</span>
+<span class="cline-any cline-yes">441x</span>
+<span class="cline-any cline-yes">441x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">29x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">441x</span>
+<span class="cline-any cline-yes">29x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">29x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">29x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">29x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">29x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">29x</span>
+<span class="cline-any cline-yes">29x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">29x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">29x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">29x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">29x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">29x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">21x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">29x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">29x</span>
+<span class="cline-any cline-yes">29x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">21x</span>
+<span class="cline-any cline-yes">21x</span>
+<span class="cline-any cline-yes">21x</span>
+<span class="cline-any cline-yes">21x</span>
+<span class="cline-any cline-yes">21x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">693x</span>
+<span class="cline-any cline-yes">693x</span>
+<span class="cline-any cline-yes">693x</span>
+<span class="cline-any cline-yes">88011x</span>
+<span class="cline-any cline-yes">88011x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">693x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">21x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">29x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">983x</span>
+<span class="cline-any cline-yes">983x</span>
+<span class="cline-any cline-yes">32439x</span>
+<span class="cline-any cline-yes">32439x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">983x</span>
+<span class="cline-any cline-yes">983x</span>
+<span class="cline-any cline-yes">983x</span>
+<span class="cline-any cline-yes">983x</span>
+<span class="cline-any cline-yes">983x</span>
+<span class="cline-any cline-yes">983x</span>
+<span class="cline-any cline-yes">983x</span>
+<span class="cline-any cline-yes">983x</span>
+<span class="cline-any cline-yes">32439x</span>
+<span class="cline-any cline-yes">32439x</span>
+<span class="cline-any cline-yes">32439x</span>
+<span class="cline-any cline-yes">32439x</span>
+<span class="cline-any cline-yes">16681x</span>
+<span class="cline-any cline-yes">16681x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">32439x</span>
+<span class="cline-any cline-yes">32439x</span>
+<span class="cline-any cline-yes">32439x</span>
+<span class="cline-any cline-yes">32439x</span>
+<span class="cline-any cline-yes">32439x</span>
+<span class="cline-any cline-yes">1245x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">31194x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">983x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">29x</span>
+<span class="cline-any cline-yes">29x</span>
+<span class="cline-any cline-yes">29x</span>
+<span class="cline-any cline-yes">29x</span>
+<span class="cline-any cline-yes">29x</span>
+<span class="cline-any cline-yes">29x</span>
+<span class="cline-any cline-yes">29x</span>
+<span class="cline-any cline-yes">29x</span>
+<span class="cline-any cline-yes">29x</span>
+<span class="cline-any cline-yes">29x</span>
+<span class="cline-any cline-yes">29x</span>
+<span class="cline-any cline-yes">29x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">/* eslint-disable no-alert */
+&nbsp;
+// taken from https://github.com/paulmillr/noble-ed25519/blob/main/index.ts
+/*! noble-ed25519 - MIT License (c) 2019 Paul Miller (paulmillr.com) */
+const P = 2n ** 255n - 19n; // ed25519 is twisted edwards curve
+const N = 2n ** 252n + 27742317777372353535851937790883648493n; // curve's (group) order
+export const Gx =
+  0x216936d3cd6e53fec0a4e231fdd6dc5c692cc7609525a7b2c9562d608f25d51an; // base point x
+export const Gy =
+  0x6666666666666666666666666666666666666666666666666666666666666658n; // base point y
+const CURVE = {
+  // Curve's formula is −x² + y² = -a + dx²y²
+  a: -1n, // where a=-1, d = -(121665/121666) == -(121665 * inv(121666)) mod P
+  d: 37095705934669439343138083508754565189542113879843219016388785533085940283555n,
+  p: P,
+  n: N,
+  h: 8,
+  Gx,
+  Gy, // field prime, curve (group) order, cofactor
+};
+type Bytes = Uint8Array;
+type Hex = Bytes | string; // types
+const err = (m = <span class="branch-0 cbranch-no" title="branch not covered" >"")</span>: never =&gt; {
+  throw new Error(m);
+}; // error helper, messes-up stack trace
+const str = (s: unknown): s is string =&gt; typeof s === "string"; // is string
+const au8 = (
+  a: unknown,
+  l?: number,
+): Bytes =&gt;  // is Uint8Array (of specific length)
+  !(a instanceof Uint8Array) ||
+  (typeof l === "number" &amp;&amp; l &gt; 0 &amp;&amp; a.length !== l)
+    ? <span class="branch-0 cbranch-no" title="branch not covered" >err("Uint8Array of valid length expected")</span>
+    : a;
+const u8n = (data?: any) =&gt; new Uint8Array(data); // creates Uint8Array
+const toU8 = (a: Hex, len?: number) =&gt; au8(str(a) ? h2b(a) : <span class="branch-1 cbranch-no" title="branch not covered" >u8n(a),</span> len); // norm(hex/u8a) to u8a
+export const mod = (a: bigint, b = P) =&gt; {
+  let r = a % b;
+  return r &gt;= 0n ? r : b + r;
+}; // mod division
+const isPoint = (p: any) =&gt; (p instanceof Point ? p : <span class="branch-1 cbranch-no" title="branch not covered" >err("Point expected"))</span>; // is xyzt point
+let Gpows: Point[] | undefined = undefined; // precomputes for base point G
+interface AffinePoint {
+  x: bigint;
+  y: bigint;
+} // Point in 2d xy affine coordinates
+class Point {
+  // Point in xyzt extended coordinates
+  constructor(
+    readonly ex: bigint,
+    readonly ey: bigint,
+    readonly ez: bigint,
+    readonly et: bigint,
+  ) {}
+  static readonly BASE = new Point(Gx, Gy, 1n, mod(Gx * Gy)); // Generator / Base point
+  static readonly ZERO = new Point(0n, 1n, 1n, 0n); // Identity / Zero point
+  static fromAffine(p: AffinePoint) {
+    return new Point(p.x, p.y, 1n, mod(p.x * p.y));
+  }
+<span class="fstat-no" title="function not covered" >  static </span>fromHex(hex: Hex, zip215 = <span class="branch-0 cbranch-no" title="branch not covered" >false)</span> {
+    // RFC8032 5.1.3: hex / Uint8Array to Point.
+    const { d } = <span class="cstat-no" title="statement not covered" >CURVE;</span>
+<span class="cstat-no" title="statement not covered" >    hex = toU8(hex, 32);</span>
+    const normed = <span class="cstat-no" title="statement not covered" >hex.slice();</span> // copy the array to not mess it up
+    const lastByte = <span class="cstat-no" title="statement not covered" >hex[31];</span>
+<span class="cstat-no" title="statement not covered" >    normed[31] = lastByte &amp; ~0x80; </span>// adjust first LE byte = last BE byte
+    const y = <span class="cstat-no" title="statement not covered" >b2n_LE(normed);</span> // decode as little-endian, convert to num
+<span class="cstat-no" title="statement not covered" >    <span class="missing-if-branch" title="if path not taken" >I</span>if (zip215 &amp;&amp; !(0n &lt;= y &amp;&amp; y &lt; 2n ** 256n)) <span class="cstat-no" title="statement not covered" >err("bad y coord 1"); </span></span>// zip215=true  [1..2^256-1]
+<span class="cstat-no" title="statement not covered" >    <span class="missing-if-branch" title="if path not taken" >I</span>if (!zip215 &amp;&amp; !(0n &lt;= y &amp;&amp; y &lt; P)) <span class="cstat-no" title="statement not covered" >err("bad y coord 2"); </span></span>// zip215=false [1..P-1]
+    const y2 = <span class="cstat-no" title="statement not covered" >mod(y * y);</span> // y²
+    const u = <span class="cstat-no" title="statement not covered" >mod(y2 - 1n);</span> // u=y²-1
+    const v = <span class="cstat-no" title="statement not covered" >mod(d * y2 + 1n);</span> // v=dy²+1
+    let { isValid, value: x } = <span class="cstat-no" title="statement not covered" >uvRatio(u, v);</span> // (uv³)(uv⁷)^(p-5)/8; square root
+<span class="cstat-no" title="statement not covered" >    <span class="missing-if-branch" title="if path not taken" >I</span>if (!isValid) <span class="cstat-no" title="statement not covered" >err("bad y coordinate 3"); </span></span>// not square root: bad point
+    const isXOdd = <span class="cstat-no" title="statement not covered" >(x &amp; 1n) === 1n;</span> // adjust sign of x coordinate
+    const isLastByteOdd = <span class="cstat-no" title="statement not covered" >(lastByte &amp; 0x80) !== 0;</span> // x_0, last bit
+<span class="cstat-no" title="statement not covered" >    <span class="missing-if-branch" title="if path not taken" >I</span>if (!zip215 &amp;&amp; x === 0n &amp;&amp; isLastByteOdd) <span class="cstat-no" title="statement not covered" >err("bad y coord 3"); </span></span>// x=0 and x_0 = 1
+<span class="cstat-no" title="statement not covered" >    <span class="missing-if-branch" title="if path not taken" >I</span>if (isLastByteOdd !== isXOdd) <span class="cstat-no" title="statement not covered" >x = mod(-x);</span></span>
+<span class="cstat-no" title="statement not covered" >    return new Point(x, y, 1n, mod(x * y)); </span>// Z=1, T=xy
+  }
+<span class="fstat-no" title="function not covered" >  get x</span>() {
+<span class="cstat-no" title="statement not covered" >    return this.toAffine().x;</span>
+  } // .x, .y will call expensive toAffine.
+<span class="fstat-no" title="function not covered" >  get y</span>() {
+<span class="cstat-no" title="statement not covered" >    return this.toAffine().y;</span>
+  } // Should be used with care.
+  equals(other: Point): boolean {
+    // equality check: compare points
+    const { ex: X1, ey: Y1, ez: Z1 } = this;
+    const { ex: X2, ey: Y2, ez: Z2 } = isPoint(other); // isPoint() checks class equality
+    const X1Z2 = mod(X1 * Z2),
+      X2Z1 = mod(X2 * Z1);
+    const Y1Z2 = mod(Y1 * Z2),
+      Y2Z1 = mod(Y2 * Z1);
+    return X1Z2 === X2Z1 &amp;&amp; Y1Z2 === Y2Z1;
+  }
+<span class="fstat-no" title="function not covered" >  is0(</span>): boolean {
+<span class="cstat-no" title="statement not covered" >    return this.equals(I);</span>
+  }
+  negate(): Point {
+    // negate: flip over the affine x coordinate
+    return new Point(mod(-this.ex), this.ey, this.ez, mod(-this.et));
+  }
+  double(): Point {
+    // Point doubling. Complete formula.
+    const { ex: X1, ey: Y1, ez: Z1 } = this; // Cost: 4M + 4S + 1*a + 6add + 1*2
+    const { a } = CURVE; // https://hyperelliptic.org/EFD/g1p/auto-twisted-extended.html#doubling-dbl-2008-hwcd
+    const A = mod(X1 * X1);
+    const B = mod(Y1 * Y1);
+    const C = mod(2n * mod(Z1 * Z1));
+    const D = mod(a * A);
+    const x1y1 = X1 + Y1;
+    const E = mod(mod(x1y1 * x1y1) - A - B);
+    const G = D + B;
+    const F = G - C;
+    const H = D - B;
+    const X3 = mod(E * F);
+    const Y3 = mod(G * H);
+    const T3 = mod(E * H);
+    const Z3 = mod(F * G);
+    return new Point(X3, Y3, Z3, T3);
+  }
+  add(other: Point) {
+    // Point addition. Complete formula.
+    const { ex: X1, ey: Y1, ez: Z1, et: T1 } = this; // Cost: 8M + 1*k + 8add + 1*2.
+    const { ex: X2, ey: Y2, ez: Z2, et: T2 } = isPoint(other); // doesn't check if other on-curve
+    const { a, d } = CURVE; // http://hyperelliptic.org/EFD/g1p/auto-twisted-extended-1.html#addition-add-2008-hwcd-3
+    const A = mod(X1 * X2);
+    const B = mod(Y1 * Y2);
+    const C = mod(T1 * d * T2);
+    const D = mod(Z1 * Z2);
+    const E = mod((X1 + Y1) * (X2 + Y2) - A - B);
+    const F = mod(D - C);
+    const G = mod(D + C);
+    const H = mod(B - a * A);
+    const X3 = mod(E * F);
+    const Y3 = mod(G * H);
+    const T3 = mod(E * H);
+    const Z3 = mod(F * G);
+    return new Point(X3, Y3, Z3, T3);
+  }
+  mul(n: bigint, safe = true): Point {
+    // Multiply point by scalar n
+    if (n === 0n) return safe === true ? err("cannot multiply by 0") : <span class="branch-1 cbranch-no" title="branch not covered" >I;</span>
+    <span class="missing-if-branch" title="if path not taken" >I</span>if (!(typeof n === "bigint" &amp;&amp; 0n &lt; n &amp;&amp; n &lt; N))
+<span class="cstat-no" title="statement not covered" >      err("invalid scalar, must be &lt; L");</span>
+    <span class="missing-if-branch" title="if path not taken" >I</span>if ((!safe &amp;&amp; <span class="branch-1 cbranch-no" title="branch not covered" >this.is0())</span> || n === 1n) <span class="cstat-no" title="statement not covered" >return this; </span>// safe=true bans 0. safe=false allows 0.
+    if (this.equals(G)) return wNAF(n).p; // use wNAF precomputes for base points
+    let p = I,
+      f = G; // init result point &amp; fake point
+    for (let d: Point = this; n &gt; 0n; d = d.double(), n &gt;&gt;= 1n) {
+      // double-and-add ladder
+      if (n &amp; 1n) p = p.add(d); // if bit is present, add to point
+      else if (safe) f = f.add(d); // if not, add to fake for timing safety
+    }
+    return p;
+  }
+<span class="fstat-no" title="function not covered" >  multiply(</span>scalar: bigint) {
+<span class="cstat-no" title="statement not covered" >    return this.mul(scalar);</span>
+  } // Aliases for compatibilty
+<span class="fstat-no" title="function not covered" >  clearCofactor(</span>): Point {
+<span class="cstat-no" title="statement not covered" >    return this.mul(BigInt(CURVE.h), false);</span>
+  } // multiply by cofactor
+<span class="fstat-no" title="function not covered" >  isSmallOrder(</span>): boolean {
+<span class="cstat-no" title="statement not covered" >    return this.clearCofactor().is0();</span>
+  } // check if P is small order
+<span class="fstat-no" title="function not covered" >  isTorsionFree(</span>): boolean {
+    // multiply by big number CURVE.n
+    let p = <span class="cstat-no" title="statement not covered" >this.mul(N / 2n, false).double();</span> // ensures the point is not "bad".
+<span class="cstat-no" title="statement not covered" >    <span class="missing-if-branch" title="if path not taken" >I</span>if (N % 2n) <span class="cstat-no" title="statement not covered" >p = p.add(this); </span></span>// P^(N+1)             // P*N == (P*(N/2))*2+P
+<span class="cstat-no" title="statement not covered" >    return p.is0();</span>
+  }
+  toAffine(): AffinePoint {
+    // converts point to 2d xy affine point
+    const { ex: x, ey: y, ez: z } = this; // (x, y, z, t) ∋ (x=x/z, y=y/z, t=xy)
+    <span class="missing-if-branch" title="if path not taken" >I</span>if (this.equals(I)) <span class="cstat-no" title="statement not covered" >return { x: 0n, y: 1n }; </span>// affine zero point (0 , 1)
+    const iz = invert(z); // z^-1: invert z
+    <span class="missing-if-branch" title="if path not taken" >I</span>if (mod(z * iz) !== 1n) <span class="cstat-no" title="statement not covered" >err("invalid inverse"); </span>// (z * z^-1) must be 1, otherwise bad math
+    return { x: mod(x * iz), y: mod(y * iz) }; // x = x*z^-1; y = y*z^-1
+  }
+  toRawBytes(): Bytes {
+    // Encode to Uint8Array
+    const { x, y } = this.toAffine(); // convert to affine 2d point
+    const b = n2b_32LE(y); // encode number to 32 bytes
+    b[31] |= x &amp; 1n ? 0x80 : 0; // store sign in first LE byte
+    return b;
+  }
+<span class="fstat-no" title="function not covered" >  toHex(</span>): string {
+<span class="cstat-no" title="statement not covered" >    return b2h(this.toRawBytes());</span>
+  } // encode to hex string
+}
+const { BASE: G, ZERO: I } = Point; // Generator, identity points
+const padh = (num: number | bigint, pad: number) =&gt;
+  num.toString(16).padStart(pad, "0");
+const b2h = (b: Bytes): string =&gt;
+  Array.from(b)
+    .map((e) =&gt; padh(e, 2))
+    .join(""); // bytes to hex
+const h2b = (hex: string): Bytes =&gt; {
+  // hex to bytes
+  const l = hex.length; // error if not string,
+  <span class="missing-if-branch" title="if path not taken" >I</span>if (!str(hex) || l % 2) <span class="cstat-no" title="statement not covered" >err("hex invalid 1"); </span>// or has odd length like 3, 5.
+  const arr = u8n(l / 2); // create result array
+  for (let i = 0; i &lt; arr.length; i++) {
+    const j = i * 2;
+    const h = hex.slice(j, j + 2); // hexByte. slice is faster than substr
+    const b = Number.parseInt(h, 16); // byte, created from string part
+    <span class="missing-if-branch" title="if path not taken" >I</span>if (Number.isNaN(b) || b &lt; 0) <span class="cstat-no" title="statement not covered" >err("hex invalid 2"); </span>// byte must be valid 0 &lt;= byte &lt; 256
+    arr[i] = b;
+  }
+  return arr;
+};
+const n2b_32LE = (num: bigint) =&gt; h2b(padh(num, 32 * 2)).reverse(); // number to bytes LE
+const b2n_LE = (b: Bytes): bigint =&gt; BigInt("0x" + b2h(u8n(au8(b)).reverse())); // bytes LE to num
+const concatB = (...arrs: Bytes[]) =&gt; {
+  // concatenate Uint8Array-s
+  const r = u8n(arrs.reduce((sum, a) =&gt; sum + au8(a).length, 0)); // create u8a of summed length
+  let pad = 0; // walk through each array,
+  arrs.forEach((a) =&gt; {
+    r.set(a, pad);
+    pad += a.length;
+  }); // ensure they have proper type
+  return r;
+};
+const invert = (num: bigint, md = P): bigint =&gt; {
+  // modular inversion
+  <span class="missing-if-branch" title="if path not taken" >I</span>if (num === 0n || md &lt;= 0n) <span class="cstat-no" title="statement not covered" >err("no inverse n=" + num + " mod=" + md); </span>// no neg exponent for now
+  let a = mod(num, md),
+    b = md,
+    x = 0n,
+    y = 1n,
+    u = 1n,
+    v = 0n;
+  while (a !== 0n) {
+    // uses euclidean gcd algorithm
+    const q = b / a,
+      r = b % a; // not constant-time
+    const m = x - u * q,
+      n = y - v * q;
+    (b = a), (a = r), (x = u), (y = v), (u = m), (v = n);
+  }
+  return b === 1n ? mod(x, md) : <span class="branch-1 cbranch-no" title="branch not covered" >err("no inverse");</span> // b is gcd at this point
+};
+const pow2 = <span class="fstat-no" title="function not covered" >(x</span>: bigint, power: bigint): bigint =&gt; {
+  // pow2(x, 4) == x^(2^4)
+  let r = <span class="cstat-no" title="statement not covered" >x;</span>
+<span class="cstat-no" title="statement not covered" >  while (power-- &gt; 0n) {</span>
+<span class="cstat-no" title="statement not covered" >    r *= r;</span>
+<span class="cstat-no" title="statement not covered" >    r %= P;</span>
+  }
+<span class="cstat-no" title="statement not covered" >  return r;</span>
+};
+const pow_2_252_3 = <span class="fstat-no" title="function not covered" >(x</span>: bigint) =&gt; {
+  // x^(2^252-3) unrolled util for square root
+  const x2 = <span class="cstat-no" title="statement not covered" >(x * x) % P;</span> // x^2,       bits 1
+  const b2 = <span class="cstat-no" title="statement not covered" >(x2 * x) % P;</span> // x^3,       bits 11
+  const b4 = <span class="cstat-no" title="statement not covered" >(pow2(b2, 2n) * b2) % P;</span> // x^(2^4-1), bits 1111
+  const b5 = <span class="cstat-no" title="statement not covered" >(pow2(b4, 1n) * x) % P;</span> // x^(2^5-1), bits 11111
+  const b10 = <span class="cstat-no" title="statement not covered" >(pow2(b5, 5n) * b5) % P;</span> // x^(2^10)
+  const b20 = <span class="cstat-no" title="statement not covered" >(pow2(b10, 10n) * b10) % P;</span> // x^(2^20)
+  const b40 = <span class="cstat-no" title="statement not covered" >(pow2(b20, 20n) * b20) % P;</span> // x^(2^40)
+  const b80 = <span class="cstat-no" title="statement not covered" >(pow2(b40, 40n) * b40) % P;</span> // x^(2^80)
+  const b160 = <span class="cstat-no" title="statement not covered" >(pow2(b80, 80n) * b80) % P;</span> // x^(2^160)
+  const b240 = <span class="cstat-no" title="statement not covered" >(pow2(b160, 80n) * b80) % P;</span> // x^(2^240)
+  const b250 = <span class="cstat-no" title="statement not covered" >(pow2(b240, 10n) * b10) % P;</span> // x^(2^250)
+  const pow_p_5_8 = <span class="cstat-no" title="statement not covered" >(pow2(b250, 2n) * x) % P;</span> // &lt; To pow to (p+3)/8, multiply it by x.
+<span class="cstat-no" title="statement not covered" >  return { pow_p_5_8, b2 };</span>
+};
+const RM1 =
+  19681161376707505956807079304988542015446066515923890162744021073123829784752n; // √-1
+const uvRatio = <span class="fstat-no" title="function not covered" >(u</span>: bigint, v: bigint): { isValid: boolean; value: bigint } =&gt; {
+  // for sqrt comp
+  const v3 = <span class="cstat-no" title="statement not covered" >mod(v * v * v);</span> // v³
+  const v7 = <span class="cstat-no" title="statement not covered" >mod(v3 * v3 * v);</span> // v⁷
+  const pow = <span class="cstat-no" title="statement not covered" >pow_2_252_3(u * v7).pow_p_5_8;</span> // (uv⁷)^(p-5)/8
+  let x = <span class="cstat-no" title="statement not covered" >mod(u * v3 * pow);</span> // (uv³)(uv⁷)^(p-5)/8
+  const vx2 = <span class="cstat-no" title="statement not covered" >mod(v * x * x);</span> // vx²
+  const root1 = <span class="cstat-no" title="statement not covered" >x;</span> // First root candidate
+  const root2 = <span class="cstat-no" title="statement not covered" >mod(x * RM1);</span> // Second root candidate; RM1 is √-1
+  const useRoot1 = <span class="cstat-no" title="statement not covered" >vx2 === u;</span> // If vx² = u (mod p), x is a square root
+  const useRoot2 = <span class="cstat-no" title="statement not covered" >vx2 === mod(-u);</span> // If vx² = -u, set x &lt;-- x * 2^((p-1)/4)
+  const noRoot = <span class="cstat-no" title="statement not covered" >vx2 === mod(-u * RM1);</span> // There is no valid root, vx² = -u√-1
+<span class="cstat-no" title="statement not covered" >  <span class="missing-if-branch" title="if path not taken" >I</span>if (useRoot1) <span class="cstat-no" title="statement not covered" >x = root1;</span></span>
+<span class="cstat-no" title="statement not covered" >  <span class="missing-if-branch" title="if path not taken" >I</span>if (useRoot2 || noRoot) <span class="cstat-no" title="statement not covered" >x = root2; </span></span>// We return root2 anyway, for const-time
+<span class="cstat-no" title="statement not covered" >  <span class="missing-if-branch" title="if path not taken" >I</span>if ((mod(x) &amp; 1n) === 1n) <span class="cstat-no" title="statement not covered" >x = mod(-x); </span></span>// edIsNegative
+<span class="cstat-no" title="statement not covered" >  return { isValid: useRoot1 || useRoot2, value: x };</span>
+};
+const modL_LE = (hash: Bytes): bigint =&gt; mod(b2n_LE(hash), N); // modulo L; but little-endian
+type Sha512FnSync = undefined | ((...messages: Bytes[]) =&gt; Bytes);
+let _shaS: Sha512FnSync;
+const sha512a = <span class="fstat-no" title="function not covered" >(.</span>..m: Bytes[]) =&gt; <span class="cstat-no" title="statement not covered" >etc.sha512Async(...m);</span> // Async SHA512
+const sha512s = (
+  ...m: Bytes[] // Sync SHA512, not set by default
+) =&gt;
+  typeof _shaS === "function" ? _shaS(...m) : <span class="branch-1 cbranch-no" title="branch not covered" >err("etc.sha512Sync not set");</span>
+type ExtK = {
+  head: Bytes;
+  prefix: Bytes;
+  scalar: bigint;
+  point: Point;
+  pointBytes: Bytes;
+};
+const hash2extK = (hashed: Bytes): ExtK =&gt; {
+  // RFC8032 5.1.5
+  const head = hashed.slice(0, 32); // slice creates a copy, unlike subarray
+  head[0] &amp;= 248; // Clamp bits: 0b1111_1000,
+  head[31] &amp;= 127; // 0b0111_1111,
+  head[31] |= 64; // 0b0100_0000
+  const prefix = hashed.slice(32, 64); // private key "prefix"
+  const scalar = modL_LE(head); // modular division over curve order
+  const point = G.mul(scalar); // public key point
+  const pointBytes = point.toRawBytes(); // point serialized to Uint8Array
+  return { head, prefix, scalar, point, pointBytes };
+};
+// RFC8032 5.1.5; getPublicKey async, sync. Hash priv key and extract point.
+const getExtendedPublicKeyAsync = <span class="fstat-no" title="function not covered" >(p</span>riv: Hex) =&gt;
+<span class="cstat-no" title="statement not covered" >  sha512a(toU8(priv, 32)).then(hash2extK);</span>
+const getExtendedPublicKey = (priv: Hex) =&gt; hash2extK(sha512s(toU8(priv, 32)));
+const getPublicKeyAsync = <span class="fstat-no" title="function not covered" >(p</span>riv: Hex): Promise&lt;Bytes&gt; =&gt;
+<span class="cstat-no" title="statement not covered" >  getExtendedPublicKeyAsync(priv).then(<span class="fstat-no" title="function not covered" >(p</span>) =&gt; <span class="cstat-no" title="statement not covered" >p.pointBytes)</span>;</span>
+const getPublicKey = <span class="fstat-no" title="function not covered" >(p</span>riv: Hex): Bytes =&gt;
+<span class="cstat-no" title="statement not covered" >  getExtendedPublicKey(priv).pointBytes;</span>
+type Finishable&lt;T&gt; = {
+  // Reduces logic duplication between
+  hashable: Bytes;
+  finish: (hashed: Bytes) =&gt; T; // sync &amp; async versions of sign(), verify()
+}; // hashable=start(); finish(hash(hashable));
+function hashFinish&lt;T&gt;(asynchronous: true, res: Finishable&lt;T&gt;): Promise&lt;T&gt;;
+function hashFinish&lt;T&gt;(asynchronous: false, res: Finishable&lt;T&gt;): T;
+function <span class="fstat-no" title="function not covered" >hashFinish&lt;</span>T&gt;(asynchronous: boolean, res: Finishable&lt;T&gt;) {
+<span class="cstat-no" title="statement not covered" >  <span class="missing-if-branch" title="if path not taken" >I</span>if (asynchronous) <span class="cstat-no" title="statement not covered" >return sha512a(res.hashable).then(res.finish);</span></span>
+<span class="cstat-no" title="statement not covered" >  return res.finish(sha512s(res.hashable));</span>
+}
+const _sign = <span class="fstat-no" title="function not covered" >(e</span>: ExtK, rBytes: Bytes, msg: Bytes): Finishable&lt;Bytes&gt; =&gt; {
+  // sign() shared code
+  const { pointBytes: P, scalar: s } = <span class="cstat-no" title="statement not covered" >e;</span>
+  const r = <span class="cstat-no" title="statement not covered" >modL_LE(rBytes);</span> // r was created outside, reduce it modulo L
+  const R = <span class="cstat-no" title="statement not covered" >G.mul(r).toRawBytes();</span> // R = [r]B
+  const hashable = <span class="cstat-no" title="statement not covered" >concatB(R, P, msg);</span> // dom2(F, C) || R || A || PH(M)
+  const finish = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(h</span>ashed: Bytes): Bytes =&gt; {</span>
+    // k = SHA512(dom2(F, C) || R || A || PH(M))
+    const S = <span class="cstat-no" title="statement not covered" >mod(r + modL_LE(hashed) * s, N);</span> // S = (r + k * s) mod L; 0 &lt;= s &lt; l
+<span class="cstat-no" title="statement not covered" >    return au8(concatB(R, n2b_32LE(S)), 64); </span>// 64-byte sig: 32b R.x + 32b LE(S)
+  };
+<span class="cstat-no" title="statement not covered" >  return { hashable, finish };</span>
+};
+const signAsync = <span class="fstat-no" title="function not covered" >async </span>(msg: Hex, privKey: Hex): Promise&lt;Bytes&gt; =&gt; {
+  const m = <span class="cstat-no" title="statement not covered" >toU8(msg);</span> // RFC8032 5.1.6: sign msg with key async
+  const e = <span class="cstat-no" title="statement not covered" >await getExtendedPublicKeyAsync(privKey);</span> // pub,prfx
+  const rBytes = <span class="cstat-no" title="statement not covered" >await sha512a(e.prefix, m);</span> // r = SHA512(dom2(F, C) || prefix || PH(M))
+<span class="cstat-no" title="statement not covered" >  return hashFinish(true, _sign(e, rBytes, m)); </span>// gen R, k, S, then 64-byte signature
+};
+const sign = <span class="fstat-no" title="function not covered" >(m</span>sg: Hex, privKey: Hex): Bytes =&gt; {
+  const m = <span class="cstat-no" title="statement not covered" >toU8(msg);</span> // RFC8032 5.1.6: sign msg with key sync
+  const e = <span class="cstat-no" title="statement not covered" >getExtendedPublicKey(privKey);</span> // pub,prfx
+  const rBytes = <span class="cstat-no" title="statement not covered" >sha512s(e.prefix, m);</span> // r = SHA512(dom2(F, C) || prefix || PH(M))
+<span class="cstat-no" title="statement not covered" >  return hashFinish(false, _sign(e, rBytes, m)); </span>// gen R, k, S, then 64-byte signature
+};
+const dvo = { zip215: true };
+const _verify = <span class="fstat-no" title="function not covered" >(</span>
+  sig: Hex,
+  msg: Hex,
+  pub: Hex,
+  opts = <span class="branch-0 cbranch-no" title="branch not covered" >dvo,</span>
+): Finishable&lt;boolean&gt; =&gt; {
+<span class="cstat-no" title="statement not covered" >  msg = toU8(msg); </span>// Message hex str/Bytes
+<span class="cstat-no" title="statement not covered" >  sig = toU8(sig, 64); </span>// Signature hex str/Bytes, must be 64 bytes
+  const { zip215 } = <span class="cstat-no" title="statement not covered" >opts;</span> // switch between zip215 and rfc8032 verif
+  let A: Point,
+    R: Point,
+    s: bigint,
+    SB: Point,
+    hashable = <span class="cstat-no" title="statement not covered" >new Uint8Array();</span>
+<span class="cstat-no" title="statement not covered" >  try {</span>
+<span class="cstat-no" title="statement not covered" >    A = Point.fromHex(pub, zip215); </span>// public key A decoded
+<span class="cstat-no" title="statement not covered" >    R = Point.fromHex(sig.slice(0, 32), zip215); </span>// 0 &lt;= R &lt; 2^256: ZIP215 R can be &gt;= P
+<span class="cstat-no" title="statement not covered" >    s = b2n_LE(sig.slice(32, 64)); </span>// Decode second half as an integer S
+<span class="cstat-no" title="statement not covered" >    SB = G.mul(s, false); </span>// in the range 0 &lt;= s &lt; L
+<span class="cstat-no" title="statement not covered" >    hashable = concatB(R.toRawBytes(), A.toRawBytes(), msg); </span>// dom2(F, C) || R || A || PH(M)
+  } catch (error) {}
+  const finish = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(h</span>ashed: Bytes): boolean =&gt; {</span>
+    // k = SHA512(dom2(F, C) || R || A || PH(M))
+<span class="cstat-no" title="statement not covered" >    <span class="missing-if-branch" title="if path not taken" >I</span>if (SB == null) <span class="cstat-no" title="statement not covered" >return false; </span></span>// false if try-catch catched an error
+<span class="cstat-no" title="statement not covered" >    <span class="missing-if-branch" title="if path not taken" >I</span>if (!zip215 &amp;&amp; A.isSmallOrder()) <span class="cstat-no" title="statement not covered" >return false; </span></span>// false for SBS: Strongly Binding Signature
+    const k = <span class="cstat-no" title="statement not covered" >modL_LE(hashed);</span> // decode in little-endian, modulo L
+    const RkA = <span class="cstat-no" title="statement not covered" >R.add(A.mul(k, false));</span> // [8]R + [8][k]A'
+<span class="cstat-no" title="statement not covered" >    return RkA.add(SB.negate()).clearCofactor().is0(); </span>// [8][S]B = [8]R + [8][k]A'
+  };
+<span class="cstat-no" title="statement not covered" >  return { hashable, finish };</span>
+};
+// RFC8032 5.1.7: verification async, sync
+const verifyAsync = <span class="fstat-no" title="function not covered" >async </span>(s: Hex, m: Hex, p: Hex, opts = <span class="branch-0 cbranch-no" title="branch not covered" >dvo)</span> =&gt;
+<span class="cstat-no" title="statement not covered" >  hashFinish(true, _verify(s, m, p, opts));</span>
+const verify = <span class="fstat-no" title="function not covered" >(s</span>: Hex, m: Hex, p: Hex, opts = <span class="branch-0 cbranch-no" title="branch not covered" >dvo)</span> =&gt;
+<span class="cstat-no" title="statement not covered" >  hashFinish(false, _verify(s, m, p, opts));</span>
+declare const globalThis: Record&lt;string, any&gt; | undefined; // Typescript symbol present in browsers
+const cr = <span class="fstat-no" title="function not covered" >() =</span>&gt;
+  // We support: 1) browsers 2) node.js 19+
+<span class="cstat-no" title="statement not covered" >  typeof globalThis === "object" &amp;&amp; "crypto" in globalThis</span>
+    ? globalThis.crypto
+    : undefined;
+const etc = {
+  bytesToHex: b2h,
+  hexToBytes: h2b,
+  concatBytes: concatB,
+  mod,
+  invert,
+  randomBytes: <span class="fstat-no" title="function not covered" >(l</span>en = <span class="branch-0 cbranch-no" title="branch not covered" >32)</span>: Bytes =&gt; {
+    // CSPRNG (random number generator)
+    const crypto = <span class="cstat-no" title="statement not covered" >cr();</span> // Can be shimmed in node.js &lt;= 18 to prevent error:
+    // import { webcrypto } from 'node:crypto';
+    // if (!globalThis.crypto) globalThis.crypto = webcrypto;
+<span class="cstat-no" title="statement not covered" >    <span class="missing-if-branch" title="if path not taken" >I</span>if (!crypto || !crypto.getRandomValues)</span>
+<span class="cstat-no" title="statement not covered" >      err("crypto.getRandomValues must be defined");</span>
+<span class="cstat-no" title="statement not covered" >    return crypto.getRandomValues(u8n(len));</span>
+  },
+  sha512Async: <span class="fstat-no" title="function not covered" >async </span>(...messages: Bytes[]): Promise&lt;Bytes&gt; =&gt; {
+    const crypto = <span class="cstat-no" title="statement not covered" >cr();</span>
+<span class="cstat-no" title="statement not covered" >    <span class="missing-if-branch" title="if path not taken" >I</span>if (!crypto || !crypto.subtle)</span>
+<span class="cstat-no" title="statement not covered" >      err("crypto.subtle or etc.sha512Async must be defined");</span>
+    const m = <span class="cstat-no" title="statement not covered" >concatB(...messages);</span>
+<span class="cstat-no" title="statement not covered" >    return u8n(await crypto.subtle.digest("SHA-512", m.buffer));</span>
+  },
+  sha512Sync: undefined as Sha512FnSync, // Actual logic below
+};
+Object.defineProperties(etc, {
+  sha512Sync: {
+    // Allow setting it once. Next sets will be ignored
+    configurable: false,
+<span class="fstat-no" title="function not covered" >    get(</span>) {
+<span class="cstat-no" title="statement not covered" >      return _shaS;</span>
+    },
+    set(f) {
+      if (!_shaS) _shaS = f;
+    },
+  },
+});
+const utils = {
+  getExtendedPublicKeyAsync,
+  getExtendedPublicKey,
+  randomPrivateKey: <span class="fstat-no" title="function not covered" >(): Bytes =</span>&gt; <span class="cstat-no" title="statement not covered" >etc.randomBytes(32),</span>
+<span class="fstat-no" title="function not covered" >  precompute(</span>w = <span class="branch-0 cbranch-no" title="branch not covered" >8,</span> p: Point = <span class="branch-0 cbranch-no" title="branch not covered" >G)</span> {
+<span class="cstat-no" title="statement not covered" >    p.multiply(3n);</span>
+<span class="cstat-no" title="statement not covered" >    w;</span>
+<span class="cstat-no" title="statement not covered" >    return p;</span>
+  }, // no-op
+};
+const W = 8; // Precomputes-related code. W = window size
+const precompute = () =&gt; {
+  // They give 12x faster getPublicKey(),
+  const points: Point[] = []; // 10x sign(), 2x verify(). To achieve this,
+  const windows = 256 / W + 1; // app needs to spend 40ms+ to calculate
+  let p = G,
+    b = p; // a lot of points related to base point G.
+  for (let w = 0; w &lt; windows; w++) {
+    // Points are stored in array and used
+    b = p; // any time Gx multiplication is done.
+    points.push(b); // They consume 16-32 MiB of RAM.
+    for (let i = 1; i &lt; 2 ** (W - 1); i++) {
+      b = b.add(p);
+      points.push(b);
+    }
+    p = b.double(); // Precomputes don't speed-up getSharedKey,
+  } // which multiplies user point by scalar,
+  return points; // when precomputes are using base point
+};
+const wNAF = (n: bigint): { p: Point; f: Point } =&gt; {
+  // w-ary non-adjacent form (wNAF) method.
+  // Compared to other point mult methods,
+  const comp = Gpows || (Gpows = precompute()); // stores 2x less points using subtraction
+  const neg = (cnd: boolean, p: Point) =&gt; {
+    let n = p.negate();
+    return cnd ? n : p;
+  }; // negate
+  let p = I,
+    f = G; // f must be G, or could become I in the end
+  const windows = 1 + 256 / W; // W=8 17 windows
+  const wsize = 2 ** (W - 1); // W=8 128 window size
+  const mask = BigInt(2 ** W - 1); // W=8 will create mask 0b11111111
+  const maxNum = 2 ** W; // W=8 256
+  const shiftBy = BigInt(W); // W=8 8
+  for (let w = 0; w &lt; windows; w++) {
+    const off = w * wsize;
+    let wbits = Number(n &amp; mask); // extract W bits.
+    n &gt;&gt;= shiftBy; // shift number by W bits.
+    if (wbits &gt; wsize) {
+      wbits -= maxNum;
+      n += 1n;
+    } // split if bits &gt; max: +224 =&gt; 256-32
+    const off1 = off,
+      off2 = off + Math.abs(wbits) - 1; // offsets, evaluate both
+    const cnd1 = w % 2 !== 0,
+      cnd2 = wbits &lt; 0; // conditions, evaluate both
+    if (wbits === 0) {
+      f = f.add(neg(cnd1, comp[off1])); // bits are 0: add garbage to fake point
+    } else {
+      //          ^ can't add off2, off2 = I
+      p = p.add(neg(cnd2, comp[off2])); // bits are 1: add to result point
+    }
+  }
+  return { p, f }; // return both real and fake points for JIT
+}; // !! you can disable precomputes by commenting-out call of the wNAF() inside Point#mul()
+export {
+  getPublicKey,
+  getPublicKeyAsync,
+  sign,
+  verify, // Remove the export to easily use in REPL
+  signAsync,
+  verifyAsync,
+  CURVE,
+  etc,
+  utils,
+  P,
+  N,
+  Point as ExtendedPoint,
+}; // envs like browser console
+&nbsp;</pre></td></tr></table></pre>
+
+                <div class='push'></div><!-- for sticky footer -->
+            </div><!-- /wrapper -->
+            <div class='footer quiet pad2 space-top1 center small'>
+                Code coverage generated by
+                <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
+                at 2024-03-29T10:25:02.624Z
+            </div>
+        <script src="../../../prettify.js"></script>
+        <script>
+            window.onload = function () {
+                prettyPrint();
+            };
+        </script>
+        <script src="../../../sorter.js"></script>
+        <script src="../../../block-navigation.js"></script>
+    </body>
+</html>
+    
