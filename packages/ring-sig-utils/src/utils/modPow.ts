@@ -14,6 +14,10 @@ export function modPow(
 ): bigint {
   let result = 1n;
   base = base % modulus;
+  if (exponent < 0n) {
+    // Handle negative exponent (modular division)
+    return modDiv(1n, modPow(base, -exponent, modulus), modulus);
+  }
   while (exponent > 0n) {
     if (exponent % 2n === 1n) {
       result = (result * base) % modulus;
@@ -22,4 +26,10 @@ export function modPow(
     base = (base * base) % modulus;
   }
   return result;
+}
+
+// Helper function for modular division
+function modDiv(a: bigint, b: bigint, m: bigint): bigint {
+  // Assume m is prime for Fermat's Little Theorem
+  return (a * modPow(b, m - 2n, m)) % m;
 }

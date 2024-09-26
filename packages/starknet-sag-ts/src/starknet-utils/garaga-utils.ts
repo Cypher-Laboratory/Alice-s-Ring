@@ -5,6 +5,11 @@ import {
   CurveName,
 } from "@cypher-laboratory/ring-sig-utils";
 
+export function modulo(n: bigint, p: bigint): bigint {
+  const result = n % p;
+  return result >= 0n ? result : result + p;
+}
+
 const ED25519_CONSTANTS = {
   A: 57896044618658097711785492504343953926634992332820282019728792003956564819948n,
   D: 37095705934669439343138083508754565189542113879843219016388785533085940283555n,
@@ -44,12 +49,12 @@ export function toWeierstrass(
   const a = a_twisted;
   const d = d_twisted;
 
-  const x = mod(
+  const x = modulo(
     (5n * a + a * y_twisted - 5n * d * y_twisted - d) *
       modPow(12n - 12n * y_twisted, -1n, p),
     p,
   );
-  const y = mod(
+  const y = modulo(
     (a + a * y_twisted - d * y_twisted - d) *
       modPow(4n * x_twisted - 4n * x_twisted * y_twisted, -1n, p),
     p,
@@ -92,12 +97,12 @@ export function toTwistedEdwards(
 ): [bigint, bigint] {
   const a = a_twisted;
   const d = d_twisted;
-  const y = mod(
+  const y = modulo(
     (5n * a - 12n * x_weierstrass - d) *
       modPow(-12n * x_weierstrass - a + 5n * d, -1n, p),
     p,
   );
-  const x = mod(
+  const x = modulo(
     (a + a * y - d * y - d) *
       modPow(4n * y_weierstrass - 4n * y_weierstrass * y, -1n, p),
     p,
@@ -148,6 +153,7 @@ export async function prepareGaragaHints(
   try {
     const garaga = await import("garaga");
     await garaga.init();
+    console.log("points : ", points);
     return garaga.msmCalldataBuilder(points, scalars, garaga.CurveId.X25519, {
       includeDigitsDecomposition: false,
     });
