@@ -22,6 +22,7 @@
   "author": "Elli610 && LeJamon && maximedgr",
   "license": "MIT",
   "dependencies": {
+    "@cypher-laboratory/ring-sig-utils": "^0.0.1",
     "@noble/hashes": "^1.3.2",
     "crypto-browserify": "^3.12.0",
     "garaga": "^0.13.3",

@@ -1,4 +1,3 @@
-import { assert } from "console";
 import { toTwistedEdwards, toWeierstrass } from "../../src/starknet-utils";
 
 /*
@@ -27,7 +26,7 @@ describe("test_weierstrass_to_twistededwards_and_back", () => {
       weirstrassPoint[0],
       weirstrassPoint[1],
     );
-    assert(twistedPoint[0] === x_twisted);
-    assert(twistedPoint[1] === y_twisted);
+    expect(twistedPoint[0]).toEqual(x_twisted);
+    expect(twistedPoint[1]).toEqual(y_twisted);
   });
 });
