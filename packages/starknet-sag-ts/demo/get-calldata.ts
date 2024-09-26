@@ -13,9 +13,8 @@ async function main() {
   const ring = data.publicKeys_ed25519.slice(0, 3);
 
   const signature = RingSignature.sign(ring, signerPrivKey, message, curve);
-
-  const callDataStruct = await signature.getCallDataStruct();
-  console.log("callDataStruct : ", callDataStruct);
+  const rawCallData = await signature.getCallData();
+  console.log(rawCallData.toString());
 }
 
 main();

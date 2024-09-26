@@ -20,7 +20,10 @@ import {
   serializeRingCairo,
   pointToWeirstrass,
   prepareGaragaHints,
+  generateCallData,
+  CairoG1Point,
 } from "./starknet-utils";
+import { Uint384 } from "@cypher-laboratory/ring-sig-utils/dist/src/u384";
 
 /**
  * Ring signature class.
@@ -472,8 +475,7 @@ export class RingSignature {
   }
 
   /**
-   * Asynchronously retrieves the call data structure for the current instance.
-   *
+   * Asynchronously generate the callData and verify the signature
    * @async
    * @returns an object representating the struct for the callData
    * An object containing the instance's message, `c`, `ring`, and `hints` properties.
@@ -481,19 +483,21 @@ export class RingSignature {
    * const callData = await instance.getCallDataStruct();
    * console.log(callData); // Outputs an object with message, c, ring, and hints
    */
-  async getCallDataStruct(): Promise<{
-    message: string;
-    c: bigint;
-    ring: Point[];
-    hints: bigint[][];
-  }> {
+  async getCallData(): Promise<bigint[]> {
     const hints = await this.verify_garaga();
-    return {
-      message: this.message,
-      c: this.c,
-      ring: this.ring,
+
+    const U384Ring: CairoG1Point[] = [];
+    for (const points of this.ring) {
+      const U384Point = points.toU384Coordinates();
+      U384Ring.push({ x: U384Point[0], y: U384Point[1] });
+    }
+
+    return generateCallData(
+      convertToUint384(this.messageDigest),
+      convertToUint384(this.c),
+      U384Ring,
       hints,
-    };
+    );
   }
 
   /**

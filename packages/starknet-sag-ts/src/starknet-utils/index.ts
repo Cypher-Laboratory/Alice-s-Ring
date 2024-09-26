@@ -10,3 +10,5 @@ export {
   pointToWeirstrass,
   prepareGaragaHints,
 } from "./garaga-utils";
+export { CairoG1Point } from "./CairoG1Point";
+export { generateCallData } from "./generatCallData";

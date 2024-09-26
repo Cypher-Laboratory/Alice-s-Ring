@@ -37,5 +37,5 @@ export {
   SECP256K1Gy,
 };
 
-export { convertToUint384, uint384Serialize } from "./u384";
+export { Uint384, convertToUint384, uint384Serialize } from "./u384";
 export * as errors from "./errors";
