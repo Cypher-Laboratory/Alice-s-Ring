@@ -17,7 +17,7 @@ async function callDataSECP256K1() {
 
   const signature = RingSignature.sign(ring, signerPrivKey, message, curve);
   const rawCallData = await signature.getCallData();
-  console.log(rawCallData.toString());
+  console.log("SECP256K1 callData value : ", rawCallData.toString());
 }
 
 /**
@@ -35,7 +35,8 @@ async function callDataED25519() {
 
   const signature = RingSignature.sign(ring, signerPrivKey, message, curve);
   const rawCallData = await signature.getCallData();
-  console.log(rawCallData.toString());
+  console.log("ED25519 callData value :", rawCallData.toString());
 }
 
+callDataSECP256K1();
 callDataED25519();
