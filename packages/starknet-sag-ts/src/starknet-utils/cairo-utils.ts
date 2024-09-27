@@ -1,4 +1,5 @@
 import { keccak_256 } from "@noble/hashes/sha3";
+import { poseidonHashMany } from "@scure/starknet";
 import { Point, uint384Serialize } from "@cypher-laboratory/ring-sig-utils";
 /**
  * Serialize a ring, i.e., serialize each point in the ring
@@ -28,9 +29,7 @@ export function serializeRingCairo(ring: Point[]): bigint[] {
  * console.log(hash); // Outputs a bigint hash
  */
 export function cairoHash(data: bigint[]): bigint {
-  return BigInt(
-    "0x" + Buffer.from(keccak_256(u256ArrayToBytes(data))).toString("hex"),
-  );
+  return BigInt("0x" + Buffer.from(poseidonHashMany(data).toString(16)));
 }
 
 /**
