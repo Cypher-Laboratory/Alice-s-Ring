@@ -1,5 +1,6 @@
 import {
   Curve,
+  CurveName,
   Point,
   derivePubKey,
   errors as err,
@@ -23,7 +24,6 @@ import {
   generateCallData,
   CairoG1Point,
 } from "./starknet-utils";
-import { Uint384 } from "@cypher-laboratory/ring-sig-utils/dist/src/u384";
 
 /**
  * Ring signature class.
@@ -552,11 +552,19 @@ export class RingSignature {
       );
     }
     if (params.alpha) {
-      const alphaG = pointToWeirstrass(G.mult(params.alpha));
+      const alphaG = G.mult(params.alpha);
+
+      let pointToUse: [bigint, bigint];
+      if (curve.name === CurveName.ED25519) {
+        pointToUse = pointToWeirstrass(alphaG);
+      } else {
+        pointToUse = alphaG.toCoordinates();
+      }
+
       const message_to_hash = uint384Serialize(convertToUint384(messageDigest));
       const hashContent = serializedRing
         .concat(message_to_hash)
-        .concat(uint384Serialize(convertToUint384(alphaG[1])));
+        .concat(uint384Serialize(convertToUint384(pointToUse[1])));
 
       return mod(cairoHash(hashContent), N);
     }
@@ -565,16 +573,22 @@ export class RingSignature {
       params.previousC &&
       params.previousIndex !== undefined
     ) {
-      const point = pointToWeirstrass(
-        G.mult(params.previousR).add(
-          ring[params.previousIndex].mult(params.previousC),
-        ),
+      const computedPoint = G.mult(params.previousR).add(
+        ring[params.previousIndex].mult(params.previousC),
       );
+
+      //handle the conversion to weirstrass form if curve == ED25519
+      let pointToUse: [bigint, bigint];
+      if (curve.name === CurveName.ED25519) {
+        pointToUse = pointToWeirstrass(computedPoint);
+      } else {
+        pointToUse = computedPoint.toCoordinates();
+      }
 
       const message_to_hash = uint384Serialize(convertToUint384(messageDigest));
       const hashContent = serializedRing
         .concat(message_to_hash)
-        .concat(uint384Serialize(convertToUint384(point[1])));
+        .concat(uint384Serialize(convertToUint384(pointToUse[1])));
       return mod(cairoHash(hashContent), N);
     }
     throw err.missingParams(
@@ -602,21 +616,26 @@ export class RingSignature {
       params.previousC &&
       params.previousIndex !== undefined
     ) {
-      const point = pointToWeirstrass(
-        G.mult(params.previousR).add(
-          ring[params.previousIndex].mult(params.previousC),
-        ),
+      const computedPoint = G.mult(params.previousR).add(
+        ring[params.previousIndex].mult(params.previousC),
       );
-      const G_weirstrass = pointToWeirstrass(G);
-      const ring_weirstrass = pointToWeirstrass(ring[params.previousIndex]);
+
+      //handle the conversion to weirstrass form if curve == ED25519
+      let pointToUse: [bigint, bigint];
+      if (curve.name === CurveName.ED25519) {
+        pointToUse = pointToWeirstrass(computedPoint);
+      } else {
+        pointToUse = computedPoint.toCoordinates();
+      }
+
       const precompute = await prepareGaragaHints(
-        [G_weirstrass, ring_weirstrass],
+        [G, ring[params.previousIndex]],
         [params.previousR, params.previousC],
       );
       const message_to_hash = uint384Serialize(convertToUint384(messageDigest));
       const hashContent = serializedRing
         .concat(message_to_hash)
-        .concat(uint384Serialize(convertToUint384(point[1])));
+        .concat(uint384Serialize(convertToUint384(pointToUse[1])));
       return {
         last_computed_c: mod(cairoHash(hashContent), N),
         hint: precompute,
