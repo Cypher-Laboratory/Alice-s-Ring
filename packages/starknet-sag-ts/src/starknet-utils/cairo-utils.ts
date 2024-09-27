@@ -1,4 +1,3 @@
-import { keccak_256 } from "@noble/hashes/sha3";
 import { poseidonHashMany } from "@scure/starknet";
 import { Point, uint384Serialize } from "@cypher-laboratory/ring-sig-utils";
 /**

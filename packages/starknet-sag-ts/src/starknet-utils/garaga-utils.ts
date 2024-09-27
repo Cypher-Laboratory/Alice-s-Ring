@@ -11,6 +11,20 @@ const ED25519_CONSTANTS = {
   P: 57896044618658097711785492504343953926634992332820282019728792003956564819949n,
 };
 
+/**
+ * Init the garaga wsm package.
+ */
+async function initGaraga() {
+  try {
+    const garaga = await import("garaga");
+    await garaga.init();
+    return garaga;
+  } catch (error) {
+    console.error("Failed to initialize the WASM module:", error);
+    throw new Error(`Garaga initialization failed: ${error}`);
+  }
+}
+
 /* 
  * rewrite of the toWeierstrass function from garaga
     def to_weierstrass(self, x_twisted, y_twisted):
@@ -133,29 +147,72 @@ export function pointToWeirstrass(p: Point) {
 }
 
 /**
+ * Get the coordinates of a list of points for a specified curve.
+ *
+ * @param {Point[]} points - An array of point objects to convert into coordinates.
+ * @param {CurveName} curveName - The name of the curve. Supported values are `CurveName.ED25519` and `CurveName.SECP256K1`.
+ * @returns {[bigint, bigint][]} An array of coordinate pairs (tuples) as [x, y], where both x and y are bigints.
+ *
+ * @throws {Error} If the provided curveName is not supported.
+ */
+function getPointCoordinates(
+  points: Point[],
+  curveName: CurveName,
+): [bigint, bigint][] {
+  switch (curveName) {
+    case CurveName.ED25519:
+      return points.map((point) => {
+        const [x, y] = toWeierstrass(
+          ED25519_CONSTANTS.A,
+          ED25519_CONSTANTS.D,
+          ED25519_CONSTANTS.P,
+          point.x,
+          point.y,
+        );
+        return [x, y];
+      });
+    case CurveName.SECP256K1:
+      return points.map((point) => point.toCoordinates());
+    default:
+      throw new Error(`Curve ${curveName} not supported`);
+  }
+}
+
+function getCurveId(curveName: CurveName, garaga: any): number {
+  switch (curveName) {
+    case CurveName.ED25519:
+      return garaga.CurveId.X25519;
+    case CurveName.SECP256K1:
+      return garaga.CurveId.SECP256K1;
+    default:
+      throw new Error(`Curve ${curveName} not supported for Garaga operations`);
+  }
+}
+
+/**
  * Computes and returns the MSM (Multi-Scalar Multiplication) hint for a given set of points and scalars.
  * This function uses the Garaga library to generate a hint for efficient MSM computation.
  *
- * @param points An array of points in Weierstrass coordinates, each represented as a tuple [x, y] of bigints.
- * @param scalars An array of bigint scalars corresponding to the points.
+ * @param points An array of points.
+ * @param scalars An array of bigint scalars corresponding to the point multiplier.
  * @returns A Promise that resolves to a bigint array containing the MSM hint.
  * @throws Will throw an error if the Garaga library fails to initialize or if the MSM calldata building fails.
  */
 export async function prepareGaragaHints(
-  points: [bigint, bigint][],
+  points: Point[],
   scalars: bigint[],
 ): Promise<bigint[]> {
+  const curveName = points[0].curve.name;
+  const pointCoordinates = getPointCoordinates(points, curveName);
+  const garaga = await initGaraga();
+  const curveId = getCurveId(curveName, garaga);
+
   try {
-    const garaga = await import("garaga");
-    await garaga.init();
-    return garaga.msmCalldataBuilder(points, scalars, garaga.CurveId.X25519, {
+    return garaga.msmCalldataBuilder(pointCoordinates, scalars, curveId, {
       includeDigitsDecomposition: false,
     });
   } catch (error) {
-    console.error(
-      "Failed to initialize the WASM module or perform operation:",
-      error,
-    );
+    console.error("Failed to perform Garaga operation:", error);
     throw new Error(`Garaga operation failed: ${error}`);
   }
 }
