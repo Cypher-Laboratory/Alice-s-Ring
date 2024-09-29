@@ -3,3 +3,4 @@ test
 .eslintignore
 .eslintrc.js
 .prettierignore
+coverage/
