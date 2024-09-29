@@ -27,7 +27,6 @@ export function convertToUint384(bigInt: bigint): Uint384 {
 }
 
 /**
- *
  * Serialize a U384 following the U384Serde from garaga
  * https://github.com/keep-starknet-strange/garaga/blob/6135bd6dec063851a8249e1dafc8a7e4c98abf9d/src/src/definitions.cairo#L10
  *
