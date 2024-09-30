@@ -7,6 +7,7 @@ import styles from './index.module.css';
 import { useColorMode } from '@docusaurus/theme-common';
 
 import React from 'react';
+import { ColorModeProvider } from '@docusaurus/theme-common/internal';
 
 function HomepageHeader() {
   const { siteConfig } = useDocusaurusContext();
@@ -83,7 +84,9 @@ export default function Home(): JSX.Element {
 
   return (
     <Layout title={`Welcome to ${siteConfig.title}`} description="Learn about the Ring Signature Snap for MetaMask">
-      <Docs />
+      <ColorModeProvider>
+        <Docs />
+      </ColorModeProvider>
     </Layout>
   );
 }

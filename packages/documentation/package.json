@@ -1,5 +1,5 @@
 {
-  "name": "ring-signature-snap",
+  "name": "@cypher-laboratory/alicesring-documentation",
   "version": "0.0.0",
   "private": true,
   "scripts": {
