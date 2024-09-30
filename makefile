@@ -4,6 +4,7 @@ SAG_TS_DIR = packages/sag-ts
 LSAG_TS_DIR = packages/lsag-ts
 SAG_EVM_VERIFIER_DIR = packages/sag-evm-verifier
 RUST_VERIFIER_DIR = packages/rust-verifier
+STARKNET_SAG_TS_DIR = packages/starknet-sag-ts
 
 # Default target: install dependencies and build everything
 .PHONY: all
@@ -32,6 +33,7 @@ build-ts: build-ring-sig-utils
 	@set -e; \
 	cd $(SAG_TS_DIR) && yarn build & \
 	cd $(LSAG_TS_DIR) && yarn build & \
+	cd $(STARKNET_SAG_TS_DIR) && yarn build \
 	wait
 
 .PHONY: build-solidity
@@ -61,6 +63,7 @@ test-ts: build-ring-sig-utils
 	cd $(RING_SIG_UTILS_DIR) && yarn test & \
 	cd $(SAG_TS_DIR) && yarn test & \
 	cd $(LSAG_TS_DIR) && yarn test & \
+  cd $(STARKNET_SAG_TS_DIR) && yarn test & \
 	wait
 
 .PHONY: test-solidity
@@ -86,6 +89,7 @@ fmt-ts: build-ring-sig-utils
 	cd $(RING_SIG_UTILS_DIR) && yarn fmt & \
 	cd $(SAG_TS_DIR) && yarn fmt & \
 	cd $(LSAG_TS_DIR) && yarn fmt & \
+ cd $(STARKNET_SAG_TS_DIR) && yarn fmt & \
 	wait
 
 .PHONY: fmt-solidity
@@ -111,6 +115,7 @@ fmt-check-ts: build-ring-sig-utils
 	cd $(RING_SIG_UTILS_DIR) && yarn fmt:check & \
 	cd $(SAG_TS_DIR) && yarn fmt:check & \
 	cd $(LSAG_TS_DIR) && yarn fmt:check & \
+	cd $(STARKNET_SAG_TS_DIR) && yarn fmt:check & \
 	wait
 
 .PHONY: fmt-check-solidity
@@ -136,6 +141,7 @@ clean-ts:
 	cd $(RING_SIG_UTILS_DIR) && npm run clean & \
 	cd $(SAG_TS_DIR) && npm run clean & \
 	cd $(LSAG_TS_DIR) && npm run clean & \
+	cd $(STARKNET_SAG_TS_DIR) && npm run clean & \
 	wait
 
 .PHONY: clean-solidity
