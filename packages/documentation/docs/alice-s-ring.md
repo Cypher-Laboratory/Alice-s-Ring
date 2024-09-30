@@ -1,7 +1,6 @@
 ---
 id: AlicesRing
-title: Alice's Ring 💍
-sidebar_position: 1
+title: 💍 Alice's Ring
 --- 
 
 Alice's Ring is an open source and community-driven project that aims to enhance privacy in the WEB3 ecosystem through Ring Signatures. Our mission is to shape a future where privacy is an integral part of the digital experience.
@@ -12,7 +11,7 @@ It offers a suite of libraries that provide developers with the tools to integra
 Alice's Ring includes implementations in:
 
 1. **TypeScript**: Ideal for front-end development and integration into web applications, allowing for easier interaction with blockchain systems.
-2. **Rust**: Known for its performance and security, the Rust library provides a robust and safe implementation of ring signature schemes, suitable for high-performance decentralized applications.
+2. **Rust**: Known for its performance and security, the Rust library provides a robust implementation of ring signature schemes, suitable for high-performance in your applications.
 3. **Solidity**: Designed for the Ethereum ecosystem, the Solidity library enables the use of ring signatures directly within smart contracts, promoting privacy in on-chain transactions.
 4. **Cairo**: A language tailored for StarkNet, a Layer-2 scaling solution for Ethereum, the Cairo library allows developers to use ring signatures efficiently within the StarkNet ecosystem.
 

@@ -10,16 +10,3 @@ The easiest way to interact with the Ring Signature Snap is by using the Ring Si
 
 You can find the toolkit on [npmjs](https://www.npmjs.com/package/@cypher-laboratory/alicesring-snap-sdk) and its source code on [GitHub](https://github.com/Cypher-Laboratory/Alice-s-Ring-snap-toolkit).
 
-### Installing the Toolkit
-
-You can install the toolkit via npm or yarn:
-
-```sh
-npm install @cypher-laboratory/alicesring-snap-sdk
-```
-
-or
-
-```sh
-yarn add @cypher-laboratory/alicesring-snap-sdk
-```

@@ -10,7 +10,7 @@ const sidebars: SidebarsConfig = {
     'ring-signatures',
     {
       type: 'category',
-      label: 'SAG',
+      label: '🕵️‍♂️ SAG',
       items: [
         {
           type: 'doc',
@@ -40,7 +40,7 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
-      label: 'LSAG',
+      label: '🕵️‍♂️ LSAG',
       items: [
         {
           type: 'doc',
@@ -84,7 +84,7 @@ const sidebars: SidebarsConfig = {
         {
           type: 'doc',
           id: 'metamask-snap/usage',
-          label: 'Usage',
+          label: 'Toolkit',
         },
       ]
     },

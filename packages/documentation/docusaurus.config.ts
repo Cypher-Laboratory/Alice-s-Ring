@@ -4,15 +4,15 @@ import type { Config } from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 
 const config: Config = {
-  title: 'Ring Signatures',
-  tagline: 'a Snap for MetaMask',
+  title: 'Alice\'s Ring',
+  tagline: 'a set of ring signature libraries',
   favicon: 'img/favicon.ico',
 
   url: 'https://your-docusaurus-site.example.com',
   baseUrl: '/',
 
   organizationName: 'Cypher Lab',
-  projectName: 'Ring Signature Snap - Documentation',
+  projectName: "Alice's Ring - Documentation",
 
   onBrokenLinks: 'warn',
   onBrokenMarkdownLinks: 'warn',
@@ -46,7 +46,7 @@ const config: Config = {
     },
     image: 'img/docusaurus-social-card.jpg',
     navbar: {
-      title: 'Ring Signature Snap',
+      title: "Alice's Ring",
       logo: {
         alt: 'My Site Logo',
         src: 'img/logo.svg',

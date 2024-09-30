@@ -20,7 +20,7 @@ function HomepageHeader() {
         </Heading>
         <p className="hero__subtitle">{siteConfig.tagline}</p>
         <div className={styles.buttons}>
-          <Link className="button button--secondary button--lg" to="/docs/overview">
+          <Link className="button button--secondary button--lg" to="/docs/AlicesRing">
             Get Started
           </Link>
         </div>
@@ -46,7 +46,7 @@ const Docs = () => {
               <div className="text--center padding-horiz--md">
                 <h3>Easy Integration</h3>
                 <p>
-                  Seamlessly integrate the Ring Signature Snap into your MetaMask wallet to enhance your privacy.
+                  Seamlessly integrate the Ring Signature into your applications with our easy-to-use libraries and tools.
                 </p>
               </div>
             </div>
@@ -83,7 +83,7 @@ export default function Home(): JSX.Element {
   const { siteConfig } = useDocusaurusContext();
 
   return (
-    <Layout title={`Welcome to ${siteConfig.title}`} description="Learn about the Ring Signature Snap for MetaMask">
+    <Layout title={`Welcome to ${siteConfig.title}`} description="Learn about the Alice's Ring and Ring Signatures">
       <ColorModeProvider>
         <Docs />
       </ColorModeProvider>

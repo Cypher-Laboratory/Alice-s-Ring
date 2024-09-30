@@ -1,6 +1,6 @@
 ---
 id: ring-signatures
-title: What are Ring Signatures
+title: 🖋️ What are Ring Signatures
 sidebar_position: 2
 ---
 
@@ -63,4 +63,4 @@ Ring signatures are used in blockchain systems like Monero to provide:
 - **Untraceable Transactions:** Ensuring that the source of funds remains anonymous.
 - **Double-Spending Prevention:** Using linkability to detect and prevent attempts to spend the same funds multiple times.
 
-By implementing these advanced cryptographic techniques, the Ring Signature Snap ensures enhanced privacy and security for Ethereum transactions and interactions within MetaMask, fostering a more secure and private blockchain ecosystem.
+

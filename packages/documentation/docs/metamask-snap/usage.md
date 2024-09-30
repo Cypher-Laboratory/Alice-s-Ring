@@ -3,15 +3,32 @@ id: usage
 title: Usage
 ---
 
+// todo: briefly explain the purpose of the toolkit
 
 
+## Installing the Toolkit
+
+You can install the toolkit via npm or yarn:
+
+```sh
+npm install @cypher-laboratory/alicesring-snap-sdk
+```
+
+or
+
+```sh
+yarn add @cypher-laboratory/alicesring-snap-sdk
+```
+
+
+## Using the Toolkit
 Below are examples of how to use each function provided by the toolkit along with explanations.
 
 #### Install the Snap
 
 The `installSnap` function installs the Ring Signature Snap into MetaMask. This function requires user approval.
 
-```javascript
+```typescript
 import { installSnap } from '@cypher-laboratory/alicesring-snap-sdk';
 
 (async () => {
@@ -28,7 +45,7 @@ import { installSnap } from '@cypher-laboratory/alicesring-snap-sdk';
 
 The `generateAccount` function generates a new Ethereum account within the Snap. This function requires user approval.
 
-```javascript
+```typescript
 import { generateAccount } from '@cypher-laboratory/alicesring-snap-sdk';
 
 (async () => {
@@ -45,7 +62,7 @@ import { generateAccount } from '@cypher-laboratory/alicesring-snap-sdk';
 
 The `importAccount` function imports an Ethereum account into the Snap using a mnemonic. This function requires user approval.
 
-```javascript
+```typescript
 import { importAccount } from '@cypher-laboratory/alicesring-snap-sdk';
 
 (async () => {
@@ -62,7 +79,7 @@ import { importAccount } from '@cypher-laboratory/alicesring-snap-sdk';
 
 The `getAddresses` function retrieves the addresses of all imported accounts. This function requires user approval.
 
-```javascript
+```typescript
 import { getAddresses } from '@cypher-laboratory/alicesring-snap-sdk';
 
 (async () => {
@@ -75,7 +92,7 @@ import { getAddresses } from '@cypher-laboratory/alicesring-snap-sdk';
 
 The `LSAG_signature` function signs a message using the Linkable Spontaneous Anonymous Group (LSAG) signature scheme. This function requires user approval.
 
-```javascript
+```typescript
 import { LSAG_signature } from '@cypher-laboratory/alicesring-snap-sdk';
 
 (async () => {
@@ -93,7 +110,7 @@ import { LSAG_signature } from '@cypher-laboratory/alicesring-snap-sdk';
 
 The `SAG_signature` function signs a message using the Spontaneous Anonymous Group (SAG) signature scheme. This function requires user approval.
 
-```javascript
+```typescript
 import { SAG_signature } from '@cypher-laboratory/alicesring-snap-sdk';
 
 (async () => {
@@ -110,7 +127,7 @@ import { SAG_signature } from '@cypher-laboratory/alicesring-snap-sdk';
 
 The `verifyLSAG` function verifies a Linkable Spontaneous Anonymous Group (LSAG) signature. This function does not require user approval.
 
-```javascript
+```typescript
 import { verifyLSAG } from '@cypher-laboratory/alicesring-snap-sdk';
 
 (async () => {
@@ -125,7 +142,7 @@ import { verifyLSAG } from '@cypher-laboratory/alicesring-snap-sdk';
 
 The `verifySAG` function verifies a Spontaneous Anonymous Group (SAG) signature. This function does not require user approval.
 
-```javascript
+```typescript
 import { verifySAG } from '@cypher-laboratory/alicesring-snap-sdk';
 
 (async () => {
@@ -140,12 +157,12 @@ import { verifySAG } from '@cypher-laboratory/alicesring-snap-sdk';
 
 The `exportKeyImages` function exports key images for a list of addresses, which can be used for linkability checks in the LSAG scheme. This function requires user approval.
 
-```javascript
+```typescript
 import { exportKeyImages } from '@cypher-laboratory/alicesring-snap-sdk';
 
 (async () => {
   const addresses = ['0xAddress1', '0xAddress2'];
-  const linkabilityFlag = 'linkabilityFlag';
+  const linkabilityFlag = 'linkabilityFlag'; // used to customize the key images for your context
 
   const keyImages = await exportKeyImages(addresses, linkabilityFlag);
   console.log('Key Images:', keyImages);
