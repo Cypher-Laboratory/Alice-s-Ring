@@ -8,7 +8,6 @@ export interface Uint384 {
 const MASK96 = BigInt(2) ** BigInt(96) - BigInt(1);
 
 /**
- *
  * Convert a bigint into a Uint384
  *
  * @param bigInt the bigint value to convert
