@@ -564,10 +564,10 @@ export class RingSignature {
       } else {
         pointToUse = alphaG.toCoordinates();
       }
-
       const message_to_hash = uint384Serialize(convertToUint384(messageDigest));
       const hashContent = serializedRing
         .concat(message_to_hash)
+        .concat(uint384Serialize(convertToUint384(pointToUse[0])))
         .concat(uint384Serialize(convertToUint384(pointToUse[1])));
 
       return mod(cairoHash(hashContent), N);
@@ -592,7 +592,9 @@ export class RingSignature {
       const message_to_hash = uint384Serialize(convertToUint384(messageDigest));
       const hashContent = serializedRing
         .concat(message_to_hash)
+        .concat(uint384Serialize(convertToUint384(pointToUse[0])))
         .concat(uint384Serialize(convertToUint384(pointToUse[1])));
+
       return mod(cairoHash(hashContent), N);
     }
     throw err.missingParams(
@@ -639,7 +641,9 @@ export class RingSignature {
       const message_to_hash = uint384Serialize(convertToUint384(messageDigest));
       const hashContent = serializedRing
         .concat(message_to_hash)
+        .concat(uint384Serialize(convertToUint384(pointToUse[0])))
         .concat(uint384Serialize(convertToUint384(pointToUse[1])));
+
       return {
         last_computed_c: mod(cairoHash(hashContent), N),
         hint: precompute,
