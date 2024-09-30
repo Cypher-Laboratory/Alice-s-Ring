@@ -33,7 +33,7 @@ build-ts: build-ring-sig-utils
 	@set -e; \
 	cd $(SAG_TS_DIR) && yarn build & \
 	cd $(LSAG_TS_DIR) && yarn build & \
-	cd $(STARKNET_SAG_TS_DIR) && yarn build \
+	cd $(STARKNET_SAG_TS_DIR) && yarn build & \
 	wait
 
 .PHONY: build-solidity
