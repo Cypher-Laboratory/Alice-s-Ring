@@ -14,5 +14,5 @@ const ring = data.publicKeys_ed25519.slice(0, 3);
 const signature = RingSignature.sign(ring, signerPrivKey, message, curve);
 
 const verified = signature.verify();
-
+console.log(signature.toJsonString());
 console.log("\n\tverified: ", verified, "\n");

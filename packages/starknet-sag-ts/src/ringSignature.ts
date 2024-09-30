@@ -140,7 +140,7 @@ export class RingSignature {
    *
    * @returns A RingSignature
    */
-  static fromJsonString(json: string | object): RingSignature {
+  static fromJson(json: string | object): RingSignature {
     let parsedJson;
     if (typeof json === "string") {
       try {
@@ -171,13 +171,12 @@ export class RingSignature {
         curve: string;
       };
       const curve = Curve.fromString(sig.curve);
+
       return new RingSignature(
         sig.message,
-        sig.ring.map((point: string) =>
-          Point.deserialize(bigIntToPublicKey(BigInt(point))),
-        ),
-        BigInt(sig.c),
-        sig.responses.map((response: string) => BigInt(response)),
+        sig.ring.map((point: string) => Point.deserialize(point)),
+        BigInt("0x" + sig.c),
+        sig.responses.map((response: string) => BigInt("0x" + response)),
         curve,
       );
     } catch (e) {
@@ -193,9 +192,9 @@ export class RingSignature {
   toJsonString(): string {
     return JSON.stringify({
       message: this.message,
-      ring: serializeRing(this.ring).map((bi) => bi.toString()),
-      c: this.c.toString(),
-      responses: this.responses.map((response) => response.toString()),
+      ring: serializeRing(this.ring),
+      c: this.c.toString(16),
+      responses: this.responses.map((response) => response.toString(16)),
       curve: this.curve.toString(),
     });
   }
@@ -212,7 +211,7 @@ export class RingSignature {
     if (!base64Regex.test(base64)) throw err.invalidBase64();
 
     const decoded = Buffer.from(base64, "base64").toString("ascii");
-    return RingSignature.fromJsonString(decoded);
+    return RingSignature.fromJson(decoded);
   }
 
   /**
@@ -429,8 +428,7 @@ export class RingSignature {
     if (base64Regex.test(signature)) {
       signature = RingSignature.fromBase64(signature).toJsonString();
     }
-    const ringSignature: RingSignature =
-      RingSignature.fromJsonString(signature);
+    const ringSignature: RingSignature = RingSignature.fromJson(signature);
     return ringSignature.verify();
   }
 
@@ -485,7 +483,6 @@ export class RingSignature {
    */
   async getCallData(): Promise<bigint[]> {
     const hints = await this.verify_garaga();
-
     const U384Ring: CairoG1Point[] = [];
     for (const points of this.ring) {
       const U384Point = points.toU384Coordinates();
@@ -499,7 +496,14 @@ export class RingSignature {
       hints,
     );
   }
-
+  static async getCallData(signature: string): Promise<bigint[]> {
+    // check if the signature is a json or a base64 string
+    if (base64Regex.test(signature)) {
+      signature = RingSignature.fromBase64(signature).toJsonString();
+    }
+    const ringSignature: RingSignature = RingSignature.fromJson(signature);
+    return await ringSignature.getCallData();
+  }
   /**
    * Compute a challenge (abbriviated c) value
    *
