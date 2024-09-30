@@ -1,9 +1,4 @@
-export {
-  u256ArrayToBytes,
-  cairoHash,
-  stringToBigInt,
-  serializeRingCairo,
-} from "./cairo-utils";
+export { cairoHash, stringToBigInt, serializeRingCairo } from "./cairo-utils";
 export {
   toWeierstrass,
   toTwistedEdwards,

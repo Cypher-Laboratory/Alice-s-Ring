@@ -5,7 +5,7 @@ import { Point, uint384Serialize } from "@cypher-laboratory/ring-sig-utils";
  *
  * @param ring - The ring to serialize
  *
- * @returns The serialized ring as a string array
+ * @returns The serialized ring as a bigint array
  */
 export function serializeRingCairo(ring: Point[]): bigint[] {
   let serializedPoints: bigint[] = [];
@@ -52,42 +52,4 @@ export function stringToBigInt(str: string): bigint {
 
   // Prepend '0x' to create a hexadecimal literal and convert to BigInt
   return BigInt("0x" + hex);
-}
-
-/**
- * Converts an array of 256-bit unsigned bigint values into a concatenated byte array (`Uint8Array`).
- * @param {bigint[]} u256Array - An array of 256-bit unsigned integers (bigint) to be converted into a byte array.
- * @returns {Uint8Array} - A byte array where each 256-bit bigint from the input array is represented by 32 bytes.
- * @example
- * const byteArray = u256ArrayToBytes([1234567890123456789012345678901234567890n, 9876543210987654321098765432109876543210n]);
- * console.log(byteArray); // Outputs a Uint8Array where each bigint is represented as 32 bytes
- */
-export function u256ArrayToBytes(u256Array: bigint[]): Uint8Array {
-  const result: number[] = [];
-  for (const u256 of u256Array) {
-    const bytes = u256ToBytes(u256);
-    result.push(...bytes);
-  }
-
-  return new Uint8Array(result);
-}
-
-/**
- * Converts a 256-bit unsigned bigint (`u256`) into a 32-byte array (`Uint8Array`).
- * @param {bigint} u256 - The 256-bit unsigned integer (bigint) to be converted into a 32-byte array.
- * @returns {Uint8Array} - A 32-byte array representing the `u256` bigint.
- * @example
- * const bytes = u256ToBytes(1234567890123456789012345678901234567890n);
- * console.log(bytes); // Outputs a Uint8Array of length 32
- */
-function u256ToBytes(u256: bigint): Uint8Array {
-  const buffer = new ArrayBuffer(32);
-  const view = new DataView(buffer);
-
-  for (let i = 0; i < 32; i++) {
-    view.setUint8(31 - i, Number(u256 & 255n));
-    u256 >>= 8n;
-  }
-
-  return new Uint8Array(buffer);
 }
