@@ -178,6 +178,7 @@ function getPointCoordinates(
   }
 }
 
+// eslint-disable-next-line
 function getCurveId(curveName: CurveName, garaga: any): number {
   switch (curveName) {
     case CurveName.ED25519:
