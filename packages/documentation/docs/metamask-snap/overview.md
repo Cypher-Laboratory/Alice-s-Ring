@@ -5,11 +5,6 @@ sidebar_position: 1
 ---
 
 ## Introduction
-
-The Ring Signature Snap unlocks enhanced privacy and security functionalities via MetaMask, allowing other applications to interact with it and enabling MetaMask to perform ring signature operations without relying on external services.
-
-## Overview
-
 With the Ring Signature Snap, users can create and import Ethereum accounts, sign messages using Spontaneous Anonymous Group (SAG) and Linkable Spontaneous Anonymous Group (LSAG) signatures, and verify these signatures. This Snap ensures that users can sign messages privately, with the option to reveal linkage across multiple messages without revealing the actual signer.
 
 ## What is a Snap?

@@ -1,10 +1,8 @@
 ---
 id: ring-signatures
 title: What are Ring Signatures
-sidebar_position: 4
+sidebar_position: 2
 ---
-
-## What are Ring Signatures
 
 Ring signatures are a type of digital signature that allows a group of users to sign a message anonymously. Unlike traditional digital signatures uniquely linked to one user, ring signatures obscure the actual author by linking multiple possible signers together in a "ring."
 
@@ -56,6 +54,10 @@ In the LSAG signature scheme, a private key can produce one anonymous unlinked s
    - The ring signature scheme is secure against adaptive chosen-message and adaptive chosen-public-key attacks. An attacker cannot forge signatures even if they can obtain legitimate signatures for chosen messages and public keys.
 
 ### Practical Applications
+
+You can use ring signatures in various applications to enhance privacy and security. Here are some common use cases:
+- **Private voting**: Ensuring voter anonymity and preventing coercion or vote buying.
+- **Private multi-signature transactions**: Enabling multiple parties to sign a transaction without revealing their identities.
 
 Ring signatures are used in blockchain systems like Monero to provide:
 - **Untraceable Transactions:** Ensuring that the source of funds remains anonymous.
