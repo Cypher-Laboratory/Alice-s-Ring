@@ -4,6 +4,7 @@ import { SECP256K1, ED25519 } from "./curves";
 import * as ed from "../../src/utils/noble-libraries/noble-ED25519";
 import { sha512 } from "@noble/hashes/sha512";
 import { derivePubKey } from "../../src/curves";
+import { Uint384 } from "../../src";
 ed.etc.sha512Sync = (...m) => sha512(ed.etc.concatBytes(...m));
 
 export const privateKey = [
@@ -119,6 +120,34 @@ export const valid_coordinates_ed25519: [bigint, bigint] = [
 export const valid_coordinates_secp256k1: [bigint, bigint] = [
   30558939714202291090863029727820829993227403204286654734430544819396481281155n,
   46835398937525857424678912804713110217248423408711238708095319128726301404767n,
+];
+export const valid_coordinates_U384_ed25519: [Uint384, Uint384] = [
+  {
+    limb0: 51327608074875651568234292170n,
+    limb1: 8504477248056293471063662544n,
+    limb2: 2977937783060727313n,
+    limb3: 0n,
+  },
+  {
+    limb0: 43860635396307821452324163049n,
+    limb1: 3100731210178364366614804429n,
+    limb2: 4003596457430562539n,
+    limb3: 0n,
+  },
+];
+export const valid_coordinates_U384_secp256k1: [Uint384, Uint384] = [
+  {
+    limb0: 35406264268981164962922261635n,
+    limb1: 25793803402983064411989120380n,
+    limb2: 4868319967147992290n,
+    limb3: 0n,
+  },
+  {
+    limb0: 30563506205455417743086808671n,
+    limb1: 11302477924359120964473243806n,
+    limb2: 7461309520203389305n,
+    limb3: 0n,
+  },
 ];
 
 export const valid_string_point_ed25519 = new Point(
