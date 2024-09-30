@@ -19,10 +19,10 @@ export function serializeRingCairo(ring: Point[]): bigint[] {
 }
 
 /**
- * Computes a Keccak-256 hash of the given array of bigints, ensuring that the
+ * Computes a Poseidon hash of the given array of bigints, ensuring that the
  * resulting hash is compatible between Cairo (StarkNet) and TypeScript.
  * @param {bigint[]} data - An array of bigint numbers representing the input to be hashed.
- * @returns {bigint} - The resulting Keccak-256 hash represented as a bigint.
+ * @returns {bigint} - The resulting Poseidon hash represented as a bigint.
  * @example
  * const hash = cairoHash([123456789n, 987654321n]);
  * console.log(hash); // Outputs a bigint hash
