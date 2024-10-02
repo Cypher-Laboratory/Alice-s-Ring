@@ -47,6 +47,7 @@ Collect the public keys that will form the ring. Convert each public key into a 
 const publicKeys = [
   '030066ba293cc22d0eadbe494e9bd4d6d05c3e09d74dff0e991075de74b2359678',
   '0316d7da70ba247a6a40bb310187e8789b80c45fa6dc0061abb8ced49cbe7f887f',    '0221869ca3ae33be3a7327e9a0272203afa72c52a5460ceb9f4a50930531bd926a',
+    // ... other public keys
 ];
 
 // Convert to Point objects
@@ -365,7 +366,7 @@ The `Curve` class encapsulates the properties of an elliptic curve.
 
 ## Sponsors
 
-We would like to thank the XRPL Foundation ([https://xrpl.org/](https://xrpl.org/)) for their support and funding, which have allowed this library to be developed for the benefit of many.
+We would like to thank the Polygon Foundation ([https://polygon.technology/](https://polygon.technology/)) for their support and funding, which have allowed this library to be developed for the benefit of many.
 
 ## Audit
 
@@ -374,7 +375,7 @@ Proceed with caution and consider auditing the code before using it in productio
 
 ## Contribution Guidelines
 
-We welcome contributions to improve and extend the functionality of the LSAG-ts library. Feel free to open issues, suggest enhancements, or submit pull requests on our [GitHub repository](https://github.com/cypher-laboratory/alices-ring-lsag).
+We welcome contributions to improve and extend the functionality of the LSAG-ts library. Feel free to open issues, suggest enhancements, or submit pull requests on our [GitHub repository](https://github.com/Cypher-Laboratory/Alice-s-Ring).
 
 ---
 

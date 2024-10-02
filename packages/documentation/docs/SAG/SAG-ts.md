@@ -35,6 +35,7 @@ Convert each public key into a `Point` object.
 const publicKeys = [
   '030066ba293cc22d0eadbe494e9bd4d6d05c3e09d74dff0e991075de74b2359678',
   '0316d7da70ba247a6a40bb310187e8789b80c45fa6dc0061abb8ced49cbe7f887f',    '0221869ca3ae33be3a7327e9a0272203afa72c52a5460ceb9f4a50930531bd926a',
+    // ... other public keys
 ];
 
 // Convert to Point objects
@@ -323,16 +324,10 @@ const G = curve.GtoPoint();
 We would like to thank the XRPL Foundation ([https://xrpl.org/](https://xrpl.org/)) for their support and funding, which have allowed this audited library to be developed for the benefit of many.
 
 
-## Audit
-
-The audit of this library was conducted by CryptoExperts ([https://www.cryptoexperts.com/](https://www.cryptoexperts.com/)) on March 13th, 2024. All vulnerabilities identified during the audit have been fixed under the supervision of CryptoExperts.
-
-The audit report is available here: [Audit Report](https://github.com/Cypher-Laboratory/Alice-s-Ring/blob/main/packages/sag-ts/AUDIT_REPORT.pdf).
-
 
 ## Contribution Guidelines
 
-We welcome contributions to improve and extend the functionality of the SAG-ts library. Feel free to open issues, suggest enhancements, or submit pull requests on our [GitHub repository](https://github.com/cypher-laboratory/alices-ring-sag).
+We welcome contributions to improve and extend the functionality of the SAG-ts library. Feel free to open issues, suggest enhancements, or submit pull requests on our [GitHub repository](https://github.com/Cypher-Laboratory/Alice-s-Ring).
 
 ---
 
