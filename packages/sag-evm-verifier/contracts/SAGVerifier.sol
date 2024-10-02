@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// Developed by Cypher Lab (https://www.cypherlab.org/)
+// Developed by Cypher Lab (https://cypherlab.org/)
 
 // see https://github.com/Cypher-Laboratory/evm-verifier // todo: use new repo url
 
@@ -80,7 +80,7 @@ library SAGVerifier {
         uint256 yPreviousPubKey
     ) internal pure returns (uint256) {
         // check if [ring[0], ring[1]] is on the curve
-        isOnSECP25K1(xPreviousPubKey, yPreviousPubKey);
+        isOnSECP256K1(xPreviousPubKey, yPreviousPubKey);
 
         // compute [rG + previousPubKey * c] by tweaking ecRecover
         address computedPubKey = sbmul_add_smul(
@@ -115,7 +115,7 @@ library SAGVerifier {
         uint256 yPreviousPubKey
     ) internal pure returns (uint256) {
         // check if [ring[0], ring[1]] is on the curve
-        isOnSECP25K1(xPreviousPubKey, yPreviousPubKey);
+        isOnSECP256K1(xPreviousPubKey, yPreviousPubKey);
         // compute [rG + previousPubKey * c] by tweaking ecRecover
         address computedPubKey = sbmul_add_smul(
             response,
@@ -164,21 +164,28 @@ library SAGVerifier {
      * @dev Computes (value * mod) % mod
      *
      * @param value - value to be modulated
-     * @param mod - mod value
+     * @param mod_ - mod value
      *
      * @return result - the result of the modular operation
      */
-    function modulo(
+    function modulo( 
         uint256 value,
-        uint256 mod
-    ) internal pure returns (uint256) {
-        uint256 result = value % mod;
-        if (result < 0) {
-            result += mod;
-        }
-        return result;
-    }
+        uint256 mod_
+    ) public pure returns (uint256) {
+        assembly {
+            let result := mod(value, mod_)
+            if lt(result, 0) {
+                result := add(result, mod_)
+            }
 
+            // Allocate memory to store the result
+            let ptr := mload(0x40)
+            mstore(ptr, result)    // Store the result at the free memory pointer
+
+            return(ptr, 0x20)      // Return 32 bytes (0x20) from the pointer
+        }
+    }
+    
     /**
      * @dev Checks if a point is on the secp256k1 curve
      *
@@ -187,14 +194,25 @@ library SAGVerifier {
      * @param x - point x coordinate
      * @param y - point y coordinate
      */
-    function isOnSECP25K1(uint256 x, uint256 y) internal pure {
-        if (
-            mulmod(y, y, pp) != addmod(mulmod(x, mulmod(x, x, pp), pp), 7, pp)
-        ) {
-            revert("Point is not on curve");
+    function isOnSECP256K1(uint256 x, uint256 y) public pure {
+        assembly {
+            // Calculate y^2 % pp using mulmod
+            let y2 := mulmod(y, y, pp)
+
+            // Calculate x^3 % pp using mulmod twice
+            let x2 := mulmod(x, x, pp)
+            let x3 := mulmod(x2, x, pp)
+
+            // Add 7 to x^3 % pp (addmod)
+            let rhs := addmod(x3, 7, pp)
+
+            // Compare y^2 with (x^3 + 7) % pp
+            if iszero(eq(y2, rhs)) {
+                // Revert if the point is not on the curve
+                revert(0, 0)
+            }
         }
     }
-
 
     /**
      * @dev Compute an ethereum address from a public key (x, y)
