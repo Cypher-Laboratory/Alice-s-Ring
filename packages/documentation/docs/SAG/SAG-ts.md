@@ -30,6 +30,18 @@ const curve = new Curve(CurveName.SECP256K1);
 Convert each public key into a `Point` object.
 
 ```typescript
+// Example public keys in compressed hexadecimal format
+// ex: 0x02 + x-coordinate (32 bytes) for SECP256K1
+const publicKeys = [
+  '030066ba293cc22d0eadbe494e9bd4d6d05c3e09d74dff0e991075de74b2359678',
+  '0316d7da70ba247a6a40bb310187e8789b80c45fa6dc0061abb8ced49cbe7f887f',    '0221869ca3ae33be3a7327e9a0272203afa72c52a5460ceb9f4a50930531bd926a',
+];
+
+// Convert to Point objects
+const ring: Point[] = publicKeys.map(compressed => Point.deserialize(compressed));
+```
+Or
+```typescript
 // Example public keys in hexadecimal format
 const publicKeyHexes = [
   { x: 'x-coordinate-hex-1', y: 'y-coordinate-hex-1' },
