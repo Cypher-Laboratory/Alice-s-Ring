@@ -3,7 +3,7 @@
 
 // see https://github.com/Cypher-Laboratory/evm-verifier // todo: use new repo url
 
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.27;
 
 library SAGVerifier {
     // Field size
@@ -193,5 +193,20 @@ library SAGVerifier {
         ) {
             revert("Point is not on curve");
         }
+    }
+
+
+    /**
+     * @dev Compute an ethereum address from a public key (x, y)
+     * 
+     * WARNING: this function does not check if the public key is on the curve
+     * 
+     * @param x - public key x coordinate
+     * @param y - public key y coordinate
+     * 
+     * @return address - the ethereum address derived from the public key
+     */
+    function publicKeyToAddress(uint256 x, uint256 y) external pure returns (address) {
+        return address(uint160(uint256(keccak256(abi.encodePacked(x, y))) & 0x00FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF));
     }
 }
