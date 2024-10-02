@@ -87,7 +87,7 @@ To create an LSAG signature, the signer needs to collect a set of public keys, i
 
 1. **Select the Elliptic Curve:**
    - Choose a curve compatible with the public keys.
-   - Common choices are `SECP256K1` (used in Bitcoin, Ethereum and most of the blockchains) and `ED25519`.
+   - Available choices are `SECP256K1` (used in Bitcoin, Ethereum and most of the blockchains) and `ED25519`.
 
 2. **Collect Public Keys:**
    - Gather public keys to include in the ring.
