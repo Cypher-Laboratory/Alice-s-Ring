@@ -24,12 +24,6 @@ The signer uses their private key and the ring of public keys to generate the si
 
 Anyone with the signature, message, and ring of public keys can verify the signature without knowing which member of the ring signed the message.
 
-## Audit
-
-The audit of this library was conducted by CryptoExperts ([https://www.cryptoexperts.com/](https://www.cryptoexperts.com/)) on March 13th, 2024. All vulnerabilities identified during the audit have been fixed under the supervision of CryptoExperts.
-
-The audit report is available here: [Audit Report](https://github.com/Cypher-Laboratory/Alice-s-Ring/blob/main/packages/sag-ts/AUDIT_REPORT.pdf).
-                                   |
 
 
 ## Getting Started

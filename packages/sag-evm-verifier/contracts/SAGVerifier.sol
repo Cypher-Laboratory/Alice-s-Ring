@@ -217,5 +217,4 @@ library SAGVerifier {
     ) external pure returns (bytes32) {
         return keccak256(abi.encodePacked(message, message_2));
     }
-    ////////////////////
 }

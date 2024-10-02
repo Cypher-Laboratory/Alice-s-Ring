@@ -240,24 +240,6 @@ const json = signature.toJsonString();
 const signatureFromJson = RingSignature.fromJson(json);
 ```
 
-## Sponsors
-
-We would like to thank the XRPL Foundation ([https://xrpl.org/](https://xrpl.org/)) for their support and funding, which have allowed this audited library to be developed for the benefit of many.
-
----
-
-Feel free to explore the other implementations and tools in the Alice's Ring project:
-
-- [LSAG Typescript](../LSAG/overview-lsag): TypeScript implementation of Linkable Spontaneous Anonymous Group (LSAG) signatures.
-- [Metamask-snap](../metamask-snap/overview): A Metamask snap to create and verify ring signatures easily.
-- [SAG EVM Verifier](./SAG-evm-verifier): EVM verifier for SAG ring signature written in Solidity.
-- [Rust Verifier](../SAG/SAG-rust-verifier): Rust verifier for SAG and LSAG ring signatures.
-
-For further reading and a deeper understanding of the cryptographic principles involved, refer to the [Zero to Monero](https://www.getmonero.org/library/Zero-to-Monero-2-0-0.pdf) document (p.36), which served as a reference for this implementation.
-
----
-
-**Happy coding!** If you have any questions or need assistance, don't hesitate to reach out to the community.
 
 ## Detailed Implementation
 
@@ -322,11 +304,34 @@ const G = curve.GtoPoint();
 
 ---
 
-**Note:** For a complete explanation of SAG and LSAG differences and usages, refer to the [Ring Signatures](./ring-signatures) documentation.
+**Note:** For a complete explanation of SAG and LSAG differences and usages, refer to the [Ring Signatures](../ring-signatures) documentation.
+
+## Sponsors
+
+We would like to thank the XRPL Foundation ([https://xrpl.org/](https://xrpl.org/)) for their support and funding, which have allowed this audited library to be developed for the benefit of many.
+
+
+## Audit
+
+The audit of this library was conducted by CryptoExperts ([https://www.cryptoexperts.com/](https://www.cryptoexperts.com/)) on March 13th, 2024. All vulnerabilities identified during the audit have been fixed under the supervision of CryptoExperts.
+
+The audit report is available here: [Audit Report](https://github.com/Cypher-Laboratory/Alice-s-Ring/blob/main/packages/sag-ts/AUDIT_REPORT.pdf).
+
 
 ## Contribution Guidelines
 
 We welcome contributions to improve and extend the functionality of the SAG-ts library. Feel free to open issues, suggest enhancements, or submit pull requests on our [GitHub repository](https://github.com/cypher-laboratory/alices-ring-sag).
+
+---
+
+Feel free to explore the other implementations and tools in the Alice's Ring project:
+
+- [LSAG Typescript](../LSAG/overview-lsag): TypeScript implementation of Linkable Spontaneous Anonymous Group (LSAG) signatures.
+- [Metamask-snap](../metamask-snap/overview): A Metamask snap to create and verify ring signatures easily.
+- [SAG EVM Verifier](./SAG-evm-verifier): EVM verifier for SAG ring signature written in Solidity.
+- [Rust Verifier](../SAG/SAG-rust-verifier): Rust verifier for SAG and LSAG ring signatures.
+
+For further reading and a deeper understanding of the cryptographic principles involved, refer to the [Zero to Monero](https://www.getmonero.org/library/Zero-to-Monero-2-0-0.pdf) document (p.36), which served as a reference for this implementation.
 
 ---
 
