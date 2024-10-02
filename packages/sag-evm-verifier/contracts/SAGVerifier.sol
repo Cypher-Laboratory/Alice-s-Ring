@@ -194,27 +194,4 @@ library SAGVerifier {
             revert("Point is not on curve");
         }
     }
-
-    ////////////////////
-    function keccak(string memory message) external pure returns (bytes32) {
-        return keccak256(abi.encodePacked(message));
-    }
-
-    function keccakuint256(uint256 message) external pure returns (bytes32) {
-        return keccak256(abi.encodePacked(message));
-    }
-
-    function keccak2strings(
-        string memory message,
-        string memory message_2
-    ) external pure returns (bytes32) {
-        return keccak256(abi.encodePacked(message, message_2));
-    }
-
-    function keccak2types(
-        string memory message,
-        uint256 message_2
-    ) external pure returns (bytes32) {
-        return keccak256(abi.encodePacked(message, message_2));
-    }
 }
