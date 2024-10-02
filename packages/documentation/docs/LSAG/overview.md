@@ -176,7 +176,6 @@ Verifiers can confirm:
 - **Valid Public Keys:** Ensure all public keys in the ring are valid and on the same curve.
 - **Ring Size:** Larger rings provide better anonymity but may increase computational overhead.
 
-
 ---
 
 If you have any questions or need further assistance with LSAG signatures, feel free to reach out to the community or consult additional cryptographic resources.
