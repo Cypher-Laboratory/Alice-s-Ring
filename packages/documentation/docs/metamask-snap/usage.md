@@ -1,10 +1,9 @@
 ---
 id: usage
-title: Usage
+title: Snap - Usage
 ---
 
-// todo: briefly explain the purpose of the toolkit
-
+The Snap Toolkit is a collection of functions designed by Cypher Lab to simplify the use of the ring signatures snap. It provides developers with easy-to-use tools for integrating ring signature functionalities into their applications, allowing for seamless signing and verification processes while ensuring user privacy and security. 
 
 ## Installing the Toolkit
 
