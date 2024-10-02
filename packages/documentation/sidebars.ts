@@ -14,6 +14,12 @@ const sidebars: SidebarsConfig = {
       items: [
         {
           type: 'doc',
+          id: 'SAG/overview-sag',
+          label: 'Overview',
+          className: 'sidebar-item-ts'
+        },
+        {
+          type: 'doc',
           id: 'SAG/SAG-ts',
           label: 'Typescript',
           className: 'sidebar-item-ts'
@@ -42,6 +48,12 @@ const sidebars: SidebarsConfig = {
       type: 'category',
       label: '🕵️‍♂️ LSAG',
       items: [
+        {
+          type: 'doc',
+          id: 'LSAG/overview-lsag',
+          label: 'Overview',
+          className: 'sidebar-item-ts'
+        },
         {
           type: 'doc',
           id: 'LSAG/LSAG-ts',
