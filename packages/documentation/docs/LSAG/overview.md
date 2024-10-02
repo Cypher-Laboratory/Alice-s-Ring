@@ -78,16 +78,6 @@ The **linkability flag** is an optional string that provides additional context 
 
 To create an LSAG signature, the signer needs to collect a set of public keys, including their own and others'. This set forms the **ring** against which the signature will be verified.
 
-**Sources of Public Keys:**
-
-- **Blockchain Networks:**
-  - On public blockchains like Ethereum or Bitcoin, public keys are openly available.
-  - Collect public keys from recent transactions or blocks to form a ring.
-- **Organizational Directories:**
-  - In a corporate environment, employees' public keys may be listed in a directory.
-- **Public Repositories:**
-  - Open-source projects may have public keys available for contributors.
-
 **Considerations:**
 
 - **Validity:** Ensure all public keys are valid and correspond to the same elliptic curve.
