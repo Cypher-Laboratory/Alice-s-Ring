@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
-// Developed by Cypher Lab (https://www.cypherlab.org/)
+// Developed by Cypher Lab (https://cypherlab.org/)
 
 // see https://github.com/Cypher-Laboratory/evm-verifier // todo: use new repo url
 
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.27;
 
 library SAGVerifier {
     // Field size
@@ -49,13 +49,18 @@ library SAGVerifier {
         );
 
         // compute c1' (message is added to the hash)
-        uint256 cp = computeC1(message, responses[0], c, ring[0], ring[1]);
+        uint256 cp = modulo(
+            computeC1(message, responses[0], c, ring[0], ring[1]),
+            nn
+        );
+
+        // from here, code might be displayed
 
         uint256 j = 2;
 
         // compute c2', c3', ..., cn', c0'
         for (uint256 i = 1; i < responses.length; i++) {
-            cp = computeC(responses[i], cp, ring[j], ring[j + 1]);
+            cp = modulo(computeC(responses[i], cp, ring[j], ring[j + 1]), nn);
             j += 2;
         }
 
@@ -80,7 +85,7 @@ library SAGVerifier {
         uint256 yPreviousPubKey
     ) internal pure returns (uint256) {
         // check if [ring[0], ring[1]] is on the curve
-        isOnSECP25K1(xPreviousPubKey, yPreviousPubKey);
+        isOnSECP256K1(xPreviousPubKey, yPreviousPubKey);
 
         // compute [rG + previousPubKey * c] by tweaking ecRecover
         address computedPubKey = sbmul_add_smul(
@@ -115,7 +120,7 @@ library SAGVerifier {
         uint256 yPreviousPubKey
     ) internal pure returns (uint256) {
         // check if [ring[0], ring[1]] is on the curve
-        isOnSECP25K1(xPreviousPubKey, yPreviousPubKey);
+        isOnSECP256K1(xPreviousPubKey, yPreviousPubKey);
         // compute [rG + previousPubKey * c] by tweaking ecRecover
         address computedPubKey = sbmul_add_smul(
             response,
@@ -161,21 +166,21 @@ library SAGVerifier {
     }
 
     /**
-     * @dev Computes (value * mod) % mod
+     * @dev This function returns (a % b) using inline assembly.
      *
-     * @param value - value to be modulated
-     * @param mod - mod value
+     * @param a - value to be modulated
+     * @param b - mod value
      *
      * @return result - the result of the modular operation
      */
-    function modulo(
-        uint256 value,
-        uint256 mod
-    ) internal pure returns (uint256) {
-        uint256 result = value % mod;
-        if (result < 0) {
-            result += mod;
+    function modulo(uint256 a, uint256 b) public pure returns (uint256) {
+        require(b != 0, "Modulo by zero");
+        uint256 result;
+
+        assembly {
+            result := mod(a, b)
         }
+
         return result;
     }
 
@@ -187,35 +192,46 @@ library SAGVerifier {
      * @param x - point x coordinate
      * @param y - point y coordinate
      */
-    function isOnSECP25K1(uint256 x, uint256 y) internal pure {
-        if (
-            mulmod(y, y, pp) != addmod(mulmod(x, mulmod(x, x, pp), pp), 7, pp)
-        ) {
-            revert("Point is not on curve");
+    function isOnSECP256K1(uint256 x, uint256 y) public pure {
+        assembly {
+            // Calculate y^2 % pp using mulmod
+            let y2 := mulmod(y, y, pp)
+
+            // Calculate x^3 % pp using mulmod twice
+            let x2 := mulmod(x, x, pp)
+            let x3 := mulmod(x2, x, pp)
+
+            // Add 7 to x^3 % pp (addmod)
+            let rhs := addmod(x3, 7, pp)
+
+            // Compare y^2 with (x^3 + 7) % pp
+            if iszero(eq(y2, rhs)) {
+                // Revert if the point is not on the curve
+                revert(0, 0)
+            }
         }
     }
 
-    ////////////////////
-    function keccak(string memory message) external pure returns (bytes32) {
-        return keccak256(abi.encodePacked(message));
+    /**
+     * @dev Compute an ethereum address from a public key (x, y)
+     *
+     * WARNING: this function does not check if the public key is on the curve
+     *
+     * @param x - public key x coordinate
+     * @param y - public key y coordinate
+     *
+     * @return address - the ethereum address derived from the public key
+     */
+    function publicKeyToAddress(
+        uint256 x,
+        uint256 y
+    ) external pure returns (address) {
+        return
+            address(
+                uint160(
+                    uint256(keccak256(abi.encodePacked(x, y))) &
+                        0x00FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                )
+            );
     }
-
-    function keccakuint256(uint256 message) external pure returns (bytes32) {
-        return keccak256(abi.encodePacked(message));
-    }
-
-    function keccak2strings(
-        string memory message,
-        string memory message_2
-    ) external pure returns (bytes32) {
-        return keccak256(abi.encodePacked(message, message_2));
-    }
-
-    function keccak2types(
-        string memory message,
-        uint256 message_2
-    ) external pure returns (bytes32) {
-        return keccak256(abi.encodePacked(message, message_2));
-    }
-    ////////////////////
 }

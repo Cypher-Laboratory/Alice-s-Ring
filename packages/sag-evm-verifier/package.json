@@ -48,7 +48,6 @@
     "@types/chai": "^4.2.0",
     "@types/mocha": ">=9.1.0",
     "chai": "^4.2.0",
-    "eth-gas-reporter": "^0.2.27",
     "hardhat": "^2.19.0",
     "hardhat-gas-reporter": "^1.0.8",
     "prettier": "^3.0.0",
@@ -61,6 +60,7 @@
     "@typescript-eslint/eslint-plugin": "^5.61.0",
     "@typescript-eslint/parser": "^5.61.0",
     "eslint": "^8.44.0",
-    "ethers": "^6.8.1"
+    "ethers": "^6.8.1",
+    "eth-gas-reporter": "^0.2.27"
   }
 }

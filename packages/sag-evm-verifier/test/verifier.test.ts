@@ -5,7 +5,7 @@ import { keccak_256, Point } from "@cypher-laboratory/ring-sig-utils";
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { expect } = require("chai");
 
-describe("evm-verifier", function () { // todo: add some more tests
+describe("SAG-EVM-verifier", function () { // todo: add some more tests
 
   it("Verify a ring signature", async function () {
     // link library
