@@ -49,13 +49,18 @@ library SAGVerifier {
         );
 
         // compute c1' (message is added to the hash)
-        uint256 cp = computeC1(message, responses[0], c, ring[0], ring[1]);
+        uint256 cp = modulo(
+            computeC1(message, responses[0], c, ring[0], ring[1]),
+            nn
+        );
+
+        // from here, code might be displayed
 
         uint256 j = 2;
 
         // compute c2', c3', ..., cn', c0'
         for (uint256 i = 1; i < responses.length; i++) {
-            cp = computeC(responses[i], cp, ring[j], ring[j + 1]);
+            cp = modulo(computeC(responses[i], cp, ring[j], ring[j + 1]), nn);
             j += 2;
         }
 
@@ -161,31 +166,24 @@ library SAGVerifier {
     }
 
     /**
-     * @dev Computes (value * mod) % mod
+     * @dev This function returns (a % b) using inline assembly.
      *
-     * @param value - value to be modulated
-     * @param mod_ - mod value
+     * @param a - value to be modulated
+     * @param b - mod value
      *
      * @return result - the result of the modular operation
      */
-    function modulo( 
-        uint256 value,
-        uint256 mod_
-    ) public pure returns (uint256) {
+    function modulo(uint256 a, uint256 b) public pure returns (uint256) {
+        require(b != 0, "Modulo by zero");
+        uint256 result;
+
         assembly {
-            let result := mod(value, mod_)
-            if lt(result, 0) {
-                result := add(result, mod_)
-            }
-
-            // Allocate memory to store the result
-            let ptr := mload(0x40)
-            mstore(ptr, result)    // Store the result at the free memory pointer
-
-            return(ptr, 0x20)      // Return 32 bytes (0x20) from the pointer
+            result := mod(a, b)
         }
+
+        return result;
     }
-    
+
     /**
      * @dev Checks if a point is on the secp256k1 curve
      *
@@ -216,15 +214,24 @@ library SAGVerifier {
 
     /**
      * @dev Compute an ethereum address from a public key (x, y)
-     * 
+     *
      * WARNING: this function does not check if the public key is on the curve
-     * 
+     *
      * @param x - public key x coordinate
      * @param y - public key y coordinate
-     * 
+     *
      * @return address - the ethereum address derived from the public key
      */
-    function publicKeyToAddress(uint256 x, uint256 y) external pure returns (address) {
-        return address(uint160(uint256(keccak256(abi.encodePacked(x, y))) & 0x00FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF));
+    function publicKeyToAddress(
+        uint256 x,
+        uint256 y
+    ) external pure returns (address) {
+        return
+            address(
+                uint160(
+                    uint256(keccak256(abi.encodePacked(x, y))) &
+                        0x00FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                )
+            );
     }
 }
