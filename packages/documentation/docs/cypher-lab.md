@@ -2,10 +2,6 @@
 id: cypher-lab
 title: 🔐 Cypher Lab
 ---
----
-id: cypher-lab
-title: 🔐 Cypher Lab
----
 
 Welcome to Cypher Lab! We are dedicated to enhancing privacy in the Web3 ecosystem through cutting-edge privacy solutions. Our mission is to shape a future where privacy is an integral part of the digital experience.
 
