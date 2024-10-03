@@ -1,14 +1,9 @@
 import { RingSignature } from "../../src";
 import * as data from "../data";
-import {
-  Curve,
-  CurveName,
-  HashFunction,
-  errors,
-} from "@cypher-laboratory/ring-sig-utils";
+import { Curve, CurveName, errors } from "@cypher-laboratory/ring-sig-utils";
 
 const secp256k1 = new Curve(CurveName.SECP256K1);
-
+const ed25519 = new Curve(CurveName.ED25519);
 /**
  * Test the RingSignature.sign() method
  *
@@ -75,16 +70,13 @@ describe("Test sign()", () => {
       errors.invalidParams("Signer private key cannot be 0 and must be < N"),
     );
   });
-
-  /* ------------CONFIG.HASH = SHA512------------ */
-  it("Should return a valid ring signature if config.hash is SHA512 - secp256k1", () => {
+  it("Should return a valid ring signature - ed25519", () => {
     const ringSignature = RingSignature.sign(
-      data.publicKeys_secp256k1,
+      data.publicKeys_ed25519,
       data.signerPrivKey,
       data.message,
-      secp256k1,
+      ed25519,
       data.linkabilityFlag,
-      { hash: HashFunction.SHA512 },
     );
     expect(ringSignature).toBeInstanceOf(RingSignature);
     expect(ringSignature.verify()).toBe(true);

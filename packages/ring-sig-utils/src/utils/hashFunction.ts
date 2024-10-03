@@ -5,8 +5,8 @@ import { SignatureConfig } from "../interfaces";
 import { uint8ArrayToHex } from ".";
 import { Curve, CurveName } from "../curves";
 import { Point } from "../point";
-import { hashToCurve } from "@noble/curves/secp256k1";
-
+import { hashToCurve as secp256k1HashToCurve } from "@noble/curves/secp256k1";
+import { hashToCurve as ed25519HashToCurve } from "@noble/curves/ed25519";
 export enum HashFunction {
   KECCAK256 = "keccak256",
   SHA512 = "sha512",
@@ -139,9 +139,21 @@ export function tobe256(v: bigint): Buffer {
 export function ecHash(input: (string | bigint)[], curve: Curve): Point {
   switch (curve.name) {
     case CurveName.SECP256K1: {
-      const affinePoint = hashToCurve(utf8ToBytes(serializeInput(input)), {
-        DST: "secp256k1_XMD:SHA-256_SSWU_RO_",
-      }).toAffine();
+      const affinePoint = secp256k1HashToCurve(
+        utf8ToBytes(serializeInput(input)),
+        {
+          DST: "secp256k1_XMD:SHA-256_SSWU_RO_",
+        },
+      ).toAffine();
+      return new Point(curve, [affinePoint.x, affinePoint.y]);
+    }
+    case CurveName.ED25519: {
+      const affinePoint = ed25519HashToCurve(
+        utf8ToBytes(serializeInput(input)),
+        {
+          DST: "edwards25519_XMD:SHA-512_ELL2_RO_ ",
+        },
+      ).toAffine();
       return new Point(curve, [affinePoint.x, affinePoint.y]);
     }
     default:
