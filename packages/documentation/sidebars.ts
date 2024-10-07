@@ -100,6 +100,11 @@ const sidebars: SidebarsConfig = {
         },
       ]
     },
+    {
+      type: 'doc',
+      id: 'rust-verifier',
+      label: "rust-verifier",
+    },
     'cypher-lab',
   ],
 
