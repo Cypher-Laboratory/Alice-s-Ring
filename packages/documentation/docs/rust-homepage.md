@@ -41,7 +41,7 @@ To use this Rust verifier for SAG or LSAG signatures, add it to your project as 
 
 ```toml
 [dependencies]
-ring_signature_verifier = "0.1.0"
+ring_signature_verifier = "0.1.3"
 ```
 
 > Crate URL: [crates.io/crates/ring_signature_verifier](https://crates.io/crates/ring_signature_verifier)
