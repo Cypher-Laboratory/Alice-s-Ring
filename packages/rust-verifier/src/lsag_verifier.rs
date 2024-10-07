@@ -9,16 +9,25 @@ use core::str;
 use k256::{AffinePoint, Scalar};
 use serde::Deserialize;
 
-// Define a struct that matches the structure of your JSON string
+/// Define a struct that matches the structure of the JSON string LSAG
 #[derive(Deserialize, Debug)]
 #[allow(non_snake_case)]
-struct StringifiedLsag {
+pub struct StringifiedLsag {
     pub message: String,
     pub ring: Vec<String>,
     pub c: String,
     pub responses: Vec<String>,
     pub keyImage: String,
     pub linkabilityFlag: String,
+}
+/// A struct to represent a LSAG signature
+pub struct Lsag {
+    pub ring: Vec<AffinePoint>,
+    pub message: String,
+    pub c0: Scalar,
+    pub responses: Vec<Scalar>,
+    pub key_image: AffinePoint,
+    pub linkability_flag: Option<String>,
 }
 /// Parameters required for the compute_c function
 pub struct Params {
@@ -108,27 +117,23 @@ pub fn verify_b64_lsag(b64_signature: String) -> bool {
         .collect();
 
     // return the result of the verification
-    verify_lsag(
-        &ring_points,
-        json.message.clone(),
-        scalar_from_hex(&json.c).unwrap(),
-        &responses,
+    let lsag_signature = Lsag {
+        ring: ring_points,
+        message: json.message.clone(),
+        c0: scalar_from_hex(&json.c).unwrap(),
+        responses,
         key_image,
-        Some(json.linkabilityFlag.clone()),
-    )
+        linkability_flag: Some(json.linkabilityFlag.clone()),
+    };
+
+    // Return the result of the verification
+    verify_lsag(lsag_signature)
 }
 
 /// Verifies a ring signature.
 /// Returns `true` if the signature is valid, `false` otherwise.
-pub fn verify_lsag(
-    ring: &[AffinePoint],
-    message: String,
-    c0: Scalar,
-    responses: &[Scalar],
-    key_image: AffinePoint,
-    linkability_flag: Option<String>,
-) -> bool {
-    // // Check that all points in the ring are valid
+pub fn verify_lsag(signature: Lsag) -> bool {
+    // // Check that all points in the ring are valid // todo: implement for rust
     // for point in ring {
     //     if !check_low_order(point) { // todo: add the check_low_order function
     //         panic!("The public key {:?} is not valid", point);
@@ -136,29 +141,34 @@ pub fn verify_lsag(
     // }
 
     // Ensure that the ring and responses have matching lengths
-    if ring.len() != responses.len() {
+    if signature.ring.len() != signature.responses.len() {
         panic!("Ring and responses must have the same length");
     }
-    let message_digest = keccak_256(&[message]);
+    let message_digest = keccak_256(&[signature.message]);
 
-    let serialized_ring = serialize_ring(ring);
+    let serialized_ring = serialize_ring(&signature.ring);
 
-    // Initialize lastComputedCp with c0
-    let mut last_computed_c = c0;
+    // Initialize last_computed_c with c0
+    let mut last_computed_c = signature.c0;
 
     // Compute the c values: c1', c2', ..., cn', c0'
-    for i in responses.iter().enumerate().take(ring.len()) {
+    for i in signature
+        .responses
+        .iter()
+        .enumerate()
+        .take(signature.ring.len())
+    {
         let params = Params {
-            index: (i.0 + 1) % ring.len(),
-            previous_r: responses[i.0],
+            index: (i.0 + 1) % signature.ring.len(),
+            previous_r: signature.responses[i.0],
             previous_c: last_computed_c,
             previous_index: i.0,
-            key_image,
-            linkability_flag: linkability_flag.clone(),
+            key_image: signature.key_image,
+            linkability_flag: signature.linkability_flag.clone(),
         };
 
         let c = compute_c(
-            ring,
+            &signature.ring,
             serialized_ring.clone(),
             message_digest.clone(),
             &params,
@@ -168,14 +178,13 @@ pub fn verify_lsag(
     }
 
     // Return true if c0 == c0'
-    c0 == last_computed_c
+    signature.c0 == last_computed_c
 }
-
 #[cfg(test)]
 mod tests {
     use super::verify_lsag;
     use crate::{
-        lsag_verifier::{compute_c, Params},
+        lsag_verifier::{compute_c, Lsag, Params},
         utils::{
             scalar_from_hex::scalar_from_hex, scalar_to_string::scalar_to_string,
             serialize_point::deserialize_point, test_utils::get_ring,
@@ -256,11 +265,11 @@ mod tests {
             scalar_from_hex("86379b43861e950b5fa4b7571aff0c6004578e71280aaedb993833c9bde63c43")
                 .unwrap();
 
-        let result = verify_lsag(
-            &ring,
-            "message".to_string(),
-            c,
-            &[
+        let lsag_signature = Lsag {
+            ring,
+            message: "message".to_string(),
+            c0: c,
+            responses: [
                 scalar_from_hex("d6c1854eeb132d5886ac590c530a55a7fba3d92c4eb6896a728b0a61899ad902")
                     .unwrap(),
                 scalar_from_hex("6a51d731b398036ed3b3b5cfd206407a35fd11faa2bbad1658bcf9f08b9c5fb8")
@@ -269,10 +278,12 @@ mod tests {
                     .unwrap(),
                 scalar_from_hex("6a51d731b398036ed3b3b5cfd206407a35fd11faa2bbad1658bcf9f08b9c5fb8")
                     .unwrap(),
-            ],
-            key_image.unwrap(),
-            Some("linkability flag".to_string()),
-        );
+            ]
+            .to_vec(),
+            key_image: key_image.unwrap(),
+            linkability_flag: Some("linkability flag".to_string()),
+        };
+        let result = verify_lsag(lsag_signature);
 
         assert!(result);
     }
@@ -342,14 +353,15 @@ mod tests {
             .to_string();
 
         // Call `verify_lsag` and check the result
-        let result = verify_lsag(
-            &ring,
+        let lsag_signature = Lsag {
+            ring,
             message,
-            c,
-            &responses,
+            c0: c,
+            responses,
             key_image,
-            Some(linkability_flag),
-        );
+            linkability_flag: Some(linkability_flag),
+        };
+        let result = verify_lsag(lsag_signature);
 
         // Verify that the LSAG signature is valid
         assert!(result, "The LSAG signature should be valid.");
