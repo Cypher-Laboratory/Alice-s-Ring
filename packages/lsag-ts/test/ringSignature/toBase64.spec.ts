@@ -17,7 +17,6 @@ describe("Test toBase64()", () => {
         data.linkabilityFlag ? [data.linkabilityFlag] : [],
       ),
       secp256k1,
-      // config,
     );
 
     const keyImage = customMapped.mult(data.signerPrivKey);
@@ -40,7 +39,6 @@ describe("Test toBase64()", () => {
         data.linkabilityFlag ? [data.linkabilityFlag] : [],
       ),
       secp256k1,
-      // config,
     );
 
     const keyImage = customMapped.mult(data.signerPrivKey);
