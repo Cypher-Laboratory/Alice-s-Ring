@@ -2,7 +2,7 @@ import { Curve, CurveName, RingSignature } from "../../src";
 import * as data from "../data";
 
 const secp256k1 = new Curve(CurveName.SECP256K1);
-
+const ed25519 = new Curve(CurveName.ED25519);
 /**
  * Test the RingSignature.verify() method
  *
@@ -33,15 +33,13 @@ describe("Test verify()", () => {
       secp256k1,
       data.linkabilityFlag,
     ).toJsonString();
-
-    // modify the signature message
     const editedSig = JSON.parse(signature);
     editedSig.message = "Wrong message";
 
     expect(RingSignature.fromJson(editedSig).verify()).toBe(false);
   });
 
-  it("Should return true if the base64 signature is valid", () => {
+  it("Should return true if the base64 signature is valid - secp256k1", () => {
     const signature = RingSignature.sign(
       data.publicKeys_secp256k1,
       data.signerPrivKey,
@@ -53,12 +51,61 @@ describe("Test verify()", () => {
     expect(RingSignature.verify(signature)).toBeTruthy();
   });
 
-  it("Should return true if the JSON signature is valid", () => {
+  it("Should return true if the JSON signature is valid - secp256k1", () => {
     const signature = RingSignature.sign(
       data.publicKeys_secp256k1,
       data.signerPrivKey,
       data.message,
       secp256k1,
+      data.linkabilityFlag,
+    ).toJsonString();
+
+    expect(RingSignature.verify(signature)).toBeTruthy();
+  });
+
+  it("Should return true if the signature is valid - ed25519", () => {
+    const signature = RingSignature.sign(
+      data.publicKeys_ed25519,
+      data.signerPrivKey,
+      data.message,
+      ed25519,
+      data.linkabilityFlag,
+    );
+
+    expect(signature.verify()).toBe(true);
+  });
+
+  it("Should return false if the signature is invalid - ed25519", () => {
+    const signature = RingSignature.sign(
+      data.publicKeys_ed25519,
+      data.signerPrivKey,
+      data.message,
+      ed25519,
+      data.linkabilityFlag,
+    ).toJsonString();
+    const editedSig = JSON.parse(signature);
+    editedSig.message = "Wrong message";
+    expect(RingSignature.fromJson(editedSig).verify()).toBe(false);
+  });
+
+  it("Should return true if the base64 signature is valid - ed25519", () => {
+    const signature = RingSignature.sign(
+      data.publicKeys_ed25519,
+      data.signerPrivKey,
+      data.message,
+      ed25519,
+      data.linkabilityFlag,
+    ).toBase64();
+
+    expect(RingSignature.verify(signature)).toBeTruthy();
+  });
+
+  it("Should return true if the JSON signature is valid - ed25519", () => {
+    const signature = RingSignature.sign(
+      data.publicKeys_ed25519,
+      data.signerPrivKey,
+      data.message,
+      ed25519,
       data.linkabilityFlag,
     ).toJsonString();
 
