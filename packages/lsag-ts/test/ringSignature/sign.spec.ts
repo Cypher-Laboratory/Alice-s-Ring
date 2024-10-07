@@ -1,6 +1,11 @@
 import { RingSignature } from "../../src";
 import * as data from "../data";
-import { Curve, CurveName, errors } from "@cypher-laboratory/ring-sig-utils";
+import {
+  Curve,
+  CurveName,
+  errors,
+  sortRing,
+} from "@cypher-laboratory/ring-sig-utils";
 
 const secp256k1 = new Curve(CurveName.SECP256K1);
 const ed25519 = new Curve(CurveName.ED25519);
@@ -53,7 +58,6 @@ describe("Test sign()", () => {
     );
 
     expect(ringSignature).toBeInstanceOf(RingSignature);
-    // test if the ring signature is valid
     expect(ringSignature.verify()).toBeTruthy();
   });
 
@@ -80,5 +84,48 @@ describe("Test sign()", () => {
     );
     expect(ringSignature).toBeInstanceOf(RingSignature);
     expect(ringSignature.verify()).toBe(true);
+  });
+
+  it("Should throw if the ring is not valid - ed25519", () => {
+    expect(() => {
+      RingSignature.sign(
+        sortRing(
+          data.publicKeys_ed25519.slice(1).concat(data.idPointY_ed25519),
+        ),
+        data.signerPrivKey,
+        data.message,
+        ed25519,
+        data.linkabilityFlag,
+      );
+    }).toThrow(
+      "Invalid point: At least one point is not valid: Error: Invalid point: not on curve",
+    );
+  });
+
+  it("Should return a valid signature if the ring is empty - ed25519", () => {
+    const ringSignature = RingSignature.sign(
+      [],
+      data.signerPrivKey,
+      data.message,
+      ed25519,
+      data.linkabilityFlag,
+    );
+
+    expect(ringSignature).toBeInstanceOf(RingSignature);
+    expect(ringSignature.verify()).toBeTruthy();
+  });
+
+  it("Should throw if signerPrivKey is not valid - ed25519", () => {
+    expect(() => {
+      RingSignature.sign(
+        data.publicKeys_ed25519,
+        0n,
+        data.message,
+        ed25519,
+        data.linkabilityFlag,
+      );
+    }).toThrow(
+      errors.invalidParams("Signer private key cannot be 0 and must be < N"),
+    );
   });
 });
