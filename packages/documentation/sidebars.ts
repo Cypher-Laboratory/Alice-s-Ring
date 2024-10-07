@@ -103,7 +103,7 @@ const sidebars: SidebarsConfig = {
     {
       type: 'doc',
       id: 'rust-verifier',
-      label: "rust-verifier",
+      label: "Rust crate",
     },
     'cypher-lab',
   ],
