@@ -42,6 +42,8 @@ To use this Rust verifier for SAG or LSAG signatures, add it to your project as 
 ring-ring_signature_verifier = "0.1.0"
 ```
 
+> Crate URL: // todo
+
 ### Example Usage
 
 Here is a simple example showing how to verify an LSAG signature:
