@@ -98,6 +98,11 @@ const sidebars: SidebarsConfig = {
           id: 'metamask-snap/usage',
           label: 'Toolkit',
         },
+        {
+          type: 'doc',
+          id: 'metamask-snap/faq',
+          label: 'FAQ',
+        },
       ]
     },
     {

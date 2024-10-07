@@ -60,7 +60,7 @@ const config: Config = {
         },
         { href: 'https://www.cypherlab.org/blog/articles', label: 'Blog', position: 'right' },
         {
-          href: 'https://github.com/Cypher-Laboratory/Alice-s-Ring-snap',
+          href: 'https://github.com/Cypher-Laboratory/Alice-s-Ring',
           label: 'GitHub',
           position: 'right',
         },

@@ -21,7 +21,7 @@ sidebar_position: 5
    The Snap uses advanced cryptographic techniques provided by the SAG and LSAG schemes to sign messages without revealing the identity of the signer, ensuring privacy.
 
 #### Is my private key safe when using the Ring Signatures Snap?
-   Yes, the Snap is designed to securely handle your private keys within the MetaMask environment, ensuring they are not exposed or compromised. Both libraries use the same [audited](https://github.com/Cypher-Laboratory/Alice-s-Ring-SAG-TS/blob/main/AUDIT_REPORT.pdf) base.
+   Yes, the Snap is designed to securely handle your private keys within the MetaMask environment, ensuring they are not exposed or compromised. Both libraries use the same [audited](https://github.com/Cypher-Laboratory/Alice-s-Ring/blob/main/AUDIT_REPORT.pdf) base.
 
 #### Can anyone in the ring sign messages on my behalf?
    The signatures are 'Spontaneous,' meaning anyone can use any public keys to build a signature. If someone uses your public key to build a signature, it might appear to a third party that you are the signer. Similarly, you can use any public key in your signatures, making it seem like any other group member might have signed your message.
