@@ -98,7 +98,17 @@ const sidebars: SidebarsConfig = {
           id: 'metamask-snap/usage',
           label: 'Toolkit',
         },
+        {
+          type: 'doc',
+          id: 'metamask-snap/faq',
+          label: 'FAQ',
+        },
       ]
+    },
+    {
+      type: 'doc',
+      id: 'rust-verifier',
+      label: "Rust crate",
     },
     'cypher-lab',
   ],

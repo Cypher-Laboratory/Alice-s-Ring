@@ -14,14 +14,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Cypher-Laboratory/Alice-s-Ring-SAG-TS.git"
+    "url": "git+https://github.com/Cypher-Laboratory/Alice-s-Ring.git"
   },
   "author": "Elli610 <nathan@cypherlab.org> && LeJamon <thomas@cypherlab.org> && maximedgr <maxime@cypherlab.org>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/Cypher-Laboratory/Alice-s-Ring-SAG-TS/issues"
+    "url": "https://github.com/Cypher-Laboratory/Alice-s-Ring/issues"
   },
-  "homepage": "https://github.com/Cypher-Laboratory/Alice-s-Ring-SAG-TS#readme",
+  "homepage": "https://github.com/Cypher-Laboratory/Alice-s-Ring#readme",
   "devDependencies": {
     "typescript": "^5.6.2"
   }

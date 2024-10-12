@@ -2,12 +2,12 @@
 
 ## Overview
 
-This Solidity-based SAG Verifier allows you to verify spontaneous anonymous group (SAG) signatures on the Ethereum Virtual Machine (EVM). These signatures are generated using [Alice's Ring](https://github.com/Cypher-Laboratory/Alice-s-Ring-SAG-TS), a TypeScript library for creating SAG signatures.
+This Solidity-based SAG Verifier allows you to verify spontaneous anonymous group (SAG) signatures on the Ethereum Virtual Machine (EVM). These signatures are generated using [Alice's Ring](https://github.com/Cypher-Laboratory/Alice-s-Ring), a TypeScript library for creating SAG signatures.
 
 ## What Are Ring Signatures?
 
 Ring signatures allow a member of a group to sign a message on behalf of the entire group while keeping the individual signer’s identity hidden. This guarantees the signer’s anonymity within the group. These signatures are termed 'spontaneous' because the signer does not need authorization from other group members to sign a message. 
-For a quick mathematical explanation, you can refer to [this link](https://github.com/Cypher-Laboratory/Alice-s-Ring-SAG-TS?tab=readme-ov-file#spontaneous-anonymous-group-sag-signatures).
+For a quick mathematical explanation, you can refer to [this link](https://github.com/Cypher-Laboratory/Alice-s-Ring?tab=readme-ov-file#spontaneous-anonymous-group-sag-signatures).
 
 > **Note**: Our SAG Verifier implementation currently supports ECC over SECP256K1, the most widely used curve in blockchains. Support for ED25519 will be added soon.
 
