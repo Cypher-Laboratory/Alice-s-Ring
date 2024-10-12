@@ -223,7 +223,7 @@ Handles signing and verifying LSAG signatures. Key methods include:
 
 ## Sponsor
 
-We would like to thank the [Polygon Foundation](https://polygon.technology/) for supporting this project through the [Polygon Community Grants Program](https://polygon.technology/grants) Season 01.
+ <img src="https://cryptologos.cc/logos/polygon-matic-logo.png?v=024" alt="Polygon" width="30"/> | We would like to thank the [Polygon Foundation](https://polygon.technology/) for supporting this project through the [Polygon Community Grants Program](https://polygon.technology/grants) Season 01.
 
 ## Contribution
 
