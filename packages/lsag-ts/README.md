@@ -90,7 +90,8 @@ The verifier computes the following:
     - $c_{i}$' = $H( R, m, [ r_{i-1} G$  + $c_{i-1}$' $K_{i-1}$], [$r_{i-1}H_p(K_{i-1}) + c_{i-1}\tilde{K}$]) if $i ≠ 1$ else $c_{i}$' = $H(R, m, [r_{1}G + c_{1}K_{1}], [r_{1}H_p(K_{1}) + c_{1}\tilde{K}])$
 - If $c_{1}$' = $c_{1}$ then the signature is valid, else it is invalid.
 
-> Note: It’s important to use the hash that returns curve points directly, rather than computing some integer that is then multiplied by $G$. $H_p$ would be broken if someone discovered a way to find $n_x$ such that $n_xG = H_p(x)$.
+> Note: 
+> It’s important to use the hash that returns curve points directly, rather than computing some integer that is then multiplied by $G$. $H_p$ would be broken if someone discovered a way to find $n_x$ such that $n_xG = H_p(x)$.
 
 ## Installation
 
