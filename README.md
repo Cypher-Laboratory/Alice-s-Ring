@@ -38,7 +38,7 @@ The Alice's Ring monorepo includes several projects, each focusing on different 
 6. **[SAG EVM verifier](./packages/sag-evm-verifier)**: An Ethereum-compatible (Solidity) verifier for SAG signatures, enabling on-chain privacy features in smart contracts.
 7. **[Documentation](./packages/documentation)**: Comprehensive guides, tutorials, and references for each of the above libraries and implementations.
 
-## 🔐 Who Are We? (Cypher Lab)
+## 🔐 Who Are We?
 
 **Cypher Lab** is dedicated to making privacy a foundational pillar of the Web3 ecosystem. We believe that privacy is critical to decentralization and that users should have control over their data and identities. Our focus is on building privacy-preserving cryptographic tools that empower developers and users.
 
