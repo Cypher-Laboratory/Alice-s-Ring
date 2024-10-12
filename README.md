@@ -1,12 +1,14 @@
 # Alice's Ring Monorepo
 
-Welcome to **Alice's Ring**, an open-source, community-driven initiative aimed at enhancing privacy in the Web3 ecosystem through **Ring Signatures**. Our goal is to make privacy a fundamental part of digital interactions, enabling developers to integrate ring signature-based privacy features into decentralized applications.
+Welcome to **Alice's Ring**, an open-source, community-driven initiative aimed at enhancing privacy in the Web3 ecosystem through the use of **Ring Signatures**. Our goal is to make privacy a core aspect of digital interactions, empowering developers to seamlessly integrate ring signature-based privacy features into decentralized applications.  
 
 ## 💍 What is Alice's Ring?
 
-**Alice's Ring** is a collection of cryptographic tools that empower developers to bring privacy to blockchain applications using **Ring Signatures**. By leveraging different languages and platforms, Alice's Ring offers versatile solutions that work in a variety of blockchain environments, from front-end TypeScript libraries to on-chain verifications in Solidity and high-performance Rust implementations.
+**Alice’s Ring** is a suite of cryptographic tools designed to empower developers to integrate privacy into blockchain applications using **Ring Signatures**. By supporting multiple languages and platforms, Alice’s Ring provides flexible, cross-environment solutions—from front-end **TypeScript** libraries to **on-chain verifications in Solidity**, and high-performance implementations in **Rust**.
 
-Our mission is to shape a future where privacy is integrated into every layer of the Web3 experience, providing users with secure and anonymous options.
+
+Our mission is to shape a future where privacy is embedded in every layer of the Web3 experience, offering users secure and anonymous solutions.  
+
 
 ### What Alice's Ring Offers
 
@@ -17,9 +19,9 @@ Our mission is to shape a future where privacy is integrated into every layer of
 
 ## 🖋️ Intro to Ring Signatures
 
-**Ring Signatures** are cryptographic protocols that allow a group of users to sign a message while keeping the identity of the actual signer secret. Unlike conventional digital signatures, ring signatures provide signer ambiguity, where the message could have been signed by anyone in the group, making it nearly impossible to trace back to the actual author.
+**Ring Signatures** are cryptographic protocols that enable a group of users to sign a message while preserving the anonymity of the actual signer. Unlike traditional digital signatures, ring signatures introduce signer ambiguity, making it unclear which member of the group produced the signature. This ensures that the message could plausibly have been signed by any participant, making it extremely difficult to trace the true author.
 
-Ring signatures are used to enhance privacy, making transactions untraceable. They find applications in systems like blockchain-based privacy coins (e.g., Monero) and secure voting systems.
+Ring signatures enhance privacy by making transactions untraceable. They are widely used in applications such as blockchain-based privacy coins (e.g., Monero) and secure voting systems, where anonymity and security are paramount.  
 
 ### **Spontaneous Anonymous Group (SAG) Signatures**
 SAG signatures allow spontaneous group formation, ensuring anonymity without requiring setup among members.
@@ -30,7 +32,7 @@ LSAG adds linkability to SAG, making it useful for blockchain environments to pr
 ## 📦 Contents of the Monorepo
 The Alice's Ring monorepo includes several projects, each focusing on different implementations and integrations of ring signature schemes:
 
-1. **[SAG-ts](./packages/sag-ts)**: TypeScript implementation of Spontaneous Anonymous Group (SAG) signatures. Useful for front-end developers integrating SAG-based privacy features.
+1. **[SAG-ts](./packages/sag-ts)**: Audited TypeScript implementation of Spontaneous Anonymous Group (SAG) signatures. Useful for front-end developers integrating SAG-based privacy features. 
 2. **[LSAG-ts](./packages/lsag-ts)**: TypeScript implementation of Linkable Spontaneous Anonymous Group (LSAG) signatures. Extends SAG for privacy with linkability to prevent double-spending.
 3. **[Metamask-snap](./packages/metamask-snap)**: A MetaMask Snap that allows users to generate and verify ring signatures directly from their MetaMask wallet.
 4. **[ring-sig-utils](./packages/ring-sig-utils)**: A collection of utility functions supporting ring signature operations across various implementations.
@@ -46,7 +48,7 @@ Our key projects include:
 - **Alice's Ring**: A suite of libraries implementing ring signatures to ensure privacy in blockchain transactions.
 - **Privacy Protocols**: We design and develop cryptographic protocols that prioritize user privacy, security, and decentralized control.
 
-Learn more about us at [Cypher Lab's Website](https://www.cypherlab.org/).
+Learn more about us on [Cypher Lab's Website](https://www.cypherlab.org/).
 
 ## 🛠️ How to Set Up the Repo
 To get started with the Alice's Ring monorepo, follow these steps:
@@ -84,10 +86,9 @@ We welcome contributions! To contribute:
 3. **Write Your Code**: Implement your changes, ensuring they are well-documented and tested.
 4. **Submit a Pull Request**: Push your branch and create a pull request to the main repository.
 
-> NOTE: When creating a pull request, please include a clear and concise title and description of your changes, as well as any relevant context or background information.
-
+> NOTE: When creating a pull request, please ensure to provide a clear and concise title along with a detailed description of your changes. Include any relevant context or background information to help reviewers understand the purpose and impact of your modifications.
 ## 📄 License
-Alice's Ring is open-sourced under the [MIT License](./LICENSE).
+Alice’s Ring is open source and licensed under the [MIT License](./LICENSE).
 
 ---
 Thank you for joining us in our mission to make the Web3 ecosystem more private and secure. If you have any questions or would like to collaborate, feel free to reach out through our [contact page](mailto:contact@cypherlab.org). Together, let's build a more privacy-focused future!
