@@ -287,6 +287,8 @@ const signatureFromJson = RingSignature.fromJson(json);
 
 ## Detailed Implementation
 
+**[A full mathematical explanation of the LSAG signature scheme can be found here](https://github.com/Cypher-Laboratory/Alice-s-Ring/tree/main/packages/lsag-ts#signature-generation)**
+
 ### LSAG Signatures
 
 LSAG signatures enhance traditional ring signatures by adding linkability. This allows observers to determine if two signatures were made by the same signer without revealing the signer's identity.

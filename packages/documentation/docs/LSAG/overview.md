@@ -131,6 +131,8 @@ Verifiers can confirm:
    - Compare the key image with those from other signatures.
    - If the key images match, the signatures are linked (from the same private key).
 
+**[A full mathematical explanation of the LSAG signature scheme can be found here](https://github.com/Cypher-Laboratory/Alice-s-Ring/tree/main/packages/lsag-ts#signature-generation)**
+
 ## Finding Public Keys for the Ring
 
 ### Blockchain Networks
