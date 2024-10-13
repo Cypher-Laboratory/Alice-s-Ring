@@ -87,7 +87,7 @@ The signature is valid if and only if the signature has been generated using one
 
 The verifier computes the following:
 - For $i = 2$ to $n$, with $i$ wrapping around to 1 after $n$:
-    - $c_{i}$' = $H( R, m, [ r_{i-1} G$  + $c_{i-1}$' $K_{i-1}$], [$r_{i-1}H_p(K_{i-1}) + c_{i-1}\tilde{K}$]) if $i ≠ 1$ else $c_{i}$' = $H(R, m, [r_{1}G + c_{1}K_{1}], [r_{1}H_p(K_{1}) + c_{1}\tilde{K}])$
+    - $c_{i}$' = $H( R, m, [ r_{i-1} G  + c_{i-1}' K_{i-1}], [r_{i-1}H_p(K_{i-1}) + c_{i-1}\tilde{K}])$ if $i ≠ 1$ else $c_{i}$' = $H(R, m, [r_{1}G + c_{1}K_{1}], [r_{1}H_p(K_{1}) + c_{1}\tilde{K}])$
 - If $c_{1}$' = $c_{1}$ then the signature is valid, else it is invalid.
 
 > Note: 
