@@ -130,6 +130,17 @@ describe("Test sign()", () => {
     expect(ringSignature).toBeInstanceOf(RingSignature);
     expect(ringSignature.verify()).toBe(true);
   });
+  it("Should return a valid ring signature if config.hash is SHA256 - secp256k1", () => {
+    const ringSignature = RingSignature.sign(
+      data.publicKeys_secp256k1,
+      data.signerPrivKey,
+      data.message,
+      secp256k1,
+      { hash: HashFunction.SHA256 },
+    );
+    expect(ringSignature).toBeInstanceOf(RingSignature);
+    expect(ringSignature.verify()).toBe(true);
+  });
 
   it("Should return a valid ring signature if config.hash is SHA512 - ed25519", () => {
     const ringSignature = RingSignature.sign(
@@ -138,6 +149,17 @@ describe("Test sign()", () => {
       data.message,
       ed25519,
       { hash: HashFunction.SHA512 },
+    );
+    expect(ringSignature).toBeInstanceOf(RingSignature);
+    expect(ringSignature.verify()).toBe(true);
+  });
+  it("Should return a valid ring signature if config.hash is SHA256 - ed25519", () => {
+    const ringSignature = RingSignature.sign(
+      data.publicKeys_ed25519,
+      data.signerPrivKey,
+      data.message,
+      ed25519,
+      { hash: HashFunction.SHA256 },
     );
     expect(ringSignature).toBeInstanceOf(RingSignature);
     expect(ringSignature.verify()).toBe(true);

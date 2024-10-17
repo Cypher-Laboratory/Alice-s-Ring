@@ -199,6 +199,20 @@ describe("Test Constructor", () => {
           ),
       );
     });
+    it("Should pass if config.hash is sha256", () => {
+      expect(
+        () =>
+          new RingSignature(
+            data.message,
+            data.publicKeys_ed25519,
+            data.randomC,
+            data.randomResponses,
+            ed25519,
+            { hash: HashFunction.SHA256 },
+          ),
+      );
+    });
+
     it("Should pass if config.hash is not undefined", () => {
       expect(
         () =>

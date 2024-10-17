@@ -129,7 +129,6 @@ it("Should throw if at least 1 response is 0 - secp256k1", () => {
       data.linkabilityFlag ? [data.linkabilityFlag] : [],
     ),
     secp256k1,
-    // config,
   );
 
   const keyImage = customMapped.mult(data.signerPrivKey);
@@ -155,7 +154,6 @@ it("Should throw if curve is invalid", () => {
       data.linkabilityFlag ? [data.linkabilityFlag] : [],
     ),
     secp256k1,
-    // config,
   );
 
   const keyImage = customMapped.mult(data.signerPrivKey);
@@ -178,7 +176,6 @@ it("Should pass if all parameters are valid - secp256k1", () => {
       data.linkabilityFlag ? [data.linkabilityFlag] : [],
     ),
     secp256k1,
-    // config,
   );
 
   const keyImage = customMapped.mult(data.signerPrivKey);
@@ -203,7 +200,6 @@ it("Should throw if at least 1 response is 0 - secp256k1", () => {
       data.linkabilityFlag ? [data.linkabilityFlag] : [],
     ),
     secp256k1,
-    // config,
   );
 
   const keyImage = customMapped.mult(data.signerPrivKey);

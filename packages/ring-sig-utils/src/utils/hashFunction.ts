@@ -1,6 +1,7 @@
 import { keccak_256 as keccak256 } from "@noble/hashes/sha3";
 import { utf8ToBytes } from "@noble/hashes/utils";
 import { sha512 } from "@noble/hashes/sha512";
+import { sha256 } from "@noble/hashes/sha256";
 import { SignatureConfig } from "../interfaces";
 import { uint8ArrayToHex } from ".";
 import { Curve, CurveName } from "../curves";
@@ -10,6 +11,7 @@ import { hashToCurve } from "@noble/curves/secp256k1";
 export enum HashFunction {
   KECCAK256 = "keccak256",
   SHA512 = "sha512",
+  SHA256 = "sha256",
 }
 
 /* ------------------ Hash functions ------------------ */
@@ -34,6 +36,9 @@ export function hash(
     }
     case HashFunction.SHA512: {
       return sha_512(data);
+    }
+    case HashFunction.SHA256: {
+      return sha_256(data);
     }
     default: {
       return keccak_256(data, config?.evmCompatibility);
@@ -91,10 +96,18 @@ export function keccak_256(
  * @returns - The hash of the data  as an hex string
  */
 export function sha_512(input: (string | bigint)[]): string {
-  const serialized = input
-    .map((x) => (typeof x === "bigint" ? x.toString() : x))
-    .join("");
-  return Buffer.from(sha512(serialized)).toString("hex");
+  return Buffer.from(sha512(serializeInput(input))).toString("hex");
+}
+
+/**
+ * Hash data using sha256
+ *
+ * @param input - The data to hash
+ *
+ * @returns - The hash of the data as an hex string
+ */
+export function sha_256(input: (string | bigint)[]): string {
+  return Buffer.from(sha256(serializeInput(input))).toString("hex");
 }
 
 /**

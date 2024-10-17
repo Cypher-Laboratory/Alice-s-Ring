@@ -17,7 +17,6 @@ describe("Test toJsonString()", () => {
         data.linkabilityFlag ? [data.linkabilityFlag] : [],
       ),
       secp256k1,
-      // config,
     );
 
     const keyImage = customMapped.mult(data.signerPrivKey);
@@ -39,7 +38,6 @@ describe("Test toJsonString()", () => {
         data.linkabilityFlag ? [data.linkabilityFlag] : [],
       ),
       secp256k1,
-      // config,
     );
 
     const keyImage = customMapped.mult(data.signerPrivKey);
