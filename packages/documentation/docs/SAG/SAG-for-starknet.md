@@ -45,6 +45,7 @@ async function ringSignForStarknet() {
   const rawCallData = await signature.getCallData();
   console.log(rawCallData);
 }
+ringSignForStarknet(); 
 ```
 
 **Important:** ringSignature.getCallData is an **async** function.
