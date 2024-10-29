@@ -30,8 +30,21 @@ import {
 } from "@cypher-laboratory/alicesring-sag-starknet";
 
 const curve = new Curve(CurveName.SECP256K1);
-const ring: Point[] = []; // Your ring of public keys
 const message = "Hello, Alice's Ring!";
+
+// Define an array of compressed public keys
+const compressedPublickeys = [
+  "0316d7da70ba247a6a40bb310187e8789b80c45fa6dc0061abb8ced49cbe7f887f",
+  "0221869ca3ae33be3a7327e9a0272203afa72c52a5460ceb9f4a50930531bd926a",
+  "02337d6f577e66a21a7831c087c6836a1bae37086bf431400811ac7c6e96c8ccbb",
+];
+
+const ring: Point[] = [];
+// Deserialize each compressed public key and add it to the ring array
+compressedPublickeys.forEach((compressedKey) => {
+  const point = Point.deserialize(compressedKey);
+  ring.push(point);
+});
 
 const signerPrivateKey = BigInt("0x..."); // The signer's private key
 
@@ -133,4 +146,3 @@ We welcome contributions! To contribute, follow these steps:
 - **Zero to Monero:** [PDF Document](https://www.getmonero.org/library/Zero-to-Monero-2-0-0.pdf) (p.36)
 
 ---
-
