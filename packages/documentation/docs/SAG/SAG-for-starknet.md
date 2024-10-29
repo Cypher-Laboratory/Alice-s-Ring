@@ -100,7 +100,7 @@ You can also pass the raw call data to the deployed contract at the following ad
 
 ### Number of steps
 
-Verifying a SAG signature requires approximately 46,800 steps per member in the ring.
+Verifying a SAG signature requires approximately 46,800 steps per public key in the ring.
 
 ## Deployed address
 
