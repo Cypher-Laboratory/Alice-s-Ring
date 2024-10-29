@@ -5,7 +5,7 @@ title: "SAG: EVM verifier"
 
 # SAG EVM Verifier
 
-The SAG EVM Verifier is a Solidity implementation that allows you to verify Spontaneous Anonymous Group (SAG) signatures on the Ethereum Virtual Machine (EVM). These signatures are generated using [Alice's Ring](https://github.com/Cypher-Laboratory/Alice-s-Ring-SAG-TS), a TypeScript library for creating SAG signatures.
+The SAG EVM Verifier is a Solidity implementation that allows you to verify Spontaneous Anonymous Group (SAG) signatures on the Ethereum Virtual Machine (EVM). These signatures are generated using [Alice's Ring](https://github.com/Cypher-Laboratory/Alice-s-Ring), a TypeScript library for creating SAG signatures.
 
 
 ## How the Solidity Verifier Works

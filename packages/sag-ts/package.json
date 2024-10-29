@@ -7,7 +7,7 @@
   "types": "dist/src/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Cypher-Laboratory/Alice-s-Ring-SAG-TS.git"
+    "url": "https://github.com/Cypher-Laboratory/Alice-s-Ring.git"
   },
   "scripts": {
     "build": "npm run fmt && rimraf ./dist && mkdir -p ./dist && tsc",

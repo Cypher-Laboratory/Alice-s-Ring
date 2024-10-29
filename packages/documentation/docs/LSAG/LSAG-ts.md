@@ -287,6 +287,8 @@ const signatureFromJson = RingSignature.fromJson(json);
 
 ## Detailed Implementation
 
+**[A full mathematical explanation of the LSAG signature scheme can be found here](https://github.com/Cypher-Laboratory/Alice-s-Ring/tree/main/packages/lsag-ts#signature-generation)**
+
 ### LSAG Signatures
 
 LSAG signatures enhance traditional ring signatures by adding linkability. This allows observers to determine if two signatures were made by the same signer without revealing the signer's identity.
@@ -364,9 +366,9 @@ The `Curve` class encapsulates the properties of an elliptic curve.
 - **Ring Size:** A larger ring size enhances anonymity but may impact performance.
 - **Key Image Uniqueness:** Reusing the same key image in different contexts can lead to linkability. Use the linkability flag appropriately.
 
-## Sponsors
+## Sponsor
 
-We would like to thank the Polygon Foundation ([https://polygon.technology/](https://polygon.technology/)) for their support and funding, which have allowed this library to be developed for the benefit of many.
+We would like to thank the [Polygon Foundation](https://polygon.technology/) for making this version of Alice’s Ring possible through the grant awarded as part of the [Polygon Community Grants Program](https://polygon.technology/grants) Season 01.
 
 ## Audit
 
