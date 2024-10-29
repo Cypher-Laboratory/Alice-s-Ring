@@ -49,7 +49,7 @@ console.log("Is signature valid?", signature.verify()); // Should output: true
 })();
 ```
 
-**Important:** ringSignature.getCallData is an **async** function.
+**Important:** ringSignature.getCallData() is an **async** function.
 
 ## Verifying a Ring Signature On-Chain
 
