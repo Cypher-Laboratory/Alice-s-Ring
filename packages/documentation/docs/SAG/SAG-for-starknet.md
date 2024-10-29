@@ -34,18 +34,19 @@ const ring: Point[] = []; // Your ring of public keys
 const message = "Hello, Alice's Ring!";
 
 const signerPrivateKey = BigInt("0x..."); // The signer's private key
-async function ringSignForStarknet() {
-  // Sign
+
+// Sign
+const signature = RingSignature.sign(ring, signerPrivateKey, message, curve);
+
+// Verify locally
+console.log("Is signature valid?", signature.verify()); // Should output: true
+
+(async () => {
+  // Get the signature data to send to the contract
   const signature = RingSignature.sign(ring, signerPrivateKey, message, curve);
-
-  // Verify locally
-  console.log("Is signature valid?", signature.verify()); // Should output: true
-
-  const signature = RingSignature.sign(ring, signerPrivKey, message, curve);
   const rawCallData = await signature.getCallData();
   console.log(rawCallData);
-}
-ringSignForStarknet(); 
+})();
 ```
 
 **Important:** ringSignature.getCallData is an **async** function.
