@@ -58,7 +58,7 @@ console.log("Is signature valid?", signature.verify()); // Should output: true
   // Get the signature data to send to the contract
   const signature = RingSignature.sign(ring, signerPrivateKey, message, curve);
   const rawCallData = await signature.getCallData();
-  console.log(rawCallData);
+  console.log("Starknet callData: ", rawCallData);
 })();
 ```
 
