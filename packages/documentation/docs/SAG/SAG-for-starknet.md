@@ -36,7 +36,7 @@ const message = "Hello, Alice's Ring!";
 const compressedPublickeys = [
   "0316d7da70ba247a6a40bb310187e8789b80c45fa6dc0061abb8ced49cbe7f887f",
   "0221869ca3ae33be3a7327e9a0272203afa72c52a5460ceb9f4a50930531bd926a",
-  "02337d6f577e66a21a7831c087c6836a1bae37086bf431400811ac7c6e96c8ccbb",
+  // ... 
 ];
 
 const ring: Point[] = [];
