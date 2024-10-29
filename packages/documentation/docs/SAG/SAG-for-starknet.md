@@ -5,7 +5,7 @@ title: "SAG for Starknet"
 
 # SAG for Starknet
 
-The **SAG for Starknet** implementation enables verification of Spontaneous Anonymous Group (SAG) signatures on the Starknet platform. This implementation leverages Starknet-specific optimizations to perform ring signature verification efficiently on-chain, supporting both SECP256K1 and ED25519 elliptic curves.
+The **SAG for Starknet** implementation enables verification of Spontaneous Anonymous Group (SAG) signatures on the Starknet blockchain. This implementation leverages Starknet-specific optimizations to perform ring signature verification efficiently on-chain, supporting both SECP256K1 and ED25519 elliptic curves.
 
 The SAG verification functionality on Starknet is provided by the `starknet-sag-ts` package from [Alice's Ring](https://github.com/Cypher-Laboratory/Alice-s-Ring-SAG-TS), a TypeScript library for creating SAG signatures.
 
