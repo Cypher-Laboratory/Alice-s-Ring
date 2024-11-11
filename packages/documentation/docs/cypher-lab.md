@@ -20,7 +20,6 @@ At Cypher Lab, we are committed to pioneering privacy-enhancing technologies tha
 **Our Projects:**
 
 - **Alice's Ring:** A suite of cryptographic tools implementing ring signatures, allowing users to sign transactions anonymously within a group. This enhances privacy and security in blockchain transactions.
-- 
 
 We are passionate about fostering a community that values privacy and security. Through collaboration with industry partners, academic institutions, and open-source communities, we strive to make the Web3 ecosystem more private, secure, and user-centric.
 
