@@ -3,7 +3,7 @@ import {
   modPow,
   mod,
   CurveName,
-} from '@cypher-laboratory/ring-sig-utils';
+} from "@cypher-laboratory/ring-sig-utils";
 
 const ED25519_CONSTANTS = {
   A: 57896044618658097711785492504343953926634992332820282019728792003956564819948n,
@@ -16,11 +16,11 @@ const ED25519_CONSTANTS = {
  */
 async function initGaraga() {
   try {
-    const garaga = await import('garaga-v13.4');
+    const garaga = await import("garaga-v13.4");
     await garaga.init();
     return garaga;
   } catch (error) {
-    console.error('Failed to initialize the WASM module:', error);
+    console.error("Failed to initialize the WASM module:", error);
     throw new Error(`Garaga initialization failed: ${error}`);
   }
 }
@@ -53,7 +53,7 @@ export function toWeierstrass(
   d_twisted: bigint,
   p: bigint,
   x_twisted: bigint,
-  y_twisted: bigint
+  y_twisted: bigint,
 ): [bigint, bigint] {
   const a = a_twisted;
   const d = d_twisted;
@@ -61,12 +61,12 @@ export function toWeierstrass(
   const x = mod(
     (5n * a + a * y_twisted - 5n * d * y_twisted - d) *
       modPow(12n - 12n * y_twisted, -1n, p),
-    p
+    p,
   );
   const y = mod(
     (a + a * y_twisted - d * y_twisted - d) *
       modPow(4n * x_twisted - 4n * x_twisted * y_twisted, -1n, p),
-    p
+    p,
   );
   return [x, y];
 }
@@ -102,19 +102,19 @@ export function toTwistedEdwards(
   d_twisted: bigint,
   p: bigint,
   x_weierstrass: bigint,
-  y_weierstrass: bigint
+  y_weierstrass: bigint,
 ): [bigint, bigint] {
   const a = a_twisted;
   const d = d_twisted;
   const y = mod(
     (5n * a - 12n * x_weierstrass - d) *
       modPow(-12n * x_weierstrass - a + 5n * d, -1n, p),
-    p
+    p,
   );
   const x = mod(
     (a + a * y - d * y - d) *
       modPow(4n * y_weierstrass - 4n * y_weierstrass * y, -1n, p),
-    p
+    p,
   );
   return [x, y];
 }
@@ -138,7 +138,7 @@ export function pointToWeirstrass(p: Point) {
         ED25519_CONSTANTS.D,
         ED25519_CONSTANTS.P,
         p.x,
-        p.y
+        p.y,
       );
     }
     default:
@@ -157,7 +157,7 @@ export function pointToWeirstrass(p: Point) {
  */
 function getPointCoordinates(
   points: Point[],
-  curveName: CurveName
+  curveName: CurveName,
 ): [bigint, bigint][] {
   switch (curveName) {
     case CurveName.ED25519:
@@ -167,7 +167,7 @@ function getPointCoordinates(
           ED25519_CONSTANTS.D,
           ED25519_CONSTANTS.P,
           point.x,
-          point.y
+          point.y,
         );
         return [x, y];
       });
@@ -201,7 +201,7 @@ function getCurveId(curveName: CurveName, garaga: any): number {
  */
 export async function prepareGaragaHints(
   points: Point[],
-  scalars: bigint[]
+  scalars: bigint[],
 ): Promise<bigint[]> {
   const curveName = points[0].curve.name;
   const pointCoordinates = getPointCoordinates(points, curveName);
@@ -213,7 +213,7 @@ export async function prepareGaragaHints(
       includeDigitsDecomposition: false,
     });
   } catch (error) {
-    console.error('Failed to perform Garaga operation:', error);
+    console.error("Failed to perform Garaga operation:", error);
     throw new Error(`Garaga operation failed: ${error}`);
   }
 }
