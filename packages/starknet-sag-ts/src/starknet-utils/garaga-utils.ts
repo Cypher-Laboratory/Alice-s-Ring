@@ -16,7 +16,7 @@ const ED25519_CONSTANTS = {
  */
 async function initGaraga() {
   try {
-    const garaga = await import("garaga");
+    const garaga = await import("garaga-v13.4");
     await garaga.init();
     return garaga;
   } catch (error) {
